@@ -29,7 +29,7 @@ function Header() {
       // 스크롤 시 헤더
       <div className="flex justify-between items-center h-14 px-[104px]">
         <img src="/img.jpg" alt="Logo" className="w-48"/>
-        <SearchBar variant="mini" />
+        <SearchBar />
         <HeaderAction />
       </div>
     ) : ( 
