@@ -24,10 +24,12 @@ function Header() {
     
   return(
   <header className={`fixed top-0 left-0 right-0 z-50 bg-white
-    ${isScrolled ? 'h-[50px]' : 'h-[142px]'} w-[1440px] flex flex-col justify-between`}>
-    {isScrolled ? ( 
+    ${isScrolled ? 'h-[50px]' : 'h-[142px]'} w-full flex justify-center overflow-x-clip`}>
+  
+  <div className="w-[1440px] px-[104px] flex flex-col justify-between ">
+  {isScrolled ? ( 
       // 스크롤 시 헤더
-      <div className="flex justify-between items-center h-14 px-[104px]">
+      <div className="flex justify-between items-center h-14 ">
         <img src="/img.jpg" alt="Logo" className="w-48"/>
         <SearchBar />
         <HeaderAction />
@@ -36,13 +38,13 @@ function Header() {
       // 기본 헤더
       <>  
       {/*로고와 서치바*/ }
-        <div className="flex justify-between h-[65px] px-[104px] pt-4 items-center">
+        <div className="flex justify-between h-[65px] pt-4 items-center">
           <img src="/img.jpg" alt="Logo" className="w-[342px] h-[65px]"/>
           <SearchBar variant="default" />
         </div>
           
         {/*메뉴*/ }
-        <nav className="flex justify-between items-center w-full h-[44px] px-[104px] ">
+        <nav className="flex justify-between items-center w-full h-[44px] ">
           <div className="flex gap-x-6">
             {menus.map((menu) => (
               <button
@@ -63,6 +65,9 @@ function Header() {
         </nav>
       </>
     )}
+
+  </div>
+    
     </header>
   )
 }

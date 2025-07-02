@@ -8,8 +8,8 @@ function ProfileIcon({
     return(
         <svg className={className} onClick={onClick}
             width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15.9855 15.8519C19.2087 15.8519 21.8216 13.1988 21.8216 9.92594C21.8216 6.65314 19.2087 4 15.9855 4C12.7623 4 10.1494 6.65314 10.1494 9.92594C10.1494 13.1988 12.7623 15.8519 15.9855 15.8519Z" stroke="#1D1D1D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M26 27.9999C26 25.3069 24.9464 22.7242 23.0711 20.82C21.1957 18.9157 18.6522 17.8459 16 17.8459C13.3478 17.8459 10.8043 18.9157 8.92893 20.82C7.05357 22.7242 6 25.3069 6 27.9999" stroke="#1D1D1D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15.9855 15.8519C19.2087 15.8519 21.8216 13.1988 21.8216 9.92594C21.8216 6.65314 19.2087 4 15.9855 4C12.7623 4 10.1494 6.65314 10.1494 9.92594C10.1494 13.1988 12.7623 15.8519 15.9855 15.8519Z" stroke="#1D1D1D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M26 27.9999C26 25.3069 24.9464 22.7242 23.0711 20.82C21.1957 18.9157 18.6522 17.8459 16 17.8459C13.3478 17.8459 10.8043 18.9157 8.92893 20.82C7.05357 22.7242 6 25.3069 6 27.9999" stroke="#1D1D1D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
 
     )
