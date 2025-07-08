@@ -4,6 +4,7 @@ import VectorIcon from "../icon/VectorIcon";
 function Notification() {
 
   const [check, setCheck] = useState(false);
+  //일단 오류 무시 
  
 
   return (
