@@ -3,7 +3,6 @@ import SearchBar from "./SearchBar";
 import HeaderAction from "./HeaderAction";
 
 function Header() {
-  const [activeTab, setActiveTab] = useState("IT/과학");
   const [isScrolled, setIsScrolled] = useState(false);
 
   //스크롤 감지
@@ -23,10 +22,10 @@ function Header() {
   const menus = ["홈", "정치", "경제", "사회", "생활/문화", "IT/과학", "세계"];
     
   return(
-  <header className={`fixed top-0 left-0 right-0 z-50 bg-white
-    ${isScrolled ? 'h-[50px]' : 'h-[142px]'} w-full flex justify-center overflow-x-clip`}>
+  <header className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#C1C1C1]
+    ${isScrolled ? 'h-[50px]' : 'h-[142px] pt-[16px]'} w-full flex justify-center overflow-x-clip`}>
   
-  <div className="w-[1440px] px-[104px] flex flex-col justify-between ">
+  <div className="w-[1440px] px-[104px] flex flex-col justify-between gap-[16px]">
   {isScrolled ? ( 
       // 스크롤 시 헤더
       <div className="flex justify-between items-center h-14 ">
@@ -36,24 +35,23 @@ function Header() {
       </div>
     ) : ( 
       // 기본 헤더
-      <>  
-      {/*로고와 서치바*/ }
-        <div className="flex justify-between h-[65px] pt-4 items-center">
+     <div className="flex flex-col gap-[16px]">
+        {/*로고와 서치바*/ }
+        <div className="flex justify-between h-[65px] items-center">
           <img src="/img.jpg" alt="Logo" className="w-[342px] h-[65px]"/>
           <SearchBar variant="default" />
         </div>
           
         {/*메뉴*/ }
-        <nav className="flex justify-between items-center w-full h-[44px] ">
+        <nav className="flex justify-between w-full h-[44px] ">
           <div className="flex gap-x-6">
             {menus.map((menu) => (
               <button
                 key={menu}
-                onClick={() => setActiveTab(menu)}
                 className={`relative h-11 px-2 py-3 text-sm font-['Pretendard Variable'] ${
-                  activeTab === menu
+                  menu === '경제'
                   ? "text-[#07525F] font-semibold border-b-2 border-[#07525F]"
-                  : "text-[#1D1D1D]"
+                  : "text-[#1D1D1D] disabled"
                 }`}
               >
                  {menu}
@@ -63,7 +61,9 @@ function Header() {
           {/*알림, 마이페이지 버튼 */}
           <HeaderAction />
         </nav>
-      </>
+     </div> 
+      
+      
     )}
 
   </div>
