@@ -6,7 +6,6 @@ import NewsCardSkeleton from "../components/NewsCardSkeleton";
 import { getReadTopic } from "../apis/mypage";
 import Header from "../components/Header";
 import type { NewsItems } from "../types/subscriptions";
-import { getReadNews } from "../apis/apis";
 
 const ReadPage = () => {
     const [newsList, setNewsList] = useState<NewsItems[]>([]);
@@ -20,24 +19,26 @@ const ReadPage = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const getNews = useCallback(async() => {
-        if(!more) {
-            return;
-        }
-
+    const getNews = useCallback(async () => {
+        if (!more) return;
+    
         setIsLoading(true);
-
+    
         try {
-            const response = await getReadNews(cursor, 10);
+            const response = await getReadTopic(cursor ?? 0);
+            const newTopics = response?.result?.topics ?? [];
 
-            console.log("🔍 API 응답:", response);
-
-            setNewsList(prev => [...prev, ...response.result]);
-            setCursor(response.nextCursor ?? null);
-            setMore(response.hasNext);
-        } catch(e) {
+            console.log("📦 응답 데이터:", response);
+    
+            setNewsList(prev => [...prev, ...newTopics]);
+            setCursor(response.result.cursor ?? null);
+            setMore(response.result.hasNext);
+        } catch (e: any) {
             console.error("뉴스 로딩 실패", e);
-        } finally {
+            console.error("📛 상태 코드:", e.response?.status);
+            console.error("📛 에러 응답 본문:", e.response?.data);  // << 이거 추가!
+        }
+        finally {
             setIsLoading(false);
         }
     }, [cursor, more]);

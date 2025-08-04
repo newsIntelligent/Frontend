@@ -1,5 +1,3 @@
-import React from 'react'
-
 const NewsCardSkeleton = () => {
     return (
         <div className="break-inside-avoid border border-[1px] border-[#e5e5e5] rounded-lg w-[410px] h-[288px] animate-pulse bg-white">
