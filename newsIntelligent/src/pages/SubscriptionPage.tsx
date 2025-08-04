@@ -12,8 +12,6 @@ const MyPage = () => {
     const [more, setMore] = useState(true);
     const loaderReference = useRef(null);
 
-    const [filter, setFilter] = useState<NewsItems[]>([]);
-
     const [isLoading, setIsLoading] = useState(false);
 
     const getNews = useCallback(async() => {
