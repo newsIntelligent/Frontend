@@ -3,7 +3,7 @@ import SubscribeButton from "./SubscriptionButton";
 import { ChevronDown, Circle } from "lucide-react";
 import type { NewsItems } from "../types/subscriptions";
 
-const NewsCard = ({} : {data : NewsItems}) => {
+const NewsCard = ({data: _data} : {data : NewsItems}) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleDropdown = () => {

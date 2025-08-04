@@ -13,8 +13,8 @@ const ReadPage = () => {
     const [more, setMore] = useState(true);
     const loaderReference = useRef(null);
 
-    const [allNews, setAllNews] = useState<NewsItems[]>([]);
-    const [filter, setFilter] = useState<NewsItems[]>([]);
+    //const [allNews, setAllNews] = useState<NewsItems[]>([]);
+    //const [filter, setFilter] = useState<NewsItems[]>([]);
     const [searchKeyword, setSearchKeyword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
@@ -65,15 +65,17 @@ const ReadPage = () => {
         }
     }, [getNews, more]);
 
+    /*
     useEffect(() => {
         const lowerKeyword = searchKeyword.toLowerCase();
-        const result = allNews.filter(news => 
+        const result = newsList.filter(news => 
             news.topicName.toLowerCase().includes(lowerKeyword) ||
             news.aiSummary.toLowerCase().includes(lowerKeyword)
         );
 
         setFilter(result);
-    }, [searchKeyword, allNews])
+    }, [searchKeyword, newsList])
+    */
 
     return (
         <div className="h-[1031px]">
