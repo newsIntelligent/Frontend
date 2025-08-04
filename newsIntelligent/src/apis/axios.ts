@@ -1,8 +1,6 @@
 import axios from "axios";
 
-export const newsApi = axios.create({
-    baseURL: "http://13.209.21.196:8080/api/members",
-    headers: {
-        "Content-Type": "application/json",
-    },
+export const axiosInstance = axios.create({
+    baseURL : import.meta.env.VITE_API_URL,
+    withCredentials : true,
 });

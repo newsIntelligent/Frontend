@@ -4,6 +4,7 @@ import LoginLog from "../components/LoginPage/LoginLog";
 import CodeInput from "../components/LoginPage/CodeInput";
 import LeftSection from "../components/LoginPage/LeftSection";
 import LoginComplete from "../components/LoginPage/LoginComplete";
+import { sendLoginCode } from "../apis/auth";
 
 const LoginPage = () => {
   const [step, setStep] = useState<"email" | "verify" | "complete">("email");
@@ -30,20 +31,14 @@ const LoginPage = () => {
     setIsResending(true);
   
     try{
-      const response = await fetch("", {
-        method: "POST",
-        body: JSON.stringify({email}),
-        headers:{"Content-Type": "application/json"},
-      });
-
-      if (!response.ok){
-        throw new Error("인증 코드 재요청 실패");
-      }
-  
-      setResendCount((prev) => prev + 1);
-      }
-    catch(error){
-      console.error(error);
+      await sendLoginCode(email);
+      setResendCount((prev)=> prev+1);
+    }
+    catch (error){
+      console.error("인증 코드 요청 실패", error);
+    }
+    finally {
+      setIsResending(false);
     }
   };
 
@@ -80,6 +75,7 @@ const LoginPage = () => {
                   autoLogin={autoLogin}
                   setAutoLogin={setAutoLogin}
                   isResending={isResending}
+                  email={email}
                 />;
 
       default:

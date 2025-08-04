@@ -1,14 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
 import Loading from "./Loading";
+import { verifyLoginCode } from "../../apis/auth";
 
 interface CodeInputProps {
   onComplete: () => void;
   autoLogin: boolean;
   setAutoLogin:(value: boolean) =>void;
   isResending?: boolean;
+  email: string;
 }
 
-const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending }: CodeInputProps) => {
+const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: CodeInputProps) => {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,22 +46,32 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending }: CodeInp
       setError(false);
 
       const fullCode = code.join("");
-      setTimeout(() => {
-        if (fullCode === "ABC123") {
-          setIsLoading(false);
-          onComplete(); // 인증 성공
-        } else {
-          setError(true); // 인증 실패
-          setIsLoading(false);
-          setCode(["", "", "", "", "", ""]); // 입력 초기화
-          inputRefs.current[0]?.focus(); // 다시 첫번째 입력창으로 포커스 이동
-        }
-      }, 1500);
-    }
-  }, [code]);
 
+      (async ()=> {
+        try{
+          const isValid = await verifyLoginCode(email, fullCode);
+          if (isValid) {
+            setIsLoading(false);
+            onComplete(); // 인증 성공
+          }
+          else {
+            setError(true); // 인증 실패
+            setIsLoading(false);
+            setCode(["", "", "", "", "", ""]); // 입력 초기화
+            inputRefs.current[0]?.focus(); // 다시 첫번째 입력창으로 포커스
+          }
+        }
+        catch (err){
+          console.error("인증 실패", err);
+          setError(true);
+          setIsLoading(false);
+        }
+      })();
+    }
+  },[code]);
+      
   const handleChange = (value: string, index: number) => {
-    const filtered = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const filtered = value.toUpperCase().replace(/[^0-9]/g, "");
     if (!filtered) return;
 
     const newCode = [...code];
