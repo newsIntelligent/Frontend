@@ -1,4 +1,4 @@
-import {Plus, X } from 'lucide-react'
+import {Plus} from 'lucide-react'
 import { useState } from 'react'
 import SettingTimeModal from './SettingTimeModal';
 

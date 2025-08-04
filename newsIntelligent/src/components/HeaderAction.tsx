@@ -5,6 +5,7 @@ import ProfileIcon from "../assets/ProfileIcon";
 
 function HeaderAction() {
     const [openNotification, setOpenNotification] = useState(false); //알림창 열기
+
     const [newNotification, setNewNotification] = useState(false); //새로운 알람이 있으면 true
     const [isLogin, setIsLogin] = useState(false); //로그인 상태 구분
     const [showNotification, setShowNotification] = useState(false); //DOM 렌더링 여부
@@ -19,6 +20,8 @@ function HeaderAction() {
     const handleLogin = () =>{
       setIsLogin(!isLogin);
     }
+
+    
 
     return(
         <div className={`flex  justify-between h-[40px]} gap-[28px]

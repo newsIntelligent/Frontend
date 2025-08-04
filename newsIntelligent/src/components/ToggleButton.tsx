@@ -1,5 +1,3 @@
-import React, { useState } from 'react'
-
 type ToggleButtonProps = {
     isOn : boolean;
     toggle : () => void;

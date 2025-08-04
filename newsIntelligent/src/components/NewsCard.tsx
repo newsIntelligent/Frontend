@@ -3,18 +3,12 @@ import SubscribeButton from "./SubscriptionButton";
 import { ChevronDown, Circle } from "lucide-react";
 import type { NewsItems } from "../types/subscriptions";
 
-const NewsCard = ({data} : {data : NewsItems}) => {
+const NewsCard = ({data: _data} : {data : NewsItems}) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleDropdown = () => {
         setIsExpanded(!isExpanded);
     };
-
-    const formatDate = (currentDate : string) => {
-        const date = new Date(currentDate);
-
-        return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
-    }
 
     return (
         <div className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? "h-[597px]" : "h-[288px]"}`}>
