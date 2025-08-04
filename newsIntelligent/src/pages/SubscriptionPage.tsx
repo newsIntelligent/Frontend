@@ -13,7 +13,6 @@ const MyPage = () => {
     const loaderReference = useRef(null);
 
     const [filter, setFilter] = useState<NewsItems[]>([]);
-    const [searchKeyword, setSearchKeyword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -60,16 +59,6 @@ const MyPage = () => {
             }
         }
     }, [getNews, more]);
-
-    useEffect(() => {
-        const lowerKeyword = searchKeyword.toLowerCase();
-        const result = newsList.filter(news => 
-            news.topicName.toLowerCase().includes(lowerKeyword) ||
-            news.aiSummary.toLowerCase().includes(lowerKeyword)
-        );
-
-        setFilter(result);
-    }, [searchKeyword, filter])
     
     return (
         <div className="h-[1031px]">
