@@ -10,10 +10,10 @@ export const getMainArticle = async ( params? : { lastId?:number, size?:number})
     return data;
 }
 
-export const postFeedback = async ( content: string ) => {
+export const postFeedback = async (  ) => {
     try {
         const {data} = await axiosInstance.post("/feedbacks", {
-            content,
+            content: "test",
         });
         console.log("feedback 전송", data)
         return data;
@@ -22,21 +22,21 @@ export const postFeedback = async ( content: string ) => {
         throw error;
     }
 }
-
-export const getNotification = async ({cursor, size=10}: {cursor?:string, size?: number}) => {
-    try{
-        const { data } = await axiosInstance.get("/notification", {
-            params:{
-                cursor,
-                size
-            }
-        })
-        return data;
+export const getNotification = async ({ cursor, size = 10 }: { cursor?: string, size?: number }) => {
+    try {
+      // params 객체를 동적으로 생성
+      const params: Record<string, any> = { size };
+      if (cursor !== undefined) {
+        params.cursor = cursor;
+      }
+  
+      const { data } = await axiosInstance.get("/notification", { params });
+      return data;
     } catch (error) {
-        console.log("알람 목록 조회 실패", error)
-        throw error;
+      console.log("알람 목록 조회 실패", error);
+      throw error;
     }
-}
+  };
 export const checkNotification = async (notificationID:number) => {
     try{
         const {data} = await axiosInstance.patch(`/${notificationID}/check`)

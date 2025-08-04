@@ -21,13 +21,13 @@ function FeedBack() {
     )
     const [inputText, setInputText] = useState("");
     const [tag, setTag] = useState<string | null>(null);
-    const [sending, setSending] = useState(false);
+    const [_sending, setSending] = useState(false);
 
     const handleSende = async () => {
         if (inputText.trim() === "")  return; 
         setSending(true);
         try {
-            await postFeedback(inputText);
+            await postFeedback();
 
             setMessage(prevMessages => [
                 ...prevMessages,
