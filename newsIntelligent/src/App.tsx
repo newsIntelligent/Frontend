@@ -9,6 +9,7 @@ import SettingPage from './pages/SettingPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import SettingChangePage from './pages/SettingChangePage';
 import LoginPage from './pages/LoginPage';
+import ArticlePage from './pages/Article';
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,8 @@ function App() {
             <Route path="/notification" element={<NotificationSettingPage />} />
             <Route path="/settings" element={<SettingPage />} />
             <Route path="/settings/changes" element={<SettingChangePage />} />
-            <Route path="/login" element={<LoginPage />} />            
+            <Route path="/login" element={<LoginPage />} />   
+            <Route path="/article" element={<ArticlePage />} />          
           </Routes>
         </div>
       </BrowserRouter>
