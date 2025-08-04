@@ -3,13 +3,25 @@ import SubscribeButton from "./SubscribeButton";
 type MainArticleCardProps = {
     id: number;
     title: string;
-    description: string;
+    content: string;
     imageUrl: string;
-    imgSource: string;
+    imageSource: string;
     updatedAt: string;
+    idSub: boolean;
   }
 
-function MainArticle({title, description, imageUrl, imgSource, updatedAt}: MainArticleCardProps) {
+function MainArticle({title, content, imageUrl, imageSource, updatedAt, idSub}: MainArticleCardProps) {
+    const formatTime = (iso: string) : string => {
+        const time = new Date(iso);
+        return time.toLocaleTimeString("ko-KR", {
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        })
+    }
+
     return(
         <div className="flex flex-col items-center justify-center w-[840px] min-h-[368px] 
             border-y-[3px] border-[#000000]">
@@ -24,15 +36,15 @@ function MainArticle({title, description, imageUrl, imgSource, updatedAt}: MainA
                             <div className="text-4xl font-bold leading-[48px] w-[299px]">
                                 {title}
                             </div>
-                            <SubscribeButton size="large"/>
+                            <SubscribeButton sub={idSub} size="large"/>
                         </div>
                         <p className="w-[333px] text-[14px] font-normal leading-normal line-clamp-5">
-                        {description}
+                        {content}
                         </p>
                     </div>
                 </div>
-                <div className="w-full h-[20px] text-[10px] text-[#919191] pt-[6px]">이미지 · 조선일보{imgSource}</div>
-                <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {updatedAt}</div>
+                <div className="w-full h-[20px] text-[10px] text-[#919191] pt-[6px]">이미지 · {imageSource}</div>
+                <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(updatedAt)}</div>
         </div>
     )
 }

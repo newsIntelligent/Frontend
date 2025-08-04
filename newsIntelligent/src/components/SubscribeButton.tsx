@@ -1,10 +1,11 @@
 import { useState } from "react";
 type SubscribeButtonProps = {
+    sub: boolean;
     size?: 'default' | 'large';
 }
 
-function SubscribeButton({size = "default"}: SubscribeButtonProps) {
-    const [isSubscribed, setIsSubscribed] = useState(false);
+function SubscribeButton({sub, size = "default"}: SubscribeButtonProps) {
+    const [isSubscribed, setIsSubscribed] = useState(sub);
 
     const handleSubscribe = () => {
         setIsSubscribed(!isSubscribed);

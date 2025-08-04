@@ -1,4 +1,10 @@
-function BellIcon({ className = '', onClick }: { className?: string; onClick?: () => void }) {
+function BellIcon({
+  className = '',
+  onClick,
+}: {
+  className?: string
+  onClick?: () => void
+}) {
   return (
     <svg
       className={className}

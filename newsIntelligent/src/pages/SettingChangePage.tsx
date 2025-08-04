@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
-import { getMemberInfo, updateMemberMail } from '../apis/apis';
+import { updateMemberMail } from '../apis/apis';
 import Header from "../components/Header";
 
 const SettingChangePage = () => {

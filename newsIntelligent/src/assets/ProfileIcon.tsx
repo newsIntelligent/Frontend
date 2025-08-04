@@ -1,4 +1,10 @@
-function ProfileIcon({ className = '', onClick }: { className?: string; onClick?: () => void }) {
+function ProfileIcon({
+  className = '',
+  onClick,
+}: {
+  className?: string
+  onClick?: () => void
+}) {
   return (
     <svg
       className={className}

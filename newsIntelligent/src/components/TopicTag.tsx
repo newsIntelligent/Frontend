@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import XIcon from "../icon/XIcon";
-import PlusIcon from "../icon/PlusIcon";
+import XIcon from "../assets/XIcon";
+import PlusIcon from "../assets/PlusIcon";
 
 function TopicTag({selectedTag}: {selectedTag: (tag: string | null) => void}) {
     const [tagSelected, setTagSelected] = useState(true);
