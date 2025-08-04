@@ -13,8 +13,7 @@ const ReadPage = () => {
     const [more, setMore] = useState(true);
     const loaderReference = useRef(null);
 
-    //const [allNews, setAllNews] = useState<NewsItems[]>([]);
-    //const [filter, setFilter] = useState<NewsItems[]>([]);
+    const [filter, setFilter] = useState<NewsItems[]>([]);
     const [searchKeyword, setSearchKeyword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +64,6 @@ const ReadPage = () => {
         }
     }, [getNews, more]);
 
-    /*
     useEffect(() => {
         const lowerKeyword = searchKeyword.toLowerCase();
         const result = newsList.filter(news => 
@@ -74,8 +72,7 @@ const ReadPage = () => {
         );
 
         setFilter(result);
-    }, [searchKeyword, newsList])
-    */
+    }, [searchKeyword, filter])
 
     return (
         <div className="h-[1031px]">

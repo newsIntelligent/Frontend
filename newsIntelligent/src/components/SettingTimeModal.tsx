@@ -11,8 +11,6 @@ const SettingTimeModal = ({onAdd, onCancel} : SettingTimeModalProps) => {
     const [hour, setHour] = useState(12);
     const [minute, setMinute] = useState(0);
 
-    const [add, setAdd] = useState(false);
-
     const clickMeridiemn = () => {
         setMeridiem(prev => (prev === '오전' ? '오후' : '오전'));
     }
