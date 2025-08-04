@@ -10,7 +10,6 @@ import SubscriptionPage from './pages/SubscriptionPage'
 import SettingChangePage from './pages/SettingChangePage'
 import LoginPage from './pages/LoginPage'
 import ArticlePage from './components/Article'
-import UpdatesSideBar from './components/UpdatesSideBar'
 
 const queryClient = new QueryClient()
 
@@ -29,7 +28,6 @@ function App() {
             <Route path="/settings/changes" element={<SettingChangePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/article" element={<ArticlePage />} />
-            <Route path="/UpdatesSideBar" element={<UpdatesSideBar />} />
           </Routes>
         </div>
       </BrowserRouter>

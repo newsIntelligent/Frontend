@@ -1,26 +1,34 @@
-import { useState, useEffect } from 'react';
-import SearchBar from './SearchBar';
-import HeaderAction from './HeaderAction';
+import { useState, useEffect } from 'react'
+import SearchBar from './SearchBar'
+import HeaderAction from './HeaderAction'
 
 function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState('IT/과학');
+  const [isScrolled, setIsScrolled] = useState(false)
 
+  //스크롤 감지
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 142);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+      if (window.scrollY > 142) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
 
-  const menus = ['홈', '정치', '경제', '사회', '생활/문화', 'IT/과학', '세계'];
+    window.addEventListener('scroll', handleScroll)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
+  const menus = ['홈', '정치', '경제', '사회', '생활/문화', 'IT/과학', '세계']
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#C1C1C1]
-        transition-all duration-300
-        ${isScrolled ? 'h-[60px]' : 'h-[142px] pt-[16px]'} flex justify-center`}
+  transition-all duration-300
+  ${isScrolled ? 'h-[60px]' : 'h-[142px] pt-[16px]'} flex justify-center`}
     >
       <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300">
         {isScrolled ? (
@@ -41,5 +49,23 @@ function Header() {
                 {menus.map((menu) => (
                   <button
                     key={menu}
-                    onClick={() => setActiveTab(menu)}
-                    className={`relative h-11 px-2 text-sm whitespace-nowrap font-['Pretendard Variable'] ${
+                    className={`relative h-11 px-2 text-sm whitespace-nowrap${
+                      menu === '경제'
+                        ? 'text-[#07525F] font-semibold border-b-2 border-[#07525F]'
+                        : 'text-[#1D1D1D]'
+                    }`}
+                  >
+                    {menu}
+                  </button>
+                ))}
+              </nav>
+              <HeaderAction />
+            </div>
+          </>
+        )}
+      </div>
+    </header>
+  )
+}
+
+export default Header
