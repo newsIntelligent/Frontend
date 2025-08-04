@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import NewsCard from "../components/NewsCard"
 import Sidebar from "../components/Sidebar"
 import NewsCardSkeleton from "../components/NewsCardSkeleton"
-import { getSubscriptions } from "../apis/mypage"
 import type { NewsItems } from "../types/subscriptions"
 import Header from "../components/Header"
 import { getReadNews } from "../apis/apis"
@@ -12,10 +11,6 @@ const MyPage = () => {
     const [cursor, setCursor] = useState<number | null>(null);
     const [more, setMore] = useState(true);
     const loaderReference = useRef(null);
-
-    const [allNews, setAllNews] = useState<NewsItems[]>([]);
-    const [filter, setFilter] = useState<NewsItems[]>([]);
-    const [searchKeyword, setSearchKeyword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -62,16 +57,6 @@ const MyPage = () => {
             }
         }
     }, [getNews, more]);
-
-    useEffect(() => {
-        const lowerKeyword = searchKeyword.toLowerCase();
-        const result = allNews.filter(news => 
-            news.topicName.toLowerCase().includes(lowerKeyword) ||
-            news.aiSummary.toLowerCase().includes(lowerKeyword)
-        );
-
-        setFilter(result);
-    }, [searchKeyword, allNews])
     
     return (
         <div className="h-[1031px]">
