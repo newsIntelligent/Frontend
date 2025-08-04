@@ -1,4 +1,14 @@
-function Notification() {
+import React from 'react'
+
+interface NotificationProps {
+  isOpen: boolean
+  setNotification: React.Dispatch<React.SetStateAction<boolean>>
+  onClose: () => void
+}
+
+const Notification: React.FC<NotificationProps> = ({ isOpen, setNotification, onClose }) => {
+  if (!isOpen) return null
+
   return (
     <div
       className="absolute right-0 top-full mt-2 w-[440px] max-h-[400px] 
@@ -12,10 +22,11 @@ function Notification() {
           <button
             className="w-20 h-6 rounded-xl border border-[#E6E6E6] items-center gap-1 hover:bg-[#E6E6E6]
                     text-xs font-semibold"
+            onClick={() => setNotification(false)}
           >
             모두 읽음
           </button>
-          <img src="/src/assets/vector.svg" className="w-5" />
+          <img src="/src/assets/vector.svg" className="w-5 cursor-pointer" onClick={onClose} />
         </div>
       </div>
     </div>

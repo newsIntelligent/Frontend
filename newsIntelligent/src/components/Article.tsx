@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import UpdatesSidebar from './UpdatesSideBar'
+type Topic = {
+  media: string
+  text: string
+  mediaLogo: string
+}
 
 const ArticlePage = () => {
-  const [topics, setTopics] = useState([]) // 기존 토픽
-  const [extraTopics, setExtraTopics] = useState([]) // 더보기 항목
-  const [isScrolled, setIsScrolled] = useState(false) // 헤더 스크롤 여부
+  const [topics, setTopics] = useState<Topic[]>([]) //  타입 명시
+  const [extraTopics, setExtraTopics] = useState<Topic[]>([]) //  타입 명시
+  const [isScrolled, setIsScrolled] = useState(false)
 
   // 스크롤 감지
   useEffect(() => {
