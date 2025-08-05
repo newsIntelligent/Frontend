@@ -65,7 +65,7 @@ const MyPage = () => {
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 ml-[208.86px]">
                     <div className="w-[541px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 주제 구독 </div>
 

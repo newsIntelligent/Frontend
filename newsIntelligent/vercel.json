@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        { "source": "/subscriptions", "destination": "/" },
+        { "source": "/read-topic", "destination": "/" },
+        { "source": "/notification", "destination": "/" },
+        { "source": "/settings", "destination": "/" },
+        { "source": "/settings/changes", "destination": "/" },
+        { "source": "/login", "destination": "/" },
+        { "source": "/article", "destination": "/" },
+        { "source": "/", "destination": "/" }
+    ]
+}
