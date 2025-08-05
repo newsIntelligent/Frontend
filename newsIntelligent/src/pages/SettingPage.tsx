@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
 import { getMemberInfo } from '../apis/apis'
-import Header from '../components/Header'
 
 const SettingPage = () => {
     const navigate = useNavigate();
@@ -15,12 +14,10 @@ const SettingPage = () => {
 
     return (
         <div className="h-[1031px]">
-            <Header />
-
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 ml-[208.86px]">
                     <div className="w-[387.54px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 설정 </div>
 

@@ -4,7 +4,6 @@ import ToggleButton from '../components/ToggleButton';
 import SettingTime from '../components/SettingTime';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 
 const NotificationSettingPage = () => {
     const [nightAlarmButton, setNightAlarmButton] = useState(false);
@@ -16,13 +15,11 @@ const NotificationSettingPage = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="h-[1031px]">
-            <Header />
-
-            <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
+        <div className="">
+            <div className="flex w-full px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 h-[114.9375px] ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 h-[114.9375px] ml-[208.86px]">
                     <div className="flex flex-col gap-[16px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium"> 알림 설정 </div>
 

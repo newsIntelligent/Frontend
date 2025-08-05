@@ -44,8 +44,6 @@ if (isLoading) return
 if (error) return <p>에러가 발생했습니다.</p>;
 if (!data) return null;
 
-
-
 return (
     <div className="relative w-full flex justify-center overflow-x-clip">
         <div className="max-w-[1440px] w-full flex justify-center overflow-x-clip">
