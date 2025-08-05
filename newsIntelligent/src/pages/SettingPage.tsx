@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
 import { getMemberInfo } from '../apis/apis'
-import Header from '../components/Header'
 
 const SettingPage = () => {
     const navigate = useNavigate();

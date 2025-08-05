@@ -4,7 +4,6 @@ import NewsCard from '../components/NewsCard';
 import Sidebar from "../components/Sidebar"
 import NewsCardSkeleton from "../components/NewsCardSkeleton";
 import { getReadTopic } from "../apis/mypage";
-import Header from "../components/Header";
 import type { NewsItems } from "../types/subscriptions";
 
 const ReadPage = () => {
@@ -76,8 +75,6 @@ const ReadPage = () => {
 
     return (
         <div className="h-[1031px]">
-            <Header />
-
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 

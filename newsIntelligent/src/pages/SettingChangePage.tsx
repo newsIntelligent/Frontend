@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
 import { updateMemberMail } from '../apis/apis';
-import Header from "../components/Header";
 
 const SettingChangePage = () => {
     const memeberId = "12345";
@@ -76,8 +75,6 @@ const SettingChangePage = () => {
 
     return (
         <div className="h-[1031px]">
-            <Header />
-
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
