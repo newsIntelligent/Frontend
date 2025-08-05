@@ -17,7 +17,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="w-full pt-[167px]">
           <Header />
           <Routes>
             <Route path="/" element={<MainPage />} />
@@ -29,7 +28,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />   
             <Route path="/article" element={<ArticlePage />} />          
           </Routes>
-        </div>
+
       </BrowserRouter>
     </QueryClientProvider>
   );
