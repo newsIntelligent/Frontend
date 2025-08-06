@@ -50,6 +50,7 @@ function MainPage() {
         }
       }, [throttleInView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+
 if (isLoading) return 
 if (error) return <p>에러가 발생했습니다.</p>;
 if (!data) return null;

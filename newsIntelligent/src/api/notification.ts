@@ -1,27 +1,5 @@
 import { axiosInstance } from "./axios";
 
-export const getMainArticle = async ( params? : { lastId?:number, size?:number}) => {
-    const {data} = await axiosInstance.get('/home',{
-        params: {
-            size: params?.size ?? 5,
-            ...(params?.lastId && { lastId: params.lastId}),
-        },
-    })
-    return data;
-}
-
-export const postFeedback = async (  ) => {
-    try {
-        const {data} = await axiosInstance.post("/feedbacks", {
-            content: "test",
-        });
-        console.log("feedback 전송", data)
-        return data;
-    } catch (error:any) {
-        console.log("feedback error발생", error.response || error);
-        throw error;
-    }
-}
 export const getNotification = async ({ cursor, size = 10 }: { cursor?: string, size?: number }) => {
     try {
       // params 객체를 동적으로 생성

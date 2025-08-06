@@ -1,8 +1,8 @@
 import { useState } from "react";
 import TopicTag from "./TopicTag";
 import Chatting from "./Chatting";
-import { postFeedback } from "../api/auth";
 import ChatIcon from "../assets/ChatIcon";
+import { postFeedback } from "../api/feedback";
 
 type Chatmessage = {   
     text: string;
