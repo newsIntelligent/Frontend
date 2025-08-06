@@ -48,7 +48,7 @@ function FeedBack() {
     }
 
     return(
-        <div className="absolute bottom-[294px] right-[141px] z-50 flex flex-col items-end gap-[8px]">
+        <div className="fixed bottom-[69px] right-[141px] z-50 flex flex-col items-end gap-[8px]">
             {openFeedback && 
                 <div className="flex flex-col w-[380px] shadow-[2px_4px_8px_0px_rgba(0,0,0,0.15)] backdrop-blur-lg rounded-t-[16px]">
                     <div className="flex flex-col w-full h-[78px] rounded-t-[16px] bg-[#0EA6C0] pl-[33px] pt-[16px] text-white gap-[-6px]">
