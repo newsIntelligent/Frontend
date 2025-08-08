@@ -4,6 +4,7 @@ import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
 import VectorIcon from "../assets/VectorIcon";
 import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -11,6 +12,7 @@ import { checkAllNotification, checkNotification, getNotification } from "../api
 function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, setNotification: (value: boolean) => void, onClose?: () => void }) {
   const [visible, setVisible] = useState(false);
   const [newNotification, setNewNotification] = useState(false); //읽지 않은 알람이 있으면 true
+  const navigation = useNavigate();
 
   const {data, 
     fetchNextPage, 
@@ -61,6 +63,10 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
 
   const handleCheck = (id:number) =>{
     checkNotification(id);
+  }
+
+  const handleSettingClick = () => {
+    navigation('/notification')
   }
   const highlightQuotedText = (text: string): React.ReactNode => {
     const regex = /'([^']+)'/g;
@@ -123,7 +129,8 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
             className="w-20 h-6 rounded-xl border border-[#E6E6E6] items-center gap-1 hover:bg-[#E6E6E6]
                 text-xs font-semibold"
             onClick={handleAllCheck}>모두 읽음</button>
-        <VectorIcon className="w-5 cusor-pointer"/>
+        <VectorIcon className="w-5 cusor-pointer"
+          onClick={handleSettingClick}/>
         </div>
       </div>
       { notifications.length > 0
