@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
-import { getNotification } from "../api/auth";
 import VectorIcon from "../assets/VectorIcon";
+import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -11,6 +12,7 @@ import VectorIcon from "../assets/VectorIcon";
 function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, setNotification: (value: boolean) => void, onClose?: () => void }) {
   const [visible, setVisible] = useState(false);
   const [newNotification, setNewNotification] = useState(false); //읽지 않은 알람이 있으면 true
+  const navigation = useNavigate();
 
   const {data, 
     fetchNextPage, 
@@ -54,10 +56,18 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     }
   }, [isOpen]);
 
-  const handleCheck = () => {
+  const handleAllCheck = () => {
+    checkAllNotification();
     setNotification(false);
   }; //모두 확인
 
+  const handleCheck = (id:number) =>{
+    checkNotification(id);
+  }
+
+  const handleSettingClick = () => {
+    navigation('/notification')
+  }
   const highlightQuotedText = (text: string): React.ReactNode => {
     const regex = /'([^']+)'/g;
     const parts: React.ReactNode[] = [];
@@ -118,15 +128,18 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         <button 
             className="w-20 h-6 rounded-xl border border-[#E6E6E6] items-center gap-1 hover:bg-[#E6E6E6]
                 text-xs font-semibold"
-            onClick={handleCheck}>모두 읽음</button>
-        <VectorIcon className="w-5 cusor-pointer"/>
+            onClick={handleAllCheck}>모두 읽음</button>
+        <VectorIcon className="w-5 cusor-pointer"
+          onClick={handleSettingClick}/>
         </div>
       </div>
       { notifications.length > 0
         ? <ul className="overflow-y-auto [&::-webkit-scrollbar]:hidden">
         {notifications.map ((item) => (
-           <li key={item.noti_id} className="flex justify-between h-11 gap-3 px-[12px] py-[6px] 
-           border-b border-b-[#E6E6E6]">
+           <li 
+            key={item.noti_id} 
+            className="flex justify-between h-11 gap-3 px-[12px] py-[6px] border-b border-b-[#E6E6E6]"
+            onClick={() => handleCheck(item.noti_id)}>
              <div className="flex justify-start items-center gap-2.5">
                <div className={`w-14 h-5 px2.5 rounded-[20px] text-xs  text-center font-semibold
                   ${item.is_checked ? 'bg-[#F5F5F5] text-[#777777]':'bg-[#0EA6C01A] text-[#0B8E8E]'} `}> 
