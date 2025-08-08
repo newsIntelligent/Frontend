@@ -1,17 +1,17 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import './App.css';
-import Header from './components/Header';
-import MainPage from './pages/MainPage';
-import NotificationSettingPage from './pages/NotificationSettingPage';
-import ReadPage from './pages/ReadPage';
-import SettingPage from './pages/SettingPage';
-import SubscriptionPage from './pages/SubscriptionPage';
-import SettingChangePage from './pages/SettingChangePage';
-import LoginPage from './pages/LoginPage';
-import ArticlePage from './pages/Article';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import './App.css'
+import Header from './components/Header'
+import MainPage from './pages/MainPage'
+import NotificationSettingPage from './pages/NotificationSettingPage'
+import ReadPage from './pages/ReadPage'
+import SettingPage from './pages/SettingPage'
+import SubscriptionPage from './pages/SubscriptionPage'
+import SettingChangePage from './pages/SettingChangePage'
+import LoginPage from './pages/LoginPage'
+import ArticlePage from './pages/Article'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 function App() {
   return (
@@ -26,13 +26,13 @@ function App() {
             <Route path="/notification" element={<NotificationSettingPage />} />
             <Route path="/settings" element={<SettingPage />} />
             <Route path="/settings/changes" element={<SettingChangePage />} />
-            <Route path="/login" element={<LoginPage />} />   
-            <Route path="/article" element={<ArticlePage />} />          
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/article" element={<ArticlePage />} />
           </Routes>
         </div>
       </BrowserRouter>
     </QueryClientProvider>
-  );
+  )
 }
 
-export default App;
+export default App
