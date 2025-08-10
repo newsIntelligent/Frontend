@@ -4,7 +4,7 @@ import LoginLog from "../components/LoginPage/LoginLog";
 import CodeInput from "../components/LoginPage/CodeInput";
 import LeftSection from "../components/LoginPage/LeftSection";
 import LoginComplete from "../components/LoginPage/LoginComplete";
-import { sendLoginCode } from "../apis/auth";
+import { sendLoginCode, resendMagicLink } from "../apis/auth";
 
 const LoginPage = () => {
   const [step, setStep] = useState<"email" | "verify" | "complete">("email");
@@ -21,7 +21,21 @@ const LoginPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    setHasLoginHistory(!!token); // 로그인 이력 존재 여부 판단
+    const userInfo = localStorage.getItem("userInfo");
+
+    try{
+      const parsed = JSON.parse(userInfo || "{}");
+      if (!parsed.eamil || !parsed.name){
+          setHasLoginHistory(false);
+      }
+      else{
+        setHasLoginHistory(!!token);
+      }
+    }
+    catch(error){
+      console.error(error);
+      setHasLoginHistory(false);
+    }
   }, []);
 
   // 새 코드 요청
@@ -31,7 +45,7 @@ const LoginPage = () => {
     setIsResending(true);
   
     try{
-      await sendLoginCode(email);
+      await resendMagicLink(email, fromLoginLog);
       setResendCount((prev)=> prev+1);
     }
     catch (error){
@@ -50,18 +64,21 @@ const LoginPage = () => {
             <EmailInput
               autoLogin={autoLogin}
               onToggleAutoLogin={()=>setAutoLogin(prev => !prev)}
-              onNext={(inputEmail) => {
+              onNext={async (inputEmail) => {
+                console.log("입력된 이메일 : ", inputEmail)
                 setEmail(inputEmail);
                 setFromLoginLog(false);
+                await sendLoginCode(inputEmail, false);
                 setStep("verify");
               }}
             />
             {hasLoginHistory && (
               <LoginLog
-                onSelect={(selectedEmail, name) => {
+                onSelect={async (selectedEmail, name) => {
                   setEmail(selectedEmail);
                   setUserName(name);
                   setFromLoginLog(true);
+                  await sendLoginCode(selectedEmail, true);
                   setStep("verify");
                 }}
               />
@@ -76,6 +93,7 @@ const LoginPage = () => {
                   setAutoLogin={setAutoLogin}
                   isResending={isResending}
                   email={email}
+                  fromLoginLog={fromLoginLog}
                 />;
 
       default:

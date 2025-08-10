@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import HomeButton from "./HomeButton";
 
 const LoginComplete = () => {
-  useEffect(() => {
-    // 임시 토큰 및 사용자 정보 저장
-    localStorage.setItem("accessToken", "mock-token-123456");
-    localStorage.setItem(
-      "userInfo",
-      JSON.stringify({ name: "홍길동", email: "hong@test.com" })
-    );
-  }, []);
+  // useEffect(() => {
+  //   // 임시 토큰 및 사용자 정보 저장
+  //   localStorage.setItem("accessToken", "mock-token-123456");
+  //   localStorage.setItem(
+  //     "userInfo",
+  //     JSON.stringify({ name: "홍길동", email: "hong@test.com" })
+  //   );
+  // }, []);
 
   return (
     <div className="relative min-h-screen bg-white w-full flex flex-col items-center">

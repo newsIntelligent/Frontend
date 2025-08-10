@@ -8,9 +8,10 @@ interface EmailInputProps {
 
 const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) => {
   const [localEmail, setLocalEmail] = useState("");
-  const [domain, setDomain] = useState("직접입력");
-  const [customInput, setCustomInput] = useState(false);
+  const [domain, setDomain] = useState("");
+  const [customInput, setCustomInput] = useState(true); // 직접입력을 기본값으로 설정
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const domainRef = useRef<HTMLDivElement>(null);
 
   const domainOptions = [
@@ -23,7 +24,10 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
   ];
 
   const handleSubmit = () => {
-    const fullEmail = `${localEmail}@${domain}`;
+    if (!isFormValid()) return;
+    setIsSubmitting(true);
+    const pickedDomain = customInput ? domain.trim() : domain;
+    const fullEmail = `${localEmail}@${pickedDomain}`;
     onNext(fullEmail);
   };
 
@@ -36,20 +40,26 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
   const isFormValid = () => {
     if (!localEmail) return false;
     if (customInput) return domain.trim() !=="";
-    return domain !== "직접입력";
+    return domain !== "";
   };
 
   const handleOptionClick = (option: string) => {
     if (option === "직접입력") {
       setCustomInput(true);
       setDomain("");
-    } else {
+      setTimeout(()=> {
+        const input = domainRef.current?.querySelector("input");
+        (input as HTMLInputElement | null)?.focus();
+      }, 0);
+    }
+    else {
       setCustomInput(false);
       setDomain(option);
     }
     setShowDropdown(false);
   };
 
+  // 입력창 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -57,17 +67,13 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
         !domainRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        if (customInput) {
-          setDomain("직접입력");
-          setCustomInput(false);
-        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [customInput]);
+  }, []);
 
   return (
     <div className="w-[500px]">
@@ -94,39 +100,58 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
 
         <span className="self-center">@</span>
 
-        {/* 도메인 선택 또는 직접입력 */}
+        {/* 직접입력 또는 도메인 선택 */}
         <div className="relative w-full sm:w-[240px]" ref={domainRef}>
-          {customInput ? (
             <input
               type="text"
               placeholder="직접입력"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              value={customInput ? domain : (domain || "")}
+              onChange={(e) => {
+                if (!customInput) return;
+                setDomain(e.target.value);
+              }}
               className="w-full h-[49px] border border-gray-300 px-3 py-2 text-sm text-gray-500"
-              autoFocus
+              // 포커스하면 바로 직접입력 됨
+              onFocus={()=> {
+                if(!customInput) {
+                  setCustomInput(true);
+                  setDomain("");
+                }
+              }}
+              readOnly={!customInput}
             />
-          ) : (
+
             <button
               type="button"
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="w-full h-[49px] border border-gray-300 px-3 py-2 text-sm text-left relative text-gray-500"
+              onClick={() => setShowDropdown((v)=> !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500"
             >
-              {domain}
-              <span className="absolute right-3 top-1/2 -translate-y-1/2">
                 <img
-                  src={showDropdown ? "/Vector-up.svg" : "/Vector-down.svg"}
+                  src={showDropdown ? "UpArrow.svg" : "DownArrow.svg"}
                   alt="드롭다운 아이콘"
-                  className="w-4 h-4"
+                  className="w-4 h-4 border-none"
                 />
-              </span>
-            </button>
-          )}
-          {showDropdown && !customInput && (
+              </button>
+  
+          {showDropdown && (
             <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded shadow-md">
               {domainOptions.map((d) => (
                 <div
                   key={d}
-                  onClick={() => handleOptionClick(d)}
+                  onClick={() => {
+                    if(d === "직접입력"){
+                      setCustomInput(true);
+                      setDomain("");
+                      setTimeout(() => {
+                        (domainRef.current?.querySelector("input") as HTMLInputElement | null)?.focus();
+                      }, 0);
+                    }
+                    else {
+                      setCustomInput(false);
+                      setDomain(d);
+                    }
+                    setShowDropdown(false);handleOptionClick(d)
+                  }}
                   className="px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 cursor-pointer"
                 >
                   {d}
@@ -153,9 +178,9 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
       {/* 버튼 */}
       <button
         onClick={handleSubmit}
-        disabled={!isFormValid()}
+        disabled={!isFormValid() || isSubmitting}
         className={`w-full mb-12 text-white py-2 h-[49px] rounded-md text-sm font-medium
-                    ${isFormValid() ? "bg-[#0EA6C0] cursor-pointer" : "bg-[#B7E5EC] cursor-not-allowed"}`}
+                    ${isFormValid() && !isSubmitting? "bg-[#0EA6C0] cursor-pointer" : "bg-[#B7E5EC] cursor-not-allowed"}`}
       >
         이메일로 간편 로그인/회원가입
       </button>
