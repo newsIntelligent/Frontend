@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import HomeButton from "./HomeButton";
 
 const LoginComplete = () => {
