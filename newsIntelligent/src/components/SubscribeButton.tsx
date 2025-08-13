@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { topicSubscribe, topicUnsubscribe } from "../api/topic";
+import { useMutation } from "@tanstack/react-query";
 type SubscribeButtonProps = {
     id: number;
     sub: boolean;
@@ -7,17 +7,18 @@ type SubscribeButtonProps = {
 }
 
 function SubscribeButton({id, sub, size = "default"}: SubscribeButtonProps) {
-    const [isSubscribed, setIsSubscribed] = useState(sub);
+    const toggleSubscribe = useMutation ({
+      mutationFn: async (next: boolean) => {
+        next? topicSubscribe(id) : topicUnsubscribe(id);
+      }, //next: 구독 상태 받음 true일때 구독
 
-    const handleSubscribe = () => {
-      if (isSubscribed) {
-        topicUnsubscribe(id)
+      onMutate: (next:boolean) => {sub = next}, //구독 상태 변경
+      onError: (error, next) => {
+        console.error("구독 상태 변경 실패:", error);
+        sub = !next; // 에러 발생 시 이전 상태로 되돌림
       }
-      else{
-        topicSubscribe(id);
-      }
-        setIsSubscribed(!isSubscribed);
-    }
+    })
+    
 
   return (
     <button className={`
@@ -25,12 +26,12 @@ function SubscribeButton({id, sub, size = "default"}: SubscribeButtonProps) {
         rounded-[20px] border text-center font-semibold 
         active:ring-[4px] active:ring-[#0EA6C033] active:text-white active:bg-[#0EBEBE66] active:border-none
         transform cursor-pointer
-        ${isSubscribed  
+        ${sub
             ? 'border-[#919191] text-[#919191]'
             :'bg-transparent border-[#0EA6C0] text-[#0EA6C0] hover:bg-[#0EBEBE26]'}
        `}
-        onClick={handleSubscribe}>
-      {isSubscribed ? '구독 중' : '+ 구독'}
+        onClick={() => toggleSubscribe.mutate(!sub)}>
+      {sub ? '구독 중' : '+ 구독'}
     </button>
   );
 }

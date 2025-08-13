@@ -63,11 +63,12 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
 
   const handleCheck = (id:number) =>{
     checkNotification(id);
-  }
+  }; //알람 단건 확인
 
   const handleSettingClick = () => {
     navigation('/notification')
-  }
+  }//알림 설정 페이지로 이동
+
   const highlightQuotedText = (text: string): React.ReactNode => {
     const regex = /'([^']+)'/g;
     const parts: React.ReactNode[] = [];
@@ -91,7 +92,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     }
   
     return parts;
-  }; 
+  };  //구독 토픽 강조
 
   const formatTime = (iso: string) : string => {
       const now = new Date();
@@ -106,9 +107,10 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
           minute: "2-digit",
           hour12: false
         })
-      }
-      else return `${diffDays}일 전`;
-  };
+      } //하루 이내 알람은 시간으로 표시
+
+      else return `${diffDays}일 전`; //하루가 지난 알람은 일수로 표시
+  }; //알림 시간 표시 
   
   return (
     <div
@@ -134,6 +136,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         </div>
       </div>
       { notifications.length > 0
+      //알림이 있는 경우
         ? <ul className="overflow-y-auto [&::-webkit-scrollbar]:hidden">
         {notifications.map ((item) => (
            <li 
@@ -153,7 +156,9 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         ))}
         <div ref={ref} />
       </ul>
-      : <div className="flex flex-col items-center justify-center h-full gap-[40px]">
+      : 
+      //알림이 없는 경우 
+      <div className="flex flex-col items-center justify-center h-full gap-[40px]">
           <img src="/src/assets/notification.svg" alt="notification" className="w-[80px]"/>
           <div className="flex flex-col gap-[8px] items-center text-center">
             <p className="text-[#0EA6C0] text-[16px] font-semibold">여기에 알림이 표시됩니다.</p>

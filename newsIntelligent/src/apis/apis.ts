@@ -1,64 +1,80 @@
 import axios from 'axios';
-import type { MemberInfoResponse, MemberInfo } from '../types/members';
-import type { NewsItemsResponse } from '../types/subscriptions';
-import { axiosInstance } from './axios';
-import { dummyData } from '../mocks/dummyData';
+import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
 
-export const getMemberInfo = async (memberId : string) : Promise<MemberInfoResponse> => {
-    const response = await axiosInstance.get(`/api/members/info/${memberId}`);
+const baseURL = import.meta.env.VITE_API_URL;
+const token = import.meta.env.VITE_API_TOKEN;
+
+export const getMemberInfo = async () : Promise<MemberInfoResponse> => {
+    const response = await axios.get(`${baseURL}/api/members/info`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
     return response.data;
 }
 
-export const updateMemberMail = async (memberId : string) : Promise<MemberInfo> => {
-    const response = await axios.patch(`/api/members/info/${memberId}`);
+export const patchNickname = async (nickname : string) => {
+    const response = await axios.patch(`${baseURL}/api/members/nickname`, {nickname}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return response.data;
+}
+
+export const getNicknameAvailability = async (nickname : string) : Promise<NicknameAvailabilityResponse> => {
+    const response = await axios.get(`${baseURL}/api/members/nickname-availability`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+
+        params : {nickname},
+    });
+
+    return response.data;
+}
+
+export const postEmailCode = async (newEmail : string) => {
+    const response = await axios.patch(`${baseURL}/api/members/notification-email/change`, {newEmail}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return response.data;
+}
+
+export const postEmailCodeCheck = async (newEmail : string, code : string) => {
+    const response = await axios.patch(`${baseURL}/api/members/notification-email/verify`, {newEmail, code}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
     return response.data;
 }
 
 export const signout = async () => {
-    const response = await axiosInstance.post(`/api/members/logout`);
+    const response = await axios.post(`${baseURL}/api/members/logout`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
     return response.data;
 }
 
 export const deleteId = async () => {
-    const response = await axiosInstance.delete(`/api/members/withdraw`);
-
-    return response.data;
-}
-
-/*
-export const getSubscriptionNews = async (cursor : number | null, size : number = 10) : Promise<NewsItemsResponse> => {
-    const response = await axios.get<NewsItemsResponse>(`/api/mypage/subscriptions`, {
-        params : {cursor, size},
-    })
-
-    return response.data;
-}
-*/
-
-export const getReadNews = async (
-    cursor: number | null,
-    size: number = 2
-): Promise<NewsItemsResponse> => {
-    const start = cursor ?? 0;
-    const slice = dummyData.slice(start, start + size);
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({
-            isSuccess: true,
-            code: "200",
-            status: "OK",
-            message: "더미 뉴스 성공",
-            result: slice,
-            nextCursor: start + slice.length,
-            hasNext: start + slice.length < dummyData.length
-            });
-        }, 500);
+    const response = await axios.delete(`${baseURL}/api/members/withdraw`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
-};
+
+    return response.data;
+}
 
 export const sendDailyReport = async (memberId : string) : Promise<void> => {
     await axios.post(`/api/members/${memberId}/daily-report/send`);
