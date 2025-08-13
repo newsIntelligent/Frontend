@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 function HeaderAction() {
     const [openNotification, setOpenNotification] = useState(false); //알림창 열기
     const [newNotification, setNewNotification] = useState(false); //새로운 알람이 있으면 true
-    const [isLogin, setIsLogin] = useState(false); //로그인 상태 구분
+    const [isLogin, setIsLogin] = useState(true); //로그인 상태 구분
     const [showNotification, setShowNotification] = useState(false); //DOM 렌더링 여부
     const navigation = useNavigate();
 
@@ -23,7 +23,7 @@ function HeaderAction() {
         setIsLogin(true); //로그인 상태로 변경
     }
     const handleProfileClick = () => {
-      navigation('/settings'); //프로필 클릭 시 설정 페이지로 이동
+      navigation('/subscriptions'); //프로필 클릭 시 설정 페이지로 이동
     }
 
     
