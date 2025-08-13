@@ -33,9 +33,22 @@ const SettingTimeModal = ({onAdd, onCancel} : SettingTimeModalProps) => {
     const formatTime = (value: number) => value.toString().padStart(2, '0');
 
     const handleAdd = () => {
-        const formatted = `${meridiem} ${formatTime(hour)}:${formatTime(minute)}`;
-        onAdd(formatted);
-    }
+        let time24 = hour;
+
+        if (meridiem === '오전' && hour === 12) {
+            time24 = 0;
+        }
+
+        else if (meridiem === '오후' && hour !== 12) {
+            time24 = hour + 12;
+        }
+
+        const formatted = `${time24.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+
+        console.log("서버로 보낼 시간 (24시간제):", formatted);
+        
+        onAdd(formatted);  
+    } 
 
     return (
         <div className="absolute bg-white flex w-[200px] h-[160px] pt-[10px] pr-[10px] pl-[10px] pb-[44px] rounded-[8px] shadow-[1px_1px_8px_0px_#00000040] items-center justify-center flex-col">

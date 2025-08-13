@@ -1,77 +1,144 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+// ReadPage.tsx
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import MyPageSearchBar from '../components/MyPageSearchBar';
 import NewsCard from '../components/NewsCard';
 import Sidebar from "../components/Sidebar"
 import NewsCardSkeleton from "../components/NewsCardSkeleton";
-import { getReadTopic } from "../apis/mypage";
-import type { NewsItems } from "../types/subscriptions";
+import { getKeywordTopic, getReadTopic } from "../apis/mypage";
+import type { Topics } from "../types/mypage";
 
 const ReadPage = () => {
-    const [newsList, setNewsList] = useState<NewsItems[]>([]);
+    const [newsList, setNewsList] = useState<Topics[]>([]);
     const [cursor, setCursor] = useState<number | null>(null);
     const [more, setMore] = useState(true);
-    const loaderReference = useRef(null);
+    const loaderReference = useRef<HTMLDivElement | null>(null);
 
-    const [filter, setFilter] = useState<NewsItems[]>([]);
     const [searchKeyword, setSearchKeyword] = useState("");
-
     const [isLoading, setIsLoading] = useState(false);
 
+    const cursorRef = useRef<number | null>(null);
+    const moreRef = useRef<boolean>(true);
+    const isLoadingRef = useRef<boolean>(false);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+
+    useEffect(() => { cursorRef.current = cursor; }, [cursor]);
+    useEffect(() => { moreRef.current = more; }, [more]);
+    useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
+
     const getNews = useCallback(async () => {
-        if (!more) return;
-    
+        if (!moreRef.current || isLoadingRef.current) { 
+            return; 
+        }
+
         setIsLoading(true);
-    
+
         try {
-            const response = await getReadTopic(cursor ?? 0);
+            const response = await getReadTopic(cursorRef.current ?? 0);
             const newTopics = response?.result?.topics ?? [];
 
-            console.log("📦 응답 데이터:", response);
-    
-            setNewsList(prev => [...prev, ...newTopics]);
-            setCursor(response.result.cursor ?? null);
-            setMore(response.result.hasNext);
+            if (newTopics.length === 0) {
+                setMore(false);
+
+                moreRef.current = false;
+                observerRef.current?.disconnect();
+
+                return;
+            }
+
+            setNewsList(prev => {
+                try {
+                    const existingIds = new Set(prev.map(p => (p as any).id));
+                    const filtered = newTopics.filter((nt: any) => !(existingIds.has((nt as any).id)));
+
+                    return [...prev, ...filtered];
+                } 
+                
+                catch {
+                    return [...prev, ...newTopics];
+                }
+            });
+
+            const nextCursor = response.result.cursor ?? null;
+            const hasNext = !!response.result.hasNext;
+
+            setCursor(nextCursor);
+            cursorRef.current = nextCursor;
+
+            setMore(hasNext);
+            moreRef.current = hasNext;
+
+            if (!hasNext) {
+                observerRef.current?.disconnect();
+            }
+
         } catch (e: any) {
             console.error("뉴스 로딩 실패", e);
-            console.error("📛 상태 코드:", e.response?.status);
-            console.error("📛 에러 응답 본문:", e.response?.data);  // << 이거 추가!
-        }
-        finally {
+            console.error("📛 상태 코드:", e?.response?.status);
+            console.error("📛 에러 응답 본문:", e?.response?.data);
+        } finally {
             setIsLoading(false);
         }
-    }, [cursor, more]);
-
-    useEffect(() => {
-        getNews();
     }, []);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(entries => {
-            if(entries[0].isIntersecting && more) {
-                getNews();
-            }
-        }, {threshold : 1});
-
-        if(loaderReference.current) {
-            observer.observe(loaderReference.current);
-        }
-
-        return() => {
-            if(loaderReference.current) {
-                observer.unobserve(loaderReference.current);
-            }
-        }
-    }, [getNews, more]);
+        getNews();
+    }, [getNews]);
 
     useEffect(() => {
+        const obs = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                getNews();
+            }
+        }, { threshold: 0.5 });
+
+        observerRef.current = obs;
+        const el = loaderReference.current;
+
+        if (el) obs.observe(el);
+
+        return () => {
+            obs.disconnect();
+            observerRef.current = null;
+        };
+    }, [getNews]);
+
+    const filter = useMemo(() => {
+        if (searchKeyword.trim() === "") {
+            return newsList;
+        }
+
         const lowerKeyword = searchKeyword.toLowerCase();
-        const result = newsList.filter(news => 
+
+        return newsList.filter(news =>
             news.topicName.toLowerCase().includes(lowerKeyword) ||
             news.aiSummary.toLowerCase().includes(lowerKeyword)
         );
+    }, [searchKeyword, newsList]);
 
-        setFilter(result);
-    }, [searchKeyword, filter])
+    const handleSearch = async (keyword: string) => {
+        setSearchKeyword(keyword);
+        setIsLoading(true);
+        setMore(true);
+        setCursor(null);
+        cursorRef.current = null;
+        moreRef.current = true;
+    
+        try {
+            const response = await getKeywordTopic(keyword, 0);
+            const topics = response?.result?.topics ?? [];
+    
+            setNewsList(topics);
+            setCursor(response.result.cursor ?? null);
+            cursorRef.current = response.result.cursor ?? null;
+            setMore(response.result.hasNext);
+            moreRef.current = response.result.hasNext;
+        } catch (error) {
+            console.error("검색 결과 로딩 실패", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
 
     return (
         <div className="h-[1031px]">
@@ -88,22 +155,22 @@ const ReadPage = () => {
                     </div>
 
                     <div className="flex mt-[24px] mb-[24px] w-[840px] justify-between">
-                        <MyPageSearchBar onSearch={setSearchKeyword}/>
+                        <MyPageSearchBar onSearch={handleSearch} />
                     </div>
 
                     <div className="columns-2 [column-gap:1.3rem] space-y-5">
-                        {newsList.map((item, idx) => (
-                            <NewsCard key={idx} data={item} />
+                        {filter.map((item, idx) => (
+                            <NewsCard key={(item as any).id ?? `${(item as any).topicName ?? idx}-${idx}`} data={item} />
                         ))}
 
                         {isLoading && (
                             <>
-                            <NewsCardSkeleton />
-                            <NewsCardSkeleton />
+                                <NewsCardSkeleton />
+                                <NewsCardSkeleton />
                             </>
                         )}
 
-                        <div ref={loaderReference} className="h-10" />
+                        {more && <div ref={loaderReference} className="h-10" />}
                     </div>
                 </div>
             </div>
