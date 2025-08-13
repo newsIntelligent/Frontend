@@ -3,6 +3,7 @@ import TopicTag from "./TopicTag";
 import Chatting from "./Chatting";
 import ChatIcon from "../assets/ChatIcon";
 import { postFeedback } from "../api/feedback";
+import { useMutation } from "@tanstack/react-query";
 
 type Chatmessage = {   
     text: string;
@@ -21,31 +22,31 @@ function FeedBack() {
     )
     const [inputText, setInputText] = useState("");
     const [tag, setTag] = useState<string | null>(null);
-    const [_sending, setSending] = useState(false);
 
-    const handleSende = async () => {
-        if (inputText.trim() === "")  return; 
-        setSending(true);
-        try {
-            await postFeedback();
-
+    const sending = useMutation ({
+        mutationFn: async() => {postFeedback()},
+        onMutate: () => {
             setMessage(prevMessages => [
                 ...prevMessages,
-                { text: inputText, isUser: true, tag: tag },
+                { text: inputText, isUser: true, tag: tag }
+            ]);
+        },
+        onSuccess: () => {
+            setMessage(prevMessages => [
+                ...prevMessages,
                 { text: "피드백이 정상적으로 전송되었습니다.\n 감사합니다.", isUser: false }
             ]);
-        } catch(err) {
+            setInputText("");
+        },
+        onError: () => {
             setMessage(prevMessages => [
                 ...prevMessages,
-                { text: inputText, isUser: true, tag: tag },
                 { text: "피드백 전송에 실패했습니다.", isUser: false }
             ]);
-        } finally {
             setInputText("");
-            setSending(false);
         }
-        //api연결 후 응답 조건에 따라서로 바꾸기
-    }
+    })
+  
 
     return(
         <div className="fixed bottom-[69px] right-[141px] z-50 flex flex-col items-end gap-[8px]">
@@ -72,7 +73,7 @@ function FeedBack() {
                             onChange={(e)=>setInputText(e.target.value)}/>
                         <button className="w-[59px] h-[30px] rounded-[4px] px-[16px] py-[6px] bg-[#0EA6C0]
                             absolute right-[5px] bottom-[7px]  text-white text-[12px] text-center leading-none"
-                            onClick={handleSende}>
+                            onClick={() => sending.mutate()}>
                             전송 </button>
                     </div>
                 </div>

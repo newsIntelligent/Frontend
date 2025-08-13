@@ -1,4 +1,3 @@
-
 import MainArticle from "../components/MainArticle";
 import MainArticleCard from "../components/MainArticleCard";
 import { useInfiniteQuery } from "@tanstack/react-query";
