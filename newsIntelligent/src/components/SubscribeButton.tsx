@@ -1,13 +1,21 @@
 import { useState } from "react";
+import { topicSubscribe, topicUnsubscribe } from "../api/topic";
 type SubscribeButtonProps = {
+    id: number;
     sub: boolean;
     size?: 'default' | 'large';
 }
 
-function SubscribeButton({sub, size = "default"}: SubscribeButtonProps) {
+function SubscribeButton({id, sub, size = "default"}: SubscribeButtonProps) {
     const [isSubscribed, setIsSubscribed] = useState(sub);
 
     const handleSubscribe = () => {
+      if (isSubscribed) {
+        topicUnsubscribe(id)
+      }
+      else{
+        topicSubscribe(id);
+      }
         setIsSubscribed(!isSubscribed);
     }
 

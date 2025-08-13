@@ -33,17 +33,17 @@ const ArticlePage = () => {
   const [hasNext, setHasNext] = useState<boolean>(true)
   const [loading, setLoading] = useState(false)
 
-  const topicId = 2 // 테스트 데이터 있는 ID 사용
+  const topicId = 10 // 테스트 데이터 있는 ID 사용
   const pageSize = 8
 
   //  Access Token 가져오기
   // const token = localStorage.getItem('accessToken')
   const token =
-    'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwN2M1ZDI5Zi1mODA4LTRlYzEtYTlmYi1hMzIxY2Q4MTE1ZTMiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU0NjMyODUzLCJleHAiOjE3NTQ2NDcyNTN9.HlD5XsEDk-r191i7DUiEqUB8CaCqxUBCkANk5FPus9s'
+    'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1MDlkMWMwOS1mYTMwLTRhMDUtODcyMi0wOTg3NDU2ZDJmYmYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MDkwMjU0LCJleHAiOjE3NTUxMDQ2NTR9.au8D6Y6Qom0qQICv68v_Sx1V3Qx3yMGJ1suSFnxCuLo'
 
   // Axios 기본 인스턴스
   const api = axios.create({
-    baseURL: 'http://13.209.21.196:8080/api',
+    baseURL: 'https://api.newsintelligent.site/api',
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
     },

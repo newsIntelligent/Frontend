@@ -1,16 +1,26 @@
 
 import MainArticle from "../components/MainArticle";
 import MainArticleCard from "../components/MainArticleCard";
-import FeedBack from "../components/FeedBack";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
 import { fetchMockArticles } from "../api/fetchMockArticles";
 import SkeletonCard from "../components/SkeletonCard";
+import UpdatesSidebar from "../components/UpdatesSideBar";
 
 
 function MainPage() {
+    const [isScrolled, setIsScrolled] = useState(false)
+  
+    // 스크롤 감지
+    useEffect(() => {
+      const handleScroll = () => {
+        setIsScrolled(window.scrollY > 142)
+      }
+      window.addEventListener('scroll', handleScroll)
+      return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
     
     const {
         data,
@@ -40,16 +50,22 @@ function MainPage() {
         }
       }, [throttleInView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+
 if (isLoading) return 
 if (error) return <p>에러가 발생했습니다.</p>;
 if (!data) return null;
 
 return (
-    <div className="relative w-full flex justify-center overflow-x-clip">
-        <div className="max-w-[1440px] w-full flex justify-center overflow-x-clip">
-            <div className="w-full flex gap-[90px] pl-[112px] pr-[100px]">
-                <div className="w-[298px] h-[698px] border border-black"></div>
-                <div>
+  <div className="flex justify-center">
+    <div
+          className={`sticky w-[320px] h-[calc(100vh-167px)] ${
+            isScrolled ? 'top-[75px]' : 'top-[167px]'
+          }`}
+        >
+          <UpdatesSidebar />
+        </div>
+
+    <div className="pl-[140px] pr-8">
                   {data && (
                     <>
                     <MainArticle {...data.pages[0].articles[0]}/>
@@ -62,18 +78,13 @@ return (
               )}
                {(isFetchingNextPage || throttleInView) && <SkeletonCard />}
                     </div>
-
-
                     <div ref={ref}/>
                     </>
                   )}
-                    
-                    
                 </div>
-            </div>
-        </div>
-        <FeedBack />
-    </div>
+    
+  </div>
+
 )
 }
 
