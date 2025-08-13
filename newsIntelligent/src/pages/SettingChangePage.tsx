@@ -50,7 +50,6 @@ useEffect(() => {
 
     const [mail, setMail] = useState(``);
     const [isEditMail, setIsEditMail] = useState(false);
-    const [mailChangeError, setMailChangeError] = useState<string | null>(null);
     const [isMailValid, setIsMailValid] = useState(true); 
 
     const clickNameChange = () => {
@@ -111,13 +110,11 @@ useEffect(() => {
             setMember((prev) => prev ? {...prev, email : mail} : prev);
 
             setIsEditMail(false);
-            setMailChangeError(null);
 
             navigate("/")
         } catch (error) {
             console.log("이메일 변경 실패", error);
 
-            setMailChangeError("이메일 변경에 실패하였습니다.");
             setIsMailValid(false);
         }
     }

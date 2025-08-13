@@ -1,4 +1,3 @@
-import { Search } from 'lucide-react';
 export interface Topics {
     id : number;
     topicName : string;

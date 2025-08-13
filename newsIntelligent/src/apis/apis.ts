@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { MemberInfoResponse, MemberInfo, NicknameAvailabilityResponse } from '../types/members';
+import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
 
 const baseURL = import.meta.env.VITE_API_URL;
 const token = import.meta.env.VITE_API_TOKEN;
