@@ -50,3 +50,15 @@ export const getKeywordTopic = async (keyword : string, cursor : number, size : 
 
     return response.data;
 }
+
+export const getTopicRelated = async (topicId : number, lastId : number, size : number = 3) => {
+    const response = await axios.get(`${baseURL}/api/topic/{topicId}/related`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+
+        params : {topicId, lastId, size},
+    })
+
+    return response.data;
+}

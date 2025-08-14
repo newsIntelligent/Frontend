@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import SubscribeButton from "./SubscriptionButton";
 import { ChevronDown, Circle } from "lucide-react";
-import { getKeywordTopic, getReadTopic, getSubscriptions } from "../apis/mypage";
-import { useInfiniteQuery, type QueryFunction, type QueryKey } from "@tanstack/react-query";
-import type { ReadTopics, Subscriptions, Topics } from "../types/mypage";
+import { getKeywordTopic, getReadTopic, getSubscriptions, getTopicRelated } from "../apis/mypage";
+import { useInfiniteQuery, useQuery, type QueryFunction, type QueryKey } from "@tanstack/react-query";
+import type { ContentResultResponse, ReadTopics, Subscriptions, Topics } from "../types/mypage";
 
 export const readTopicsKey = (keyword?: string): QueryKey => ["readTopics", keyword ?? ""];
 
@@ -154,6 +154,23 @@ const NewsCard = ({ data: _data }: { data: Topics }) => {
 
     const toggleDropdown = () => setIsExpanded((v) => !v);
 
+    const {
+        data: relatedData,
+        isLoading: isRelatedLoading,
+        isError: isRelatedError,
+        error: relatedError,
+    } = useQuery<ContentResultResponse>({
+        queryKey: ["topicRelated", _data.id],
+        queryFn: () => getTopicRelated(_data.id, 0, 3),
+        enabled: isExpanded, // 펼쳤을 때만 요청
+        staleTime: 30_000,
+        gcTime: 300_000,
+    });
+
+    const relatedList = useMemo(() => {
+        return relatedData?.result?.content ?? [];
+    }, [relatedData]);
+
     return (
         <div className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? "h-[597px]" : "h-[288px]"}`}>
         {isExpanded ? (
@@ -207,6 +224,35 @@ const NewsCard = ({ data: _data }: { data: Topics }) => {
                                 {_data.aiSummary}
                                 </span>
                             </div>
+                            ))}
+
+                            {isRelatedLoading && (
+                                <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">
+                                    <span className="pl-4 text-[12px] text-[#919191]">출처 기사를 불러오는 중...</span>
+                                </div>
+                            )}
+
+                            {isRelatedError && (
+                                <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">
+                                    <span className="pl-4 text-[12px] text-red-500">
+                                        출처 기사 로딩 실패{relatedError instanceof Error ? `: ${relatedError.message}` : ""}
+                                    </span>
+                                </div>
+                            )}
+
+                            {!isRelatedLoading && !isRelatedError && relatedList.map((c) => (
+                                <div key={c.id} className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">
+                                    <div className="flex flex-1 gap-2 items-center">
+                                        <Circle size={8} fill="#0EA6C0" className="text-[#0EA6C0]" />
+                                        <span className="text-[12px] font-regular text-[#919191]">
+                                        {c.press} · {c.publishDate}
+                                        </span>
+                                    </div>
+
+                                    <span className="pl-4 w-full h-[63px] text-[14px] leading-[21px] text-black font-regular line-clamp-3">
+                                        {c.newsSummary}
+                                    </span>
+                                </div>
                             ))}
                         </div>
                     </div>

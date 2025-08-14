@@ -82,7 +82,7 @@ const SubscriptionPage = () => {
 
                 <div className="absolute flex-1 ml-[208.86px]">
                     <div className="w-[541px] leading-none justify-center">
-                        <div className="text-[32px] font-medium mt-[1.5px]"> 주제 구독 </div>
+                        <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 주제 구독 </div>
                         <div className="text-[18px] text-[#919191] mt-[16px]">
                             News intelligent는 최대 20개의 주제별 구독을 제공합니다. 
                         </div>
