@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-//import axios from "axios";
 import { axiosInstance } from "../api/axios";
 
-//const baseURL = import.meta.env.VITE_API_URL;
-=======
-import { axiosInstance } from "../api/axios";
-
->>>>>>> a2557da299a1d6641bee547dba2ea3c44b15969f
 const token = import.meta.env.VITE_API_TOKEN;
 
 export const getTopics = async (keyword : string, cursor : number, size : number = 10) => {

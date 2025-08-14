@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import UpdatesSidebar from '../components/UpdatesSideBar'
 import SubscribeButton from '../components/SubscribeButton'
-import axios from 'axios'
+import { axiosInstance } from '../api/axios'
 
 type Topic = {
   media: string
@@ -38,16 +38,15 @@ const ArticlePage = () => {
 
   //  Access Token 가져오기
   // const token = localStorage.getItem('accessToken')
-  const token =
-    'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
+  // const token =
+  //   'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
 
-  // Axios 기본 인스턴스
-  const api = axios.create({
-    baseURL: 'https://api.newsintelligent.site/api',
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
-  })
+  // const api = axiosInstance.create({
+  //   baseURL: 'https://api.newsintelligent.site',
+  //   headers: {
+  //     Authorization: token ? `Bearer ${token}` : '',
+  //   },
+  // })
 
   // 스크롤 감지
   useEffect(() => {
@@ -60,7 +59,7 @@ const ArticlePage = () => {
 
   // 상단 기사 정보 API
   useEffect(() => {
-    api
+    axiosInstance
       .get(`/topic/${topicId}`)
       .then((res) => setArticle(res.data.result))
       .catch((err) => console.error('상단 기사 API 호출 실패:', err))
@@ -74,7 +73,7 @@ const ArticlePage = () => {
       const params: any = { size: pageSize }
       if (append && lastId) params.lastId = lastId
 
-      const res = await api.get(`/topic/${topicId}/related`, { params })
+      const res = await axiosInstance.get(`/topic/${topicId}/related`, { params })
 
       const content = res.data.result.content || []
       const mapped = content.map((item: any) => ({
