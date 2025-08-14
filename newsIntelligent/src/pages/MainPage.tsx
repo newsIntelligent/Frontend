@@ -1,6 +1,6 @@
 import MainArticle from "../components/MainArticle";
 import MainArticleCard from "../components/MainArticleCard";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
