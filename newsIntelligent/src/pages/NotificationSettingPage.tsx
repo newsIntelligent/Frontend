@@ -109,7 +109,9 @@ const NotificationSettingPage = () => {
 
             } catch (error) {
                 if (!cancelled) {
-                    setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+                    setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+
+                    console.log(loading, errorMsg);
                 };
 
                 console.error('[SETTING] fetch failed:', error);
