@@ -5,6 +5,7 @@ import useThrottle from "../hooks/useThrottle";
 import VectorIcon from "../assets/VectorIcon";
 import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
 import { useNavigate } from "react-router-dom";
+import notificationIcon from "../assets/notification.svg"
 
 
 
@@ -159,7 +160,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
       : 
       //알림이 없는 경우 
       <div className="flex flex-col items-center justify-center h-full gap-[40px]">
-          <img src="/src/assets/notification.svg" alt="notification" className="w-[80px]"/>
+          <img src={notificationIcon} alt="notification" className="w-[80px]"/>
           <div className="flex flex-col gap-[8px] items-center text-center">
             <p className="text-[#0EA6C0] text-[16px] font-semibold">여기에 알림이 표시됩니다.</p>
             <p className="text-[#919191] text-[14px] font-medium leading-[18px]">토픽을 구독하거나 키워드를 설정하여 <br/>
