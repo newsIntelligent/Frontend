@@ -33,13 +33,13 @@ const ArticlePage = () => {
   const [hasNext, setHasNext] = useState<boolean>(true)
   const [loading, setLoading] = useState(false)
 
-  const topicId = 82 // 테스트 데이터 있는 ID 사용
+  const topicId = 80 // 테스트 데이터 있는 ID 사용
   const pageSize = 8
 
   //  Access Token 가져오기
   // const token = localStorage.getItem('accessToken')
   const token =
-    'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NjU3NTJlMi1iOTQ0LTQ5N2YtOTRlYS1iMGJmMGQ0MjBjODAiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTc3MTY5LCJleHAiOjE3NTUxOTE1Njl9.xG5xg6aghP4vArprNDOjbIHNIsFd8IoG6HGiJHOZ8dk'
+    'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
 
   // Axios 기본 인스턴스
   const api = axios.create({
