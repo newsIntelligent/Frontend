@@ -14,7 +14,7 @@ export default function useThrottle(value: boolean, delay: number = 500) {
             setThrottle(true);
 
             const timeout = setTimeout(()=>{
-                setThrottle(false);
+                setThrottle(false);6
             }, delay);
 
             return () => clearTimeout(timeout);

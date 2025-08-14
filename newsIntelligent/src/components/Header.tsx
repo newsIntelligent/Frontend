@@ -33,7 +33,7 @@ function Header() {
   transition-all duration-300
   ${isScrolled ? "h-[60px]" : "h-[142px] pt-[16px]"} flex justify-center`}
 >
-  <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300">
+  <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300  pb-0">
     {isScrolled ? (
       <div className="flex justify-between items-center h-[60px]">
         <img src="/SmallLogo.svg" alt="Logo" className="w-[42px]" onClick={handleLogoClick}/>
@@ -41,21 +41,20 @@ function Header() {
         <HeaderAction />
       </div>
     ) : (
-      <>
+      <div className="flex flex-col gap-y-2 justify-between ">
         <div className="flex justify-between items-center h-[70px]">
           <img src="/HeaderLogo.svg" alt="Logo" className="w-[456px] h-[70px]" onClick={handleLogoClick}/>
           <SearchBar variant="default" />
         </div>
 
         <div className="flex justify-between items-center h-[44px]">
-
           <nav className="flex gap-x-6">
             {menus.map((menu) => (
               <button
                 key={menu}
                 className={`relative h-11 px-2 text-sm whitespace-nowrap${
                   menu === "경제"
-                    ? "text-[#07525F] font-semibold border-b-2 border-[#07525F]"
+                    ? "text-[#07525F] font-semibold border-b-2 border-[#07525F] "
                     : "text-[#1D1D1D]"
                 }`}
               >
@@ -65,7 +64,7 @@ function Header() {
           </nav>
           <HeaderAction />
         </div>
-      </>
+      </div>
     )}
   </div>
 </header>

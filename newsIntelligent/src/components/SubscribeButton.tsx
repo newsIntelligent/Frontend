@@ -32,6 +32,7 @@ function SubscribeButton({id, size = "default", subscribe = false}: SubscribeBut
         ${sub
             ? 'border-[#919191] text-[#919191]'
             :'bg-transparent border-[#0EA6C0] text-[#0EA6C0] hover:bg-[#0EBEBE26]'}
+            transition-all duration-300
        `}
         onClick={() => toggleSubscribe.mutate(!sub)}>
       {sub ? '구독 중' : '+ 구독'}

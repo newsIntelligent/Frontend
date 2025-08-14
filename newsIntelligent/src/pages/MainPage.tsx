@@ -44,7 +44,7 @@ function MainPage() {
       
       const { ref, inView } = useInView({
         threshold: 0,
-        rootMargin: '200px',
+        rootMargin: '0px 0px 200px 0px',
       });
       
         const throttleInView = useThrottle(inView, 1000);
@@ -54,7 +54,7 @@ function MainPage() {
           fetchNextPage();
           console.log("다음페이지 요청")
         }
-      }, [throttleInView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+      }, [throttleInView, fetchNextPage, hasNextPage]);
 
 
 if (isLoading) return 

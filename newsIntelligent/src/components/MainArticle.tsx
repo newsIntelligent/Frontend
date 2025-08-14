@@ -1,3 +1,4 @@
+import { topicRead } from "../api/topic";
 import SubscribeButton from "./SubscribeButton";
 
 type MainArticleCardProps = {
@@ -21,6 +22,10 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
         })
     }
 
+    const handleClick = () => {
+      topicRead(id);
+    }
+
     return(
         <div className="flex flex-col items-center justify-center w-[840px] min-h-[368px] 
             border-y-[3px] border-[#000000]">
@@ -28,11 +33,13 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
                     <img
                         src={imageUrl}
                         alt="기사 이미지"
-                        className="w-[476px] h-[278px] object-cover "
+                        className="w-[476px] h-[278px] object-cover cursor-pointer"
+                        onClick={handleClick}
                     />
                     <div className="flex flex-col gap-[16px]">
                         <div className="flex flex-col items-start justify-between gap-[12px]">
-                            <div className="text-4xl font-bold leading-[48px] w-[299px] line-clamp-2 overflow-hidden">
+                            <div className="text-4xl font-bold leading-[48px] w-[299px] line-clamp-2 overflow-hidden cursor-pointer"
+                            onClick={handleClick}>
                                 {topicName}
                             </div>
                            <SubscribeButton id={id} size="large"/>  
@@ -42,7 +49,6 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
                         </p>
                     </div>
                 </div>
-                <div className="w-full h-[20px] text-[10px] text-[#919191] pt-[6px]">이미지 · {imageUrl}</div>
                 <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(summaryTime)}</div>
         </div>
     )
