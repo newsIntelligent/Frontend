@@ -14,6 +14,7 @@ import HeaderLayout from './layout/HeaderLayout';
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('API Base URL:', import.meta.env.VITE_API_URL);
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
