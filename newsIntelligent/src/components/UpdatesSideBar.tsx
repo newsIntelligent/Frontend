@@ -6,7 +6,7 @@ const USE_DUMMY = true // ← 실제 API로 보려면 false로 바꿔
 
 // Access Token 하드코딩 (테스트용)
 const token =
-  'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3NjU3NTJlMi1iOTQ0LTQ5N2YtOTRlYS1iMGJmMGQ0MjBjODAiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTc3MTY5LCJleHAiOjE3NTUxOTE1Njl9.xG5xg6aghP4vArprNDOjbIHNIsFd8IoG6HGiJHOZ8dk'
+  'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
 
 /** 이 컴포넌트 전용 axios 인스턴스 (전역 axiosInstance 건드리지 않음) */
 const latestApi = axios.create({
