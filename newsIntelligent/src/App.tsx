@@ -16,6 +16,7 @@ import EmailChangePage from './pages/EmailChangePage'
 const queryClient = new QueryClient()
 
 function App() {
+  console.log('API Base URL:', import.meta.env.VITE_API_URL);
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
