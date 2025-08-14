@@ -1,26 +1,61 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
-import { getMemberInfo } from '../apis/apis'
-import Header from '../components/Header'
+import { deleteId, getMemberInfo, signout } from '../apis/apis';
+import type { MemberInfo } from '../types/members';
 
 const SettingPage = () => {
     const navigate = useNavigate();
+    const [member, setMember] = useState<MemberInfo>(); 
 
     useEffect(() => {
-        getMemberInfo("1")
-        .then((data) => console.log("응답 성공:", data))
-        .catch((err) => console.error("에러 발생:", err));
+        const getData = async() => {
+            try {
+                const response = await getMemberInfo();
+                console.log("응답 성공:", response);
+    
+                setMember(response.result[0]);
+            } catch (error) {
+                console.log("데이터를 받아오지 못했습니다.", error);
+                alert("로그인 후 다시 실행해 주세요.");
+    
+                navigate("/login");
+            }
+        };
+
+        getData();
     }, []);
+
+    const handleSignout = async () => {
+        try {
+            console.log("로그아웃 성공");
+
+            await signout();
+
+            navigate("/");
+        } catch (error) {
+            console.log("로그아웃 실패", error);
+        }
+    }
+
+    const handleWithdraw = async () => {
+        try {
+            console.log("회원탈퇴 성공");
+
+            await deleteId();
+
+            navigate("/");
+        } catch (error) {
+            console.log("회원탈퇴 실패", error);
+        }
+    }
 
     return (
         <div className="h-[1031px]">
-            <Header />
-
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 ml-[208.86px]">
                     <div className="w-[387.54px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 설정 </div>
 
@@ -36,8 +71,8 @@ const SettingPage = () => {
                             />
 
                             <div className='px-4 leading-5'>
-                                <p className="font-bold text-[16px]">전시연 님</p>
-                                <p className="font-light text-[14px]">junsiyeon123654@gmail.com</p>
+                                <p className="font-bold text-[16px]"> {member?.nickname} 님</p>
+                                <p className="font-light text-[14px]"> {member?.email} </p>
                             </div>
 
                             <button 
@@ -48,11 +83,15 @@ const SettingPage = () => {
                         </div>
 
                         <div className='flex flex-col gap-[28px]'>
-                            <button className='text-[14px] font-medium w-[57px] h-[17px] text-black'>
+                            <button 
+                            onClick={handleSignout}
+                            className='text-[14px] font-medium w-[57px] h-[17px] text-black'>
                                 로그아웃
                             </button>
 
-                            <button className='text-[14px] font-medium w-[57px] h-[17px] text-[#FF3333]'>
+                            <button 
+                            onClick={handleWithdraw}
+                            className='text-[14px] font-medium w-[57px] h-[17px] text-[#FF3333]'>
                                 회원탈퇴
                             </button>
                         </div>

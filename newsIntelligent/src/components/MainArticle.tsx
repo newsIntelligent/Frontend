@@ -10,7 +10,7 @@ type MainArticleCardProps = {
     idSub: boolean;
   }
 
-function MainArticle({title, content, imageUrl, imageSource, updatedAt, idSub}: MainArticleCardProps) {
+function MainArticle({id, title, content, imageUrl, imageSource, updatedAt, idSub}: MainArticleCardProps) {
     const formatTime = (iso: string) : string => {
         const time = new Date(iso);
         return time.toLocaleTimeString("ko-KR", {
@@ -36,7 +36,7 @@ function MainArticle({title, content, imageUrl, imageSource, updatedAt, idSub}: 
                             <div className="text-4xl font-bold leading-[48px] w-[299px]">
                                 {title}
                             </div>
-                            <SubscribeButton sub={idSub} size="large"/>
+                            <SubscribeButton id={id} sub={idSub} size="large"/>
                         </div>
                         <p className="w-[333px] text-[14px] font-normal leading-normal line-clamp-5">
                         {content}

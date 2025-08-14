@@ -5,7 +5,7 @@ const Sidebar = () => {
     const location = useLocation();
 
     const menuItems = [
-        { label: '구독', path: '/', key: 'subscription' },
+        { label: '구독', path: '/subscriptions', key: 'subscription' },
         { label: '읽은 토픽', path: '/read-topic', key: 'readTopic' },
         { label: '활동', path: '/activity', key: 'activity', disabled: true },
         { label: '멤버쉽', path: '/membership', key: 'membership', disabled: true },
@@ -15,7 +15,7 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="flex flex-1 text-[#07525F] mt-[179px] w-[207px] h-[288px]">
+        <div className="flex flex-1 text-[#07525F] w-[207px] h-[288px]">
             <div className="h-full pl-[24px] border-l-4 border-[#07525F]">
                 <div className="flex flex-col gap-4">
                     <p className="text-2xl font-bold text-black"> 마이페이지 </p>

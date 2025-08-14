@@ -6,6 +6,7 @@ import LeftSection from "../components/LoginPage/LeftSection";
 import LoginComplete from "../components/LoginPage/LoginComplete";
 import { sendLoginCode, resendMagicLink } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
 
 const LoginPage = () => {
   const [step, setStep] = useState<"email" | "verify" | "complete">("email");
@@ -22,16 +23,22 @@ const LoginPage = () => {
   const MAX_RESEND = 3;
 
   useEffect(() => {
+    // 만료 토큰 정리(토큰만 제거, userInfo는 유지)
+    //enforceAuthExpiry();
+
     const token = localStorage.getItem("accessToken");
     const userInfo = localStorage.getItem("userInfo");
 
     try{
       const parsed = JSON.parse(userInfo || "{}");
-      if (!parsed.email || !parsed.name){
-          setHasLoginHistory(false);
-      }
-      else{
-        setHasLoginHistory(!!token);
+      if (token && parsed.email && parsed.name){
+        // 토큰 + userInfo가 있으면 최근 로그인 기록 있음
+        setHasLoginHistory(true);
+      } else if (parsed.email && parsed.name){
+        // 토큰은 없어도 userInfo만 있으면 LoginLog 노출은 가능
+        setHasLoginHistory(true);
+      } else{
+        setHasLoginHistory(false);
       }
     }
     catch(error){
@@ -47,6 +54,7 @@ const LoginPage = () => {
     setIsResending(true);
   
     try{
+      // email은 이미 canonical 상태(state)라 그대로 사용
       await resendMagicLink(email, fromLoginLog);
       setResendCount((prev)=> prev+1);
     }
@@ -56,6 +64,36 @@ const LoginPage = () => {
     finally {
       setIsResending(false);
     }
+  };
+
+  // “로그인 먼저 → 필요 시 회원가입 폴백” 판단
+  const needSignupFallback = (e: unknown) => {
+    if (!isAxiosError(e)) return false;
+    const status = e.response?.status;
+    const data = e.response?.data as { code?: string; message?: string } | undefined;
+    const code = data?.code?.toString().toUpperCase();
+    const msg  = (data?.message || "").toString();
+
+    // 서버 코드/메시지 케이스 보강
+    const codeHit = !!code && [
+      "NEED_SIGNUP",
+      "MEMBER_NOT_FOUND",
+      "MEMBERA04",
+      "MEMBERA404",
+      "USER_NOT_FOUND",
+    ].includes(code);
+
+    const msgHit = [
+      /존재하지 않는 회원/i,
+      /가입되지 않은/i,
+      /회원이 아닙니다/i,
+      /not\s*found/i,
+      /not\s*exist/i,
+      /not\s*registered/i,
+    ].some((re) => re.test(msg));
+
+    // 400/404 류에서 코드나 메시지가 맞으면 폴백
+    return (status === 400 || status === 404) && (codeHit || msgHit);
   };
 
   const renderRightSection = () => {
@@ -68,19 +106,48 @@ const LoginPage = () => {
               onToggleAutoLogin={()=>setAutoLogin(prev => !prev)}
               onNext={async (inputEmail) => {
                 console.log("입력된 이메일 : ", inputEmail)
-                setEmail(inputEmail);
-                setFromLoginLog(false);
-                await sendLoginCode(inputEmail, false);
+
+                // ✅ 발급 단계에서도 canonical 처리
+                const canonical = inputEmail.trim().toLowerCase();
+                setEmail(canonical);
+
+                // 로그인 코드 전송 먼저 시도 → “가입 필요”면 회원가입 코드로 폴백
+                try {
+                  await sendLoginCode(canonical, /* isLogin */ true);
+                  setFromLoginLog(true);   // 검증에서도 로그인 플로우로 진행
+                } catch (e: unknown) {
+                  if (needSignupFallback(e)) {
+                    await sendLoginCode(canonical, /* isLogin */ false);
+                    setFromLoginLog(false); // 검증에서는 회원가입 플로우로 진행
+                  } else {
+                    throw e;
+                  }
+                }
+
                 setStep("verify");
               }}
             />
             {hasLoginHistory && (
               <LoginLog
                 onSelect={async (selectedEmail, name) => {
-                  setEmail(selectedEmail);
+                  // ✅ LoginLog 선택 시에도 canonical 처리
+                  const canonical = selectedEmail.trim().toLowerCase();
+                  setEmail(canonical);
                   setUserName(name);
-                  setFromLoginLog(true);
-                  await sendLoginCode(selectedEmail, true);
+
+                  // 과거 기록 클릭 시에도 로그인 우선 → 실패 시 가입 코드로 폴백
+                  try {
+                    await sendLoginCode(canonical, /* isLogin */ true);
+                    setFromLoginLog(true);
+                  } catch (e: unknown) {
+                    if (needSignupFallback(e)) {
+                      await sendLoginCode(canonical, /* isLogin */ false);
+                      setFromLoginLog(false);
+                    } else {
+                      throw e;
+                    }
+                  }
+
                   setStep("verify");
                 }}
               />
@@ -90,11 +157,11 @@ const LoginPage = () => {
 
       case "verify":
         return <CodeInput 
-                  onComplete={()=> navigate("/MainPage")}
+                  onComplete={()=> navigate("/settings")}
                   autoLogin={autoLogin}
                   setAutoLogin={setAutoLogin}
                   isResending={isResending}
-                  email={email}
+                  email={email}              // 이미 canonical 상태
                   fromLoginLog={fromLoginLog}
                 />;
 

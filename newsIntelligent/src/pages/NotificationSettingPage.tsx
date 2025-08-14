@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar'
 import ToggleButton from '../components/ToggleButton';
 import SettingTime from '../components/SettingTime';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
+import { patchSetSubscribeNotification, patchSetReadTopicNotification, patchSetDailyReport } from '../apis/members';
+import { getMemberInfo } from '../apis/apis';
+import type { MemberInfo } from '../types/members';
 
 const NotificationSettingPage = () => {
     const [nightAlarmButton, setNightAlarmButton] = useState(false);
@@ -12,40 +14,105 @@ const NotificationSettingPage = () => {
     const [changeNotificationButton, setChangeNotification] = useState(false);
     const [dailyReport, setDailyReport] = useState(true);
     const [keywordAlarmButton, setKeywordAlarmButton] = useState(false);
+    
+    const [member, setMember] = useState<MemberInfo>(); 
 
     const navigate = useNavigate();
 
-    return (
-        <div className="h-[1031px]">
-            <Header />
+    useEffect(() => {
+        const getData = async() => {
+            try {
+                const response = await getMemberInfo();
+                console.log("응답 성공:", response);
+    
+                setMember(response.result[0]);
+            } catch (error) {
+                console.log("데이터를 받아오지 못했습니다.", error);
+                alert("로그인 후 다시 실행해 주세요.");
+    
+                navigate("/login");
+            }
+        };
 
-            <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
+        getData();
+    }, []);
+
+    const handleSubscriptionToggle = async () => {
+        const newValue = !subscriptionAlarmButton;
+
+        console.log(`[DEBUG] 구독 알림 토글 클릭됨. newValue:`, newValue);
+
+        setSubscriptionAlarmButton(newValue); 
+
+        try {
+            await patchSetSubscribeNotification(newValue);
+        } 
+        
+        catch (error) {
+            console.error("구독 알림 설정 실패:", error);
+            setSubscriptionAlarmButton(prev => !prev); 
+        }
+    };
+
+    const handleChangeNotificationToggle = async () => {
+        const newValue = !changeNotificationButton;
+
+        console.log(`[DEBUG] 읽은 토픽 알림 토글 클릭됨. newValue:`, newValue);
+
+        setChangeNotification(newValue);
+
+        try {
+            await patchSetReadTopicNotification(newValue);
+        } 
+        
+        catch (error) {
+            console.error("읽은 토픽 알림 설정 실패:", error);
+            setChangeNotification(prev => !prev);
+        }
+    };
+
+    const handleDailyReportToggle = async () => {
+        const newValue = !dailyReport;
+
+        console.log(`[DEBUG] 데일리 리포트 토글 클릭됨. newValue:`, newValue);
+
+        setDailyReport(newValue);
+
+        try {
+            await patchSetDailyReport(newValue);
+        } 
+        
+        catch (error) {
+            console.error("데일리 리포트 설정 실패:", error);
+            setDailyReport(prev => !prev);
+        }
+    };
+
+    return (
+        <div className="">
+            <div className="flex w-full px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 h-[114.9375px] ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 h-[114.9375px] ml-[208.86px]">
                     <div className="flex flex-col gap-[16px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium"> 알림 설정 </div>
-
                         <p className="text-[18px] text-[#919191] h-[21px] font-regular">
-                            데일리 리포트는 <span className='text-[18px] font-regular text-[#0EA6C0]'> junsiyeon123654@gmail.com</span> 으로 전송됩니다. 
+                            데일리 리포트는 <span className='text-[18px] font-regular text-[#0EA6C0]'> {member?.email}</span> 으로 전송됩니다. 
                         </p>
-
                         <button 
-                        onClick={() => navigate('/settings/changes')}
-                        className='flex flex-1 items-center justify-center w-[112px] h-[26px] pt-[4px] pr-[6px] pb-[4px] pl-[10px] rounded-sm border border-[1px] text-[#0EA6C0] hover:bg-[#0EA6C026] hover:text-[#0EA6C0]'>
+                            onClick={() => navigate('/settings/changes')}
+                            className='flex flex-1 items-center justify-center w-[112px] h-[26px] pt-[4px] pr-[6px] pb-[4px] pl-[10px] rounded-sm border border-[1px] text-[#0EA6C0] hover:bg-[#0EA6C026] hover:text-[#0EA6C0]'>
                             <p className='text-[12px] font-semibold'> 이메일 변경하기 </p>
-                            <ChevronDown className="w-[16px] h-[16px] rotate-270" strokeWidth={2} strokeLinecap="square" strokeLinejoin="miter"/>
+                            <ChevronDown className="w-[16px] h-[16px] rotate-270" strokeWidth={2}/>
                         </button>
                     </div>
 
                     <div className='flex flex-col gap-[26px] ml-[1.5px] mt-[36px] w-[403px] h-[412px]'>
                         <div className='w-[400px] h-[60px]'>
                             <div className='flex justify-between items-center h-[28px]'>
-                                <p className='text-[20px] font-normal'> 야간 수신 거부 </p>                           
-                                <ToggleButton isOn = {nightAlarmButton} toggle={() => setNightAlarmButton(prev => !prev)}/>
+                                <p className='text-[20px] text-[#C1C1C1] font-normal'> 야간 수신 거부 </p>                           
+                                <ToggleButton isOn={nightAlarmButton} toggle={() => setNightAlarmButton(prev => !prev)}/>
                             </div>
-
-
                             <div className='flex space-between text-[16px] font-normal mt-2'>
                                 <p className='text-[#0EA6C0]'> 21:00~08:00 </p>
                                 <span className='text-[#919191]'> 
@@ -57,10 +124,8 @@ const NotificationSettingPage = () => {
                         <div className='w-[400px] h-[60px]'>
                             <div className='flex justify-between items-center h-[28px]'>
                                 <p className='text-[20px] font-normal'> 구독 알림 </p>                           
-                                <ToggleButton isOn = {subscriptionAlarmButton} toggle={() => setSubscriptionAlarmButton(prev => !prev)}/>
+                                <ToggleButton isOn={subscriptionAlarmButton} toggle={handleSubscriptionToggle}/>
                             </div>
-
-
                             <div className='flex space-between text-[16px] font-medium mt-2'>
                                 <p className='text-[#0EA6C0]'> 구독 중인 토픽 </p>
                                 <span className='text-[#919191]'> 
@@ -71,15 +136,13 @@ const NotificationSettingPage = () => {
 
                         <div className='w-[400px] h-[60px]'>
                             <div className='flex justify-between items-center h-[28px]'>
-                                <p className='text-[20px] text-[#C1C1C1] font-normal'> 읽은 토픽 변경사항 알림 </p>                           
-                                <ToggleButton isOn = {changeNotificationButton} toggle={() => setChangeNotification(prev => prev)}/>
+                                <p className='text-[20px] font-normal'> 읽은 토픽 변경사항 알림 </p>                           
+                                <ToggleButton isOn={changeNotificationButton} toggle={handleChangeNotificationToggle}/>
                             </div>
-
-
                             <div className='flex space-between text-[16px] font-medium mt-2'>
                                 <p className='text-[#0EA6C0]'> 읽은 토픽 </p>
                                 <span className='text-[#919191]'> 
-                                    {changeNotificationButton ? "의 변경사항 알림 수신 " : "의 변경사항 알림    거부"}
+                                    {changeNotificationButton ? "의 변경사항 알림 수신 " : "의 변경사항 알림 거부"}
                                 </span>
                             </div>
                         </div>
@@ -87,19 +150,17 @@ const NotificationSettingPage = () => {
                         <div className='w-[400px]'>
                             <div className='flex justify-between items-center h-[28px]'>
                                 <p className='text-[20px] font-normal'> 데일리 리포트 </p>                           
-                                <ToggleButton isOn = {dailyReport} toggle={() => setDailyReport(prev => !prev)}/>
+                                <ToggleButton isOn={dailyReport} toggle={handleDailyReportToggle}/>
                             </div>
-
-
                             <div className='flex space-between text-[16px] font-medium mt-2'>
                                 <span className='text-[#919191]'> 
-                                {dailyReport ?
-                                    <div> 지정된 시간에 알림 목록을 종합해서 수신
-                                        <div className='flex flex-1 w-[400px] mt-4'>
-                                            <SettingTime />
+                                    {dailyReport ?
+                                        <div> 지정된 시간에 알림 목록을 종합해서 수신
+                                            <div className='flex flex-1 w-[400px] mt-4'>
+                                                <SettingTime />
+                                            </div>
                                         </div>
-                                    </div>
-                                    : "지정된 시간에 알림 목록을 종합해서 거부"}
+                                        : "지정된 시간에 알림 목록을 종합해서 거부"}
                                 </span>
                             </div>
                         </div>
@@ -107,10 +168,8 @@ const NotificationSettingPage = () => {
                         <div className='w-[400px]'>
                             <div className='flex justify-between items-center h-[28px]'>
                                 <p className='text-[20px] text-[#C1C1C1] font-normal'> 키워드 알림 설정 </p>                           
-                                <ToggleButton isOn = {keywordAlarmButton} toggle={() => setKeywordAlarmButton(prev => prev)}/>
+                                <ToggleButton isOn={keywordAlarmButton} toggle={() => setKeywordAlarmButton(prev => !prev)}/>
                             </div>
-
-
                             <div className='flex space-between text-[16px] font-medium mt-2'>
                                 <p className='text-[#0EA6C0]'> 등록한 키워드 </p>
                                 <span className='text-[#919191]'> 
@@ -122,8 +181,7 @@ const NotificationSettingPage = () => {
                 </div>
             </div>
         </div>
-
     )
 }
 
-export default NotificationSettingPage
+export default NotificationSettingPage;

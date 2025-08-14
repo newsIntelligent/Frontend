@@ -1,18 +1,49 @@
 import {Plus} from 'lucide-react'
 import { useState } from 'react'
 import SettingTimeModal from './SettingTimeModal';
+import { postSetDailyReport } from '../apis/members';
+
+const formatToMeridiem = (time: string) => {
+    const [hourStr, minute] = time.split(":");
+
+    let hour = parseInt(hourStr, 10);
+
+    const meridiem = hour < 12 ? "오전" : "오후";
+
+    if (hour === 0) {
+        hour = 12; 
+    } 
+    
+    else if (hour > 12) {
+        hour -= 12; 
+    }
+
+    return `${meridiem} ${hour.toString().padStart(2, "0")}:${minute}`;
+};
 
 const SettingTime = () => {
     const [isClick, setIsClick] = useState(false);
-    const [times, setTimes] = useState<string[]>(['오전 11:00']);
+    const [times, setTimes] = useState<string[]>(['11:00']);
 
     const click = () => {
         setIsClick(true);
     }
 
-    const handleAddTime = (newTime : string) => {
+    const handleAddTime = async (newTime : string) => {
+        console.log("서버로 보낼 newTime:", newTime);
+
         if (times.length < 3) {
-            setTimes(prev => [...prev, newTime]);
+            try {
+                await postSetDailyReport(newTime);
+
+                setTimes(prev => [...prev, newTime]);
+            } 
+            
+            catch (e: any) {
+                console.log('요청 페이로드:', { time: newTime });
+                console.log('응답 상태:', e.response?.status);
+                console.log('응답 바디:', e.response?.data);
+            }
         }
 
         setIsClick(false);
@@ -31,7 +62,7 @@ const SettingTime = () => {
                     <button
                     key={index}
                     className="flex items-center justify-center pr-[4px] pl-[10px] font-medium text-[13px] border border-[#0EA6C0] text-[#0EA6C0] w-[104.28px] h-[28.28px] rounded-full">
-                        <span> {time} </span>
+                        <span> {formatToMeridiem(time)} </span>
                         <button onClick={() => handleRemoveTime(index)}>
                             <Plus size={11} strokeWidth={2} className='w-[20px] h-[20px] rotate-45' />
                         </button>

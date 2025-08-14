@@ -1,37 +1,57 @@
 import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
-import { updateMemberMail } from '../apis/apis';
-import Header from "../components/Header";
+import { getMemberInfo, getNicknameAvailability, patchNickname, postEmailCode } from '../apis/apis';
+import type { MemberInfo } from "../types/members";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 
-const SettingChangePage = () => {
-    const memeberId = "12345";
-    
-    const [name, setName] = useState("junsiyeon");
-    const [isEditName, setIsEditName] = useState(false);
-
-    const [nameChangeError, setNameChangeError] = useState<string | null>(null);
-    const [isNameValid, setIsNameValid] = useState(true); 
-
-    const [mail, setMail] = useState("junsiyeon@gmail.com");
-    const [isEditMail, setIsEditMail] = useState(false);
-    const [isMailValid, setIsMailValid] = useState(true); 
+const SettingChangePage = () => {  
+    const navigate = useNavigate();
+    const [member, setMember] = useState<MemberInfo>(); 
 
     useEffect(() => {
-        const getMemberInfo = async () => {
+        const getData = async() => {
             try {
-                const member = await updateMemberMail(memeberId);
+                const availability = await getNicknameAvailability(name);
 
-                console.log("API 응답 데이터:", member.email);
+                if(availability.result.available) {
+                    setNameChangeError("이미 사용 중인 닉네임입니다.");
+                    setIsNameValid(false);
 
-                setMail(member.email);
+                    return; 
+                }
+
+                const response = await getMemberInfo();
+                console.log("응답 성공:", response);
+    
+                setMember(response.result[0]);
             } catch (error) {
-                console.log("회원 정보 조회 실패");
+                console.log("데이터를 받아오지 못했습니다.", error);
+                alert("로그인 후 다시 실행해 주세요.");
+    
+                navigate("/login");
             }
         };
 
-        getMemberInfo();
-    }, [memeberId]);
-    
+        getData();
+    }, []);
+
+useEffect(() => {
+    if (member) {
+        setName(member.nickname ?? "");
+        setMail(member.email ?? "");
+    }
+}, [member]);
+
+    const [name, setName] = useState(``);
+    const [isEditName, setIsEditName] = useState(false);
+    const [nameChangeError, setNameChangeError] = useState<string | null>(null);
+    const [isNameValid, setIsNameValid] = useState(true); 
+
+    const [mail, setMail] = useState(``);
+    const [isEditMail, setIsEditMail] = useState(false);
+    const [isMailValid, setIsMailValid] = useState(true); 
+
     const clickNameChange = () => {
         setIsEditName(true);
         setNameChangeError(null);
@@ -53,10 +73,22 @@ const SettingChangePage = () => {
         }
     }
     
-    const handleNameSave = () => {
+    const handleNameSave = async () => {
         if (!isNameValid) return;
-        setIsEditName(false);
-        setNameChangeError(null);
+
+        try {
+            await patchNickname(name);
+
+            setMember((prev) => prev ? {...prev, nickname : name} : prev);
+
+            setIsEditMail(false);
+            setNameChangeError(null);
+        } catch (error) {
+            console.log("닉네임 변경 실패", error);
+
+            setNameChangeError("닉네임 변경에 실패하였습니다.");
+            setIsNameValid(false);
+        }
     }
     
     const InputMailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,19 +101,34 @@ const SettingChangePage = () => {
         setIsMailValid(true);
     }
 
-    const handleMailSave = () => {
+    const handleMailSave = async () => {
         if (!isMailValid) return;
-        setIsEditMail(false);
+
+        try {
+            await postEmailCode(mail);
+
+            setMember((prev) => prev ? {...prev, email : mail} : prev);
+
+            setIsEditMail(false);
+
+            navigate("/")
+        } catch (error) {
+            console.log("이메일 변경 실패", error);
+
+            setIsMailValid(false);
+        }
+    }
+
+    const handleReturnSettingPage = () => {
+        navigate("/settings");
     }
 
     return (
         <div className="h-[1031px]">
-            <Header />
-
             <div className="flex w-full h-dvh px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 ml-[208.86px] mt-[179px]">
+                <div className="absolute flex-1 ml-[208.86px]">
                     <div className="w-[387.54px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 설정 </div>
 
@@ -96,15 +143,15 @@ const SettingChangePage = () => {
                                 </p>
 
                                 <span className="w-[139px] h-[19px] text-[14px] font-[500px] text-[#919191]">
-                                    junsiyeon@gmail.com
+                                    {member?.email}
                                 </span>
                             </div>
 
                             <hr className="w-[716px] h-[0px] ml-[106px] mt-[6px] text-[#E6E6E6]" />
 
-                            <div className="flex flex-1 items-end mt-[28px] gap-[80px]">
-                                <p className="w-[28px] h-[19px] text-[16px] font-semibold text-black"> 
-                                    이름
+                            <div className="flex flex-1 items-end mt-[28px] gap-[65.5px]">
+                                <p className="h-[19px] text-[16px] font-semibold text-black"> 
+                                    닉네임
                                 </p>
 
                                 <div className="flex flex-1 w-full items-end justify-between">
@@ -119,7 +166,7 @@ const SettingChangePage = () => {
                                     ) 
                                     : 
                                     (
-                                        <span className="h-[19px] text-[14px] font-[500px] text-black">{name}</span>
+                                        <span className="h-[19px] text-[14px] font-[500px] text-black"> {name} </span>
                                     )}
 
                                     {isEditName ? 
@@ -197,6 +244,13 @@ const SettingChangePage = () => {
                             <p className="w-[716px] h-[0px] ml-[106px] mt-[6px] text-[#919191] text-[12px] font-[500px]"> 알림 받는 이메일을 변경합니다. </p>
                         </div>
                     </div>
+
+                    <button 
+                    onClick={handleReturnSettingPage}
+                    className="flex flex-1 mt-[246px]">
+                        <ChevronDown className="rotate-90 text-[#919191]" strokeWidth={4} strokeLinecap="square" />
+                        <p className="pl-3 font-[500px] text-[16px] text-[#919191]"> 이전 페이지로 돌아가기 </p>
+                    </button>
                 </div>
             </div>
         </div>

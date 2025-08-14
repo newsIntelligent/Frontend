@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
-import { getNotification } from "../api/auth";
 import VectorIcon from "../assets/VectorIcon";
+import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
+import { useNavigate } from "react-router-dom";
+import notificationIcon from "../assets/notification.svg"
 
 
 
@@ -11,6 +13,7 @@ import VectorIcon from "../assets/VectorIcon";
 function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, setNotification: (value: boolean) => void, onClose?: () => void }) {
   const [visible, setVisible] = useState(false);
   const [newNotification, setNewNotification] = useState(false); //읽지 않은 알람이 있으면 true
+  const navigation = useNavigate();
 
   const {data, 
     fetchNextPage, 
@@ -54,9 +57,18 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     }
   }, [isOpen]);
 
-  const handleCheck = () => {
+  const handleAllCheck = () => {
+    checkAllNotification();
     setNotification(false);
   }; //모두 확인
+
+  const handleCheck = (id:number) =>{
+    checkNotification(id);
+  }; //알람 단건 확인
+
+  const handleSettingClick = () => {
+    navigation('/notification')
+  }//알림 설정 페이지로 이동
 
   const highlightQuotedText = (text: string): React.ReactNode => {
     const regex = /'([^']+)'/g;
@@ -81,7 +93,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     }
   
     return parts;
-  }; 
+  };  //구독 토픽 강조
 
   const formatTime = (iso: string) : string => {
       const now = new Date();
@@ -96,9 +108,10 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
           minute: "2-digit",
           hour12: false
         })
-      }
-      else return `${diffDays}일 전`;
-  };
+      } //하루 이내 알람은 시간으로 표시
+
+      else return `${diffDays}일 전`; //하루가 지난 알람은 일수로 표시
+  }; //알림 시간 표시 
   
   return (
     <div
@@ -118,15 +131,19 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         <button 
             className="w-20 h-6 rounded-xl border border-[#E6E6E6] items-center gap-1 hover:bg-[#E6E6E6]
                 text-xs font-semibold"
-            onClick={handleCheck}>모두 읽음</button>
-        <VectorIcon className="w-5 cusor-pointer"/>
+            onClick={handleAllCheck}>모두 읽음</button>
+        <VectorIcon className="w-5 cusor-pointer"
+          onClick={handleSettingClick}/>
         </div>
       </div>
       { notifications.length > 0
+      //알림이 있는 경우
         ? <ul className="overflow-y-auto [&::-webkit-scrollbar]:hidden">
         {notifications.map ((item) => (
-           <li key={item.noti_id} className="flex justify-between h-11 gap-3 px-[12px] py-[6px] 
-           border-b border-b-[#E6E6E6]">
+           <li 
+            key={item.noti_id} 
+            className="flex justify-between h-11 gap-3 px-[12px] py-[6px] border-b border-b-[#E6E6E6]"
+            onClick={() => handleCheck(item.noti_id)}>
              <div className="flex justify-start items-center gap-2.5">
                <div className={`w-14 h-5 px2.5 rounded-[20px] text-xs  text-center font-semibold
                   ${item.is_checked ? 'bg-[#F5F5F5] text-[#777777]':'bg-[#0EA6C01A] text-[#0B8E8E]'} `}> 
@@ -140,8 +157,10 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         ))}
         <div ref={ref} />
       </ul>
-      : <div className="flex flex-col items-center justify-center h-full gap-[40px]">
-          <img src="/src/assets/notification.svg" alt="notification" className="w-[80px]"/>
+      : 
+      //알림이 없는 경우 
+      <div className="flex flex-col items-center justify-center h-full gap-[40px]">
+          <img src={notificationIcon} alt="notification" className="w-[80px]"/>
           <div className="flex flex-col gap-[8px] items-center text-center">
             <p className="text-[#0EA6C0] text-[16px] font-semibold">여기에 알림이 표시됩니다.</p>
             <p className="text-[#919191] text-[14px] font-medium leading-[18px]">토픽을 구독하거나 키워드를 설정하여 <br/>
