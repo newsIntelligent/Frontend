@@ -40,6 +40,8 @@ export interface DailyReportTimes {
 }
 
 export interface MemberSetting {
+    id: any;
+    time: string;
     subscribeNotification : boolean;
     readTopicNotification : boolean;
     dailyReportSend : boolean;

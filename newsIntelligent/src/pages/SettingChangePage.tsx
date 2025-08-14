@@ -116,6 +116,8 @@ useEffect(() => {
             console.log("이메일 변경 실패", error);
 
             setIsMailValid(false);
+
+            navigate("/email-change");
         }
     }
 

@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 //import axios from 'axios';
 import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
 import { axiosInstance } from '../api/axios';
 
 //const baseURL = import.meta.env.VITE_API_URL;
+=======
+import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
+import { axiosInstance } from '../api/axios';
+
+>>>>>>> a2557da299a1d6641bee547dba2ea3c44b15969f
 const token = import.meta.env.VITE_API_TOKEN;
 
 export const getMemberInfo = async () : Promise<MemberInfoResponse> => {
@@ -76,7 +82,10 @@ export const deleteId = async () => {
 
     return response.data;
 }
+<<<<<<< HEAD
 
 export const sendDailyReport = async (memberId : string) : Promise<void> => {
     await axiosInstance.post(`/api/members/${memberId}/daily-report/send`);
 }
+=======
+>>>>>>> a2557da299a1d6641bee547dba2ea3c44b15969f

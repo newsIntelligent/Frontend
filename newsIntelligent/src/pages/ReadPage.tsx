@@ -6,6 +6,9 @@ import Sidebar from "../components/Sidebar"
 import NewsCardSkeleton from "../components/NewsCardSkeleton";
 import { getKeywordTopic, getReadTopic } from "../apis/mypage";
 import type { Topics } from "../types/mypage";
+import { getMemberInfo } from "../apis/apis";
+import type { MemberInfo } from "../types/members";
+import { useNavigate } from "react-router-dom";
 
 const ReadPage = () => {
     const [newsList, setNewsList] = useState<Topics[]>([]);
@@ -24,6 +27,30 @@ const ReadPage = () => {
     useEffect(() => { cursorRef.current = cursor; }, [cursor]);
     useEffect(() => { moreRef.current = more; }, [more]);
     useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
+
+    const navigate = useNavigate();
+    const [member, setMember] = useState<MemberInfo>(); 
+
+    useEffect(() => {
+        const getData = async() => {
+            try {
+                const response = await getMemberInfo();
+                console.log("응답 성공:", response);
+    
+                setMember(response.result[0]);
+            } 
+            
+            catch (error) {
+                console.log("데이터를 받아오지 못했습니다.", error);
+                alert("로그인 후 다시 실행해 주세요.");
+    
+                navigate("/login");
+            }
+        };
+
+        getData();
+    }, []);
+
 
     const getNews = useCallback(async () => {
         if (!moreRef.current || isLoadingRef.current) { 
@@ -150,7 +177,7 @@ const ReadPage = () => {
                         <div className="text-[32px] h-[33.94px] font-medium mt-[1.5px]"> 읽은 토픽 </div>
 
                         <p className="text-[18px] text-[#919191] h-[21px] font-regular mt-[16px]">
-                            <span> 전시연</span> 님이 읽은 기사예요.
+                            <span className="text-[#0B8E8E]"> {member?.nickname} </span> 님이 읽은 기사예요.
                         </p>
                     </div>
 

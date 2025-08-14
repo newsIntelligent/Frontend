@@ -1,18 +1,19 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import './App.css';
-import MainPage from './pages/MainPage';
-import NotificationSettingPage from './pages/NotificationSettingPage';
-import ReadPage from './pages/ReadPage';
-import SettingPage from './pages/SettingPage';
-import SubscriptionPage from './pages/SubscriptionPage';
-import SettingChangePage from './pages/SettingChangePage';
-import LoginPage from './pages/LoginPage';
-import ArticlePage from './pages/Article';
-import EmailChangePage from './pages/EmailChangePage';
-import HeaderLayout from './layout/HeaderLayout';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import './App.css'
+import MainPage from './pages/MainPage'
+import NotificationSettingPage from './pages/NotificationSettingPage'
+import ReadPage from './pages/ReadPage'
+import SettingPage from './pages/SettingPage'
+import SubscriptionPage from './pages/SubscriptionPage'
+import SettingChangePage from './pages/SettingChangePage'
+import LoginPage from './pages/LoginPage'
+import ArticlePage from './pages/Article'
+import HeaderLayout from './layout/HeaderLayout'
+import UpdatesSidebar from './components/UpdatesSideBar'
+import EmailChangePage from './pages/EmailChangePage'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 function App() {
   return (
@@ -27,13 +28,14 @@ function App() {
               <Route path="/settings" element={<SettingPage />} />
               <Route path="/settings/changes" element={<SettingChangePage />} />
               <Route path="/article" element={<ArticlePage />} />
+              <Route path="/updatessidebar" element={<UpdatesSidebar />} />
               </Route>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/email-change" element={<EmailChangePage />} />          
           </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  );
+  )
 }
 
-export default App;
+export default App
