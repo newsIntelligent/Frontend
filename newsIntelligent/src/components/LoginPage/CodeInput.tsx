@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Loading from "./Loading";
-import { verifyLoginCode, verifySignupCode } from "../../apis/auth";
+import { persistAuth, verifyLoginCode, verifySignupCode, type ApiEnvelope, type AuthResult } from '../../apis/auth';
+import { axiosInstance } from "../../api/axios";
 
 interface CodeInputProps {
   onComplete: () => void;
@@ -9,6 +10,7 @@ interface CodeInputProps {
   isResending?: boolean;
   email: string;
   fromLoginLog: boolean;
+  verifyFn?: (email: string, code: string) => Promise<boolean>;
 }
 
 const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog }: CodeInputProps) => {
@@ -16,7 +18,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
   const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [hasInteractedAfterResend, setHasInteractedAfterResend] = useState(false);
 
   // input 배열형 ref 설정 함수
   const setRef = (index: number) => (el: HTMLInputElement | null) => {
@@ -33,7 +34,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
     if (isResending){
       setError(false);
       setIsLoading(false);
-      setHasInteractedAfterResend(false);
       setCode("");
       inputRefs.current[0]?.focus();
     }    
@@ -41,42 +41,77 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
 
   // 인증번호 6자리 완료 시 로직
   useEffect(() => {
-    const isComplete = code.length === 6 && code.split("").every((char) => char !== "");
-    if (isComplete && !isLoading && !error && (!isResending && hasInteractedAfterResend)) {
-      setIsLoading(true);
-      setError(false);
+    const isComplete = code.length === 6 && code.split("").every((c) => c);
+    if (!isComplete || isLoading || error || isResending) return;
 
-      const fullCode = code;
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError(false);
 
-      (async ()=> {
-        try{
-          { /* 인증번호 입력 완료 시 */ }
-          const isValid = fromLoginLog
-            ? await verifyLoginCode(email, fullCode)
-            : await verifySignupCode(email, fullCode);
-            
-          console.log("✅ 보내는 코드", fullCode, typeof fullCode);
+        const fullCode = code.replace(/\D/g, "").slice(0, 6);
+        const fullEmail = email.trim().toLowerCase();
 
+        // 검증 API 호출 (로그인/회원가입 분기 유지)
+        const resp: ApiEnvelope<AuthResult> = fromLoginLog
+          ? await verifyLoginCode(fullEmail, fullCode)
+          : await verifySignupCode(fullEmail, fullCode);
 
-          if (isValid) {
-            setIsLoading(false);
-            onComplete(); // 인증 성공
-          }
-          else {
-            setError(true); // 인증 실패
-            setIsLoading(false);
-            setCode(""); // 입력 초기화
-            inputRefs.current[0]?.focus(); // 다시 첫번째 입력창으로 포커스
-          }
+        if (!resp?.isSuccess || !resp?.result?.accessToken) {
+          throw new Error("유효하지 않은 코드");
         }
-        catch (err){
-          console.error("인증 실패", err);
-          setError(true);
-          setIsLoading(false);
-        }
-      })();
-    }
-  },[code, isLoading, error, isResending, hasInteractedAfterResend, fromLoginLog, email, onComplete]);
+
+        // 응답에서 토큰/유저정보 꺼내기
+        // 로그인 코드 검증 성공 후
+const {
+  accessToken,
+  refreshToken,
+  expiresInSec,
+  user: { email: respEmail, name, profileImageUrl },
+} = resp.result!;
+
+// 1) 헤더는 무조건 즉시 세팅 → 다음 페이지에서도 인증 유지
+axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+// 2) 저장은 autoLogin에 따라
+if (autoLogin) {
+  persistAuth(
+    {
+      accessToken,
+      refreshToken,
+      expiresInSec: expiresInSec ?? 7 * 24 * 60 * 60,
+      user: {
+        email: respEmail || fullEmail,
+        name: name || (respEmail || fullEmail).split("@")[0],
+        profileImageUrl,
+      },
+    },
+    7
+  );
+} else {
+  // 저장 안 하더라도 최소한 LoginLog 위해 userInfo 정도는 남겨도 OK (선택)
+  localStorage.setItem(
+    "userInfo",
+    JSON.stringify({
+      email: respEmail || fullEmail,
+      name: name || (respEmail || fullEmail).split("@")[0],
+      profileImageUrl,
+    })
+  );
+}
+
+
+        setIsLoading(false);
+        onComplete(); // 성공 시 다음 단계로 이동
+      } catch (e) {
+        console.error(e);
+        setIsLoading(false);
+        setError(true);
+        setCode("");
+        inputRefs.current[0]?.focus();
+      }
+    })();
+  }, [code, isLoading, error, isResending, autoLogin, fromLoginLog, email, onComplete]);
       
   const handleChange = (value: string, index: number) => {
     const digit = value.replace(/[^0-9]/g, "");
@@ -86,7 +121,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
     codeArray[index] = digit[0];
     const newCode = codeArray.join("");
     setCode(newCode);
-    setHasInteractedAfterResend(true); // 입력 후 재전송 여부 체크
 
     if (index < 5) {
       inputRefs.current[index + 1]?.focus();
@@ -118,7 +152,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
 
     if (pasted.length === 6) {
       setCode(pasted);
-      setHasInteractedAfterResend(true);;
     }
   };
  
@@ -133,12 +166,12 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
           else if (i === 3) rounded = "rounded-l-md";
           else if (i === 5) rounded = "rounded-r-md";
           
-
           return (
             <React.Fragment key={i}>
               <input
                 ref={setRef(i)}
                 type="text"
+                inputMode="numeric"
                 maxLength={1}
                 disabled={isLoading}
                 value={code[i] || ""}
