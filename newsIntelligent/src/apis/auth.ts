@@ -230,7 +230,7 @@ export const sendLoginCode = (
   isLogin: boolean,
   redirectBaseUrl?: string
 ) => {
-  const url = isLogin ? "/api/members/login/email" : "/api/members/signup/email";
+  const url = isLogin ? "/members/login/email" : "/api/members/signup/email";
   return axiosInstance.post(url, { email, redirectBaseUrl });
 };
 
@@ -239,7 +239,7 @@ export const verifyLoginCode = async (
   email: string,
   code: string
 ): Promise<ApiEnvelope<AuthResult>> => {
-  const { data } = await axiosInstance.post("/api/members/login/verify", { email, code });
+  const { data } = await axiosInstance.post("/members/login/verify", { email, code });
   const normalized = data?.result
     ? normalizeToAuthResult(data.result as ServerVerifyResult, email)
     : null;
@@ -257,7 +257,7 @@ export const verifySignupCode = async (
   email: string,
   code: string
 ): Promise<ApiEnvelope<AuthResult>> => {
-  const { data } = await axiosInstance.post("/api/members/signup/verify", { email, code });
+  const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
   const normalized = data?.result
     ? normalizeToAuthResult(data.result as ServerVerifyResult, email)
     : null;
