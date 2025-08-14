@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-
+import { axiosInstance } from '../api/axios'
 /** ───────────── 설정 ───────────── */
 const USE_DUMMY = true // ← 실제 API로 보려면 false로 바꿔
 
-// Access Token 하드코딩 (테스트용)
-const token =
-  'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
+// // Access Token 하드코딩 (테스트용)
+// const token =
+//   'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlNzQwNWE1My1kZDVkLTQ1OTctODc1Ny1hMmRiYTQ5NmM1MGYiLCJzdWIiOiJoZWVqdW5nX184MTE0QG5hdmVyLmNvbSIsImlkIjo2LCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzU1MTkyMjc5LCJleHAiOjE3NTUyMDY2Nzl9.QowigKFmDL5phMhA9aEoIXQZjM_f91mhZhAbPWWxNq0'
 
-/** 이 컴포넌트 전용 axios 인스턴스 (전역 axiosInstance 건드리지 않음) */
-const latestApi = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // 예: https://api.newsintelligent.site/api
-  headers: { Authorization: `Bearer ${token}` },
-})
+// /** 이 컴포넌트 전용 axios 인스턴스 (전역 axiosInstance 건드리지 않음) */
+// const latestApi = axiosInstance.create({
+//   baseURL: import.meta.env.VITE_API_BASE_URL, // 예: https://api.newsintelligent.site/api
+//   headers: { Authorization: `Bearer ${token}` },
+// })
 
 /** ───────────── 타입 ───────────── */
 type LatestItem = {
@@ -120,7 +119,7 @@ export default function UpdatesSidebar() {
         }
 
         // 실제 API 호출 (성공 스키마 기준)
-        const { data } = await latestApi.get('/topic/latest')
+        const { data } = await axiosInstance.get('/topic/latest')
         const result = data?.result
         if (!result) {
           setItems([])
