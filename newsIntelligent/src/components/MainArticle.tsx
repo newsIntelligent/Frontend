@@ -2,15 +2,14 @@ import SubscribeButton from "./SubscribeButton";
 
 type MainArticleCardProps = {
     id: number;
-    title: string;
-    content: string;
+    topicName: string;
+    aiSummary: string;
     imageUrl: string;
-    imageSource: string;
-    updatedAt: string;
-    idSub: boolean;
+    summaryTime: string;
   }
 
-function MainArticle({id, title, content, imageUrl, imageSource, updatedAt, idSub}: MainArticleCardProps) {
+function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArticleCardProps) {
+
     const formatTime = (iso: string) : string => {
         const time = new Date(iso);
         return time.toLocaleTimeString("ko-KR", {
@@ -33,18 +32,18 @@ function MainArticle({id, title, content, imageUrl, imageSource, updatedAt, idSu
                     />
                     <div className="flex flex-col gap-[16px]">
                         <div className="flex flex-col items-start justify-between gap-[12px]">
-                            <div className="text-4xl font-bold leading-[48px] w-[299px]">
-                                {title}
+                            <div className="text-4xl font-bold leading-[48px] w-[299px] line-clamp-2 overflow-hidden">
+                                {topicName}
                             </div>
-                            <SubscribeButton id={id} sub={idSub} size="large"/>
+                           <SubscribeButton id={id} size="large"/>  
                         </div>
                         <p className="w-[333px] text-[14px] font-normal leading-normal line-clamp-5">
-                        {content}
+                        {aiSummary}
                         </p>
                     </div>
                 </div>
-                <div className="w-full h-[20px] text-[10px] text-[#919191] pt-[6px]">이미지 · {imageSource}</div>
-                <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(updatedAt)}</div>
+                <div className="w-full h-[20px] text-[10px] text-[#919191] pt-[6px]">이미지 · {imageUrl}</div>
+                <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(summaryTime)}</div>
         </div>
     )
 }
