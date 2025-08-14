@@ -1,4 +1,4 @@
-import upSide from "../assets/upSide.svg";
+import upSide from "../public/UpArrow.svg";
 
 function ScrollButton() {
     const MoveToTop = () =>{

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import SearchBar from "./SearchBar";
 import HeaderAction from "./HeaderAction";
 import { useNavigate } from "react-router-dom";
-import smallLogo from "../assets/smallLogo.svg";
-import logo from "../assets/logo.svg";
+import smallLogo from "../public/SmallLogo.svg";
+import logo from "../public/HeaderLogo.svg";
 
 
 function Header() {

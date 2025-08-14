@@ -5,7 +5,7 @@ import useThrottle from "../hooks/useThrottle";
 import VectorIcon from "../assets/VectorIcon";
 import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
 import { useNavigate } from "react-router-dom";
-import notificationIcon from "../assets/notification.svg"
+import notificationIcon from "..\public\Notification.svg"
 
 
 
