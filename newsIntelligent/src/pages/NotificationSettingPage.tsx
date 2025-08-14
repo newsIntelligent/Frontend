@@ -4,9 +4,9 @@ import ToggleButton from '../components/ToggleButton';
 import SettingTime from '../components/SettingTime';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { patchSetSubscribeNotification, patchSetReadTopicNotification, patchSetDailyReport } from '../apis/members';
+import { patchSetSubscribeNotification, patchSetReadTopicNotification, patchSetDailyReport, getSetting } from '../apis/members';
 import { getMemberInfo } from '../apis/apis';
-import type { MemberInfo } from '../types/members';
+import type { MemberInfo, MemberSettingResponse } from '../types/members';
 
 const NotificationSettingPage = () => {
     const [nightAlarmButton, setNightAlarmButton] = useState(false);
@@ -87,6 +87,44 @@ const NotificationSettingPage = () => {
             setDailyReport(prev => !prev);
         }
     };
+
+    const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            setErrorMsg(null);
+            
+            try {
+                const response : MemberSettingResponse = await getSetting();
+                const { subscribeNotification, readTopicNotification, dailyReportSend } = response.result;
+        
+                if (!cancelled) {
+                    setSubscriptionAlarmButton(!!subscribeNotification);
+                    setChangeNotification(!!readTopicNotification);
+                    setDailyReport(!!dailyReportSend);
+                }
+
+            } catch (error) {
+                if (!cancelled) {
+                    setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+
+                    console.log(loading, errorMsg);
+                };
+
+                console.error('[SETTING] fetch failed:', error);
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        }
+    )();
+
+    return () => { cancelled = true; };
+}, []);
 
     return (
         <div className="">

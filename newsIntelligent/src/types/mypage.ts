@@ -27,3 +27,29 @@ export interface ReadTopics {
     message : string;
     result : Result;
 }
+
+export interface Content {
+    id : number;
+    title : string;
+    newsSummary : string;
+    newsLink : string;
+    publishDate : string;
+    press : string;
+    pressLogoUrl : string;
+}
+
+export interface ContentResult {
+    content : Content[];
+    totalCount : number;
+    lastId : number;
+    size : number;
+    hasNext : boolean;
+}
+
+export interface ContentResultResponse {
+    isSuccess : boolean;
+    status : string;
+    code : string;
+    message : string;
+    result : ContentResult;
+}
