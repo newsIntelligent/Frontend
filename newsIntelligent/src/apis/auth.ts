@@ -1,19 +1,34 @@
 import { axiosInstance } from "../api/axios";
 
-// 로그인 인증 코드 전송
-export const sendLoginCode = async (email: string): Promise<void> =>{
-    await axiosInstance.post("/login/email", {email});
+// 인증 코드 전송
+export const sendLoginCode = async (email: string, isLogin: boolean): Promise<void> =>{
+    const endpoint = isLogin ? "/api/members/login/email" : "/api/members/signup/email";
+    const response = await axiosInstance.post(endpoint, {email});
+    return response.data;
 };
 
 // 로그인 인증 코드 검증
-export const verifyLoginCode = async (
-    email: string,
-    code: string
-): Promise<boolean> => {
-    const response = await axiosInstance.post("/login/verify", {
+export const verifyLoginCode = async (email: string, code: string): Promise<boolean> => {
+    const response = await axiosInstance.post("/api/members/login/verify", {
         email,
         code,
     });
     
-    return response.data.isSuccess;
+    return response.data.Success;
+};
+
+// 회원가입 인증 코드 검증
+export const verifySignupCode = async (email : string, code : string) => {
+    const response = await axiosInstance.post("/api/members/signup/verify", {
+        email,
+        code,
+    });
+    return response.data.success;
+}
+
+// 코드 재요청
+export const resendMagicLink = async (email: string, isLogin: boolean) => {
+    const endpoint = isLogin ? "/api/members/login/magic" : "api/members/signup/magic";
+    const response = await axiosInstance.post(endpoint, {email});
+    return response.data;
 };

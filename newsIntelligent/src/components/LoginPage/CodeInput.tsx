@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import Loading from "./Loading";
-import { verifyLoginCode } from "../../apis/auth";
+import { verifyLoginCode, verifySignupCode } from "../../apis/auth";
 
 interface CodeInputProps {
   onComplete: () => void;
@@ -8,11 +8,12 @@ interface CodeInputProps {
   setAutoLogin:(value: boolean) =>void;
   isResending?: boolean;
   email: string;
+  fromLoginLog: boolean;
 }
 
-const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: CodeInputProps) => {
+const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog }: CodeInputProps) => {
   const inputRefs = useRef<HTMLInputElement[]>([]);
-  const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
+  const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
   const [hasInteractedAfterResend, setHasInteractedAfterResend] = useState(false);
@@ -33,23 +34,30 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
       setError(false);
       setIsLoading(false);
       setHasInteractedAfterResend(false);
-      setCode(["", "", "", "", "", ""]);
+      setCode("");
       inputRefs.current[0]?.focus();
     }    
   }, [isResending]);
 
   // 인증번호 6자리 완료 시 로직
   useEffect(() => {
-    const isComplete = code.every((char) => char !== "");
-    if (isComplete && !isLoading && !error && !isResending && hasInteractedAfterResend) {
+    const isComplete = code.length === 6 && code.split("").every((char) => char !== "");
+    if (isComplete && !isLoading && !error && (!isResending && hasInteractedAfterResend)) {
       setIsLoading(true);
       setError(false);
 
-      const fullCode = code.join("");
+      const fullCode = code;
 
       (async ()=> {
         try{
-          const isValid = await verifyLoginCode(email, fullCode);
+          { /* 인증번호 입력 완료 시 */ }
+          const isValid = fromLoginLog
+            ? await verifyLoginCode(email, fullCode)
+            : await verifySignupCode(email, fullCode);
+            
+          console.log("✅ 보내는 코드", fullCode, typeof fullCode);
+
+
           if (isValid) {
             setIsLoading(false);
             onComplete(); // 인증 성공
@@ -57,7 +65,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
           else {
             setError(true); // 인증 실패
             setIsLoading(false);
-            setCode(["", "", "", "", "", ""]); // 입력 초기화
+            setCode(""); // 입력 초기화
             inputRefs.current[0]?.focus(); // 다시 첫번째 입력창으로 포커스
           }
         }
@@ -68,14 +76,15 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
         }
       })();
     }
-  },[code]);
+  },[code, isLoading, error, isResending, hasInteractedAfterResend, fromLoginLog, email, onComplete]);
       
   const handleChange = (value: string, index: number) => {
-    const filtered = value.toUpperCase().replace(/[^0-9]/g, "");
-    if (!filtered) return;
+    const digit = value.replace(/[^0-9]/g, "");
+    if (!digit) return;
 
-    const newCode = [...code];
-    newCode[index] = filtered[0];
+    const codeArray = code.padEnd(6,"").split("");
+    codeArray[index] = digit[0];
+    const newCode = codeArray.join("");
     setCode(newCode);
     setHasInteractedAfterResend(true); // 입력 후 재전송 여부 체크
 
@@ -88,12 +97,14 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
     const { key } = e;
 
     if (key === "Backspace") {
-      if (code[index] === "") {
-        if (index > 0) inputRefs.current[index - 1]?.focus();
-      } else {
-        const newCode = [...code];
-        newCode[index] = "";
-        setCode(newCode);
+      const arr = code.padEnd(6, "").split("");
+      if (arr[index]) {
+        arr[index] = "";
+        setCode(arr.join(""));
+      } else if (index > 0) {
+        arr[index - 1] = "";
+        setCode(arr.join(""));
+        inputRefs.current[index - 1]?.focus();
       }
     }
 
@@ -103,15 +114,11 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("Text").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const pasted = e.clipboardData.getData("Text").replace(/[^0-9]/g, "").slice(0, 6);
 
     if (pasted.length === 6) {
-      const chars = pasted.split("").slice(0, 6);
-      setCode(chars);
-      setHasInteractedAfterResend(true);
-      chars.forEach((c, i) => {
-        if (inputRefs.current[i]) inputRefs.current[i]!.value = c;
-      });
+      setCode(pasted);
+      setHasInteractedAfterResend(true);;
     }
   };
  
@@ -125,6 +132,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
           else if (i === 2) rounded = "rounded-r-md";
           else if (i === 3) rounded = "rounded-l-md";
           else if (i === 5) rounded = "rounded-r-md";
+          
 
           return (
             <React.Fragment key={i}>
@@ -133,7 +141,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email }: 
                 type="text"
                 maxLength={1}
                 disabled={isLoading}
-                value={code[i]}
+                value={code[i] || ""}
                 onChange={(e) => handleChange(e.target.value, i)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
                 className={`w-[60px] h-[80px] border border-gray-400 text-center text-xl 
