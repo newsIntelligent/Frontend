@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import SearchBar from "./SearchBar";
 import HeaderAction from "./HeaderAction";
 import { useNavigate } from "react-router-dom";
-import smallLogo from "../public/SmallLogo.svg";
-import logo from "../public/HeaderLogo.svg";
-
 
 function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,14 +36,14 @@ function Header() {
   <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300">
     {isScrolled ? (
       <div className="flex justify-between items-center h-[60px]">
-        <img src={smallLogo} alt="Logo" className="w-[42px]" onClick={handleLogoClick}/>
+        <img src="/SmallLogo.svg" alt="Logo" className="w-[42px]" onClick={handleLogoClick}/>
         <SearchBar variant="default" />
         <HeaderAction />
       </div>
     ) : (
       <>
         <div className="flex justify-between items-center h-[70px]">
-          <img src={logo} alt="Logo" className="w-[456px] h-[70px]" onClick={handleLogoClick}/>
+          <img src="/HeaderLogo.svg" alt="Logo" className="w-[456px] h-[70px]" onClick={handleLogoClick}/>
           <SearchBar variant="default" />
         </div>
 

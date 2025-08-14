@@ -7,6 +7,7 @@ import useThrottle from "../hooks/useThrottle";
 import { fetchMockArticles } from "../api/fetchMockArticles";
 import SkeletonCard from "../components/SkeletonCard";
 import UpdatesSidebar from "../components/UpdatesSideBar";
+import { topicHome } from "../api/topic";
 
 
 function MainPage() {
@@ -29,10 +30,13 @@ function MainPage() {
         hasNextPage,
         isFetchingNextPage,
       } = useInfiniteQuery({
-        queryKey: ['articles'],
-        queryFn: fetchMockArticles,
-        initialPageParam: 1, 
-        getNextPageParam: (lastPage) => lastPage.nextPage, 
+        queryKey: ['articles', 10],
+        initialPageParam: 0,
+        queryFn: ({ pageParam = 0 }) => topicHome(pageParam, 10),
+        getNextPageParam: (lastPage) => {
+          const nextCursor = lastPage?.result;
+          return nextCursor && nextCursor.hasNext? nextCursor.cursor : undefined;
+        }
       });
       
       const { ref, inView } = useInView({

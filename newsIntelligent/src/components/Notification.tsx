@@ -5,10 +5,6 @@ import useThrottle from "../hooks/useThrottle";
 import VectorIcon from "../assets/VectorIcon";
 import { checkAllNotification, checkNotification, getNotification } from "../api/notification";
 import { useNavigate } from "react-router-dom";
-import notificationIcon from "..\public\Notification.svg"
-
-
-
 
 function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, setNotification: (value: boolean) => void, onClose?: () => void }) {
   const [visible, setVisible] = useState(false);
@@ -41,7 +37,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     const notifications = data?.pages.flatMap((p) => p?.result?.notifications ?? []) ?? [];
 
   useEffect(() => {
-    const hasUnread = notifications.some((item) => !item.is_checked);
+    const hasUnread = notifications.some((item) => !item.isChecked);
     setNotification(hasUnread)
     setNewNotification(hasUnread);
   }, [data])
@@ -125,7 +121,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     >
       <div className="flex justify-between items-center px-4 py-2 text-sm font-semibold  text-[#919191]">
         { newNotification 
-          ? <span>새로운 알림 <span className="text-[#0B8E8E]">{notifications.filter((ele)=>!ele.is_checked).length}</span>개</span>
+          ? <span>새로운 알림 <span className="text-[#0B8E8E]">{notifications.filter((ele)=>!ele.isChecked).length}</span>개</span>
           : <span>알림</span>}
         <div className="flex justify-between gap-6">
         <button 
@@ -139,20 +135,23 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
       { notifications.length > 0
       //알림이 있는 경우
         ? <ul className="overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        {notifications.map ((item) => (
+        {notifications.map ((item, index) => (
            <li 
-            key={item.noti_id} 
+            key={index} 
             className="flex justify-between h-11 gap-3 px-[12px] py-[6px] border-b border-b-[#E6E6E6]"
-            onClick={() => handleCheck(item.noti_id)}>
+            onClick={() => handleCheck(index)}>
              <div className="flex justify-start items-center gap-2.5">
                <div className={`w-14 h-5 px2.5 rounded-[20px] text-xs  text-center font-semibold
-                  ${item.is_checked ? 'bg-[#F5F5F5] text-[#777777]':'bg-[#0EA6C01A] text-[#0B8E8E]'} `}> 
-                    {item.noti_type === "SUBSCRIBE" ? '구독' : '토픽'} </div>
-               <div className={`justify-center text-sm ${item.is_checked ? 'text-[#777777]':'text-black'}`}>
+                  ${item.isChecked ? 'bg-[#F5F5F5] text-[#777777]':'bg-[#0EA6C01A] text-[#0B8E8E]'} `}> 
+                    {item.type === "SUBSCRIBED" ? '구독' : '읽은기사'} </div>
+                <div className="flex flex-col justify-center text-sm w-[305px] h-[42px] ">
+                  {item.type === "READ_TOPIC" && <div className="text-xs text-[#777777]">읽은 기사에 새로운 업데이트가 있습니다.</div>}
+                <div className={`justify-center text-sm w-[305px] line-clamp-1 ${item.isChecked ? 'text-[#777777]':'text-black'}`}>
                {highlightQuotedText(item.content)}
                </div>
+                </div>
              </div>
-             <div className={`w-8 text-right justify-center text-500 text-xs whitespace-nowrap ${item.is_checked ? 'text-[#777777]':'text-black'}`}>{formatTime(item.created_at)}</div>
+             <div className={`w-8 text-right justify-center text-500 text-xs whitespace-nowrap ${item.isChecked ? 'text-[#777777]':'text-black'}`}>{formatTime(item.createdAt)}</div>
              </li>
         ))}
         <div ref={ref} />
@@ -160,12 +159,13 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
       : 
       //알림이 없는 경우 
       <div className="flex flex-col items-center justify-center h-full gap-[40px]">
-          <img src={notificationIcon} alt="notification" className="w-[80px]"/>
+          <img src="Notification.svg" alt="notification" className="w-[80px]"/>
           <div className="flex flex-col gap-[8px] items-center text-center">
             <p className="text-[#0EA6C0] text-[16px] font-semibold">여기에 알림이 표시됩니다.</p>
             <p className="text-[#919191] text-[14px] font-medium leading-[18px]">토픽을 구독하거나 키워드를 설정하여 <br/>
                업데이트 알림을 받아보세요.</p>
           </div>
+
       </div>
       }
       

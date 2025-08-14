@@ -17,7 +17,7 @@ export const getNotification = async ({ cursor, size = 10 }: { cursor?: string, 
   };
 export const checkNotification = async (notificationID:number) => {
     try{
-        const {data} = await axiosInstance.patch(`/${notificationID}/check`)
+        const {data} = await axiosInstance.patch(`/notification/${notificationID}/check`)
         return data;
     } catch (error) {
         console.log("알람 읽음 처리 오류", error)
