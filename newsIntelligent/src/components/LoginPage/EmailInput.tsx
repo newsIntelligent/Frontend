@@ -33,7 +33,7 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
 
   const handleLocalEmailChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
     const value = e.target.value;
-    const filtered = value.replace(/[^a-zA-Z0-9]/g,"");  //영어로 제한
+    const filtered = value.replace(/[^a-zA-Z0-9]/g,"");  //영어, 숫자로 제한
     setLocalEmail(filtered);
   };
 

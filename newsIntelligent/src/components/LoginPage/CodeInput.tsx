@@ -9,14 +9,16 @@ interface CodeInputProps {
   isResending?: boolean;
   email: string;
   fromLoginLog: boolean;
+  verifyFn?: (email: string, code: string) => Promise<boolean>;
 }
 
-const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog }: CodeInputProps) => {
+type VerifyResponse = {isSuccess: boolean};
+
+const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog, verifyFn }: CodeInputProps) => {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [hasInteractedAfterResend, setHasInteractedAfterResend] = useState(false);
 
   // input 배열형 ref 설정 함수
   const setRef = (index: number) => (el: HTMLInputElement | null) => {
@@ -33,7 +35,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
     if (isResending){
       setError(false);
       setIsLoading(false);
-      setHasInteractedAfterResend(false);
       setCode("");
       inputRefs.current[0]?.focus();
     }    
@@ -42,41 +43,49 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
   // 인증번호 6자리 완료 시 로직
   useEffect(() => {
     const isComplete = code.length === 6 && code.split("").every((char) => char !== "");
-    if (isComplete && !isLoading && !error && (!isResending && hasInteractedAfterResend)) {
+    if (isComplete && !isLoading && !error && !isResending) {
       setIsLoading(true);
       setError(false);
 
-      const fullCode = code;
+      const fullCode = code.replace(/\D/g,"").slice(0,6);
+      const fullEmail = email.trim().toLowerCase();
 
       (async ()=> {
         try{
           { /* 인증번호 입력 완료 시 */ }
-          const isValid = fromLoginLog
-            ? await verifyLoginCode(email, fullCode)
-            : await verifySignupCode(email, fullCode);
+          const isValid = verifyFn
+            ? await verifyFn(fullEmail, fullCode)
+            : (fromLoginLog
+              ? await verifyLoginCode(fullEmail, fullCode)
+              : await verifySignupCode(fullEmail, fullCode));
             
-          console.log("✅ 보내는 코드", fullCode, typeof fullCode);
+          const ok =
+            isValid === true ||
+            (typeof isValid === "object" && (isValid as VerifyResponse)?.isSuccess === true);
+
+          console.log("🔎 verify payload", { email: fullEmail, code: fullCode }, "→ ok:", ok);
 
 
-          if (isValid) {
+          if (ok) {
             setIsLoading(false);
             onComplete(); // 인증 성공
           }
           else {
-            setError(true); // 인증 실패
-            setIsLoading(false);
-            setCode(""); // 입력 초기화
-            inputRefs.current[0]?.focus(); // 다시 첫번째 입력창으로 포커스
+            setCode("");
+            inputRefs.current[0]?.focus();
+            throw new Error("유효하지 않은 코드")
           }
         }
         catch (err){
           console.error("인증 실패", err);
           setError(true);
           setIsLoading(false);
+          setCode("");
+          inputRefs.current[0]?.focus(); // 다시 첫번째 칸으로 포커스 이동
         }
       })();
     }
-  },[code, isLoading, error, isResending, hasInteractedAfterResend, fromLoginLog, email, onComplete]);
+  },[code, isLoading, error, isResending, fromLoginLog, email, onComplete, verifyFn]);
       
   const handleChange = (value: string, index: number) => {
     const digit = value.replace(/[^0-9]/g, "");
@@ -86,7 +95,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
     codeArray[index] = digit[0];
     const newCode = codeArray.join("");
     setCode(newCode);
-    setHasInteractedAfterResend(true); // 입력 후 재전송 여부 체크
+
 
     if (index < 5) {
       inputRefs.current[index + 1]?.focus();
@@ -118,7 +127,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
 
     if (pasted.length === 6) {
       setCode(pasted);
-      setHasInteractedAfterResend(true);;
     }
   };
  
@@ -139,6 +147,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
               <input
                 ref={setRef(i)}
                 type="text"
+                inputMode="numeric"
                 maxLength={1}
                 disabled={isLoading}
                 value={code[i] || ""}

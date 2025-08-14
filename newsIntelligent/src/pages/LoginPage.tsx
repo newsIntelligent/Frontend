@@ -5,6 +5,7 @@ import CodeInput from "../components/LoginPage/CodeInput";
 import LeftSection from "../components/LoginPage/LeftSection";
 import LoginComplete from "../components/LoginPage/LoginComplete";
 import { sendLoginCode, resendMagicLink } from "../apis/auth";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [step, setStep] = useState<"email" | "verify" | "complete">("email");
@@ -13,6 +14,7 @@ const LoginPage = () => {
   const [fromLoginLog, setFromLoginLog] = useState(false);
   const [hasLoginHistory, setHasLoginHistory] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false); // 자동로그인 관리
+  const navigate = useNavigate();
   
   // 인증 코드 재전송 관련
   const [resendCount, setResendCount] = useState(0);
@@ -25,7 +27,7 @@ const LoginPage = () => {
 
     try{
       const parsed = JSON.parse(userInfo || "{}");
-      if (!parsed.eamil || !parsed.name){
+      if (!parsed.email || !parsed.name){
           setHasLoginHistory(false);
       }
       else{
@@ -40,7 +42,7 @@ const LoginPage = () => {
 
   // 새 코드 요청
   const handleResendCode = async () => {
-    if (resendCount >= MAX_RESEND) return;
+    if (!email || isResending || resendCount >= MAX_RESEND) return;
 
     setIsResending(true);
   
@@ -88,7 +90,7 @@ const LoginPage = () => {
 
       case "verify":
         return <CodeInput 
-                  onComplete={()=> setStep("complete")}
+                  onComplete={()=> navigate("/MainPage")}
                   autoLogin={autoLogin}
                   setAutoLogin={setAutoLogin}
                   isResending={isResending}
@@ -115,6 +117,7 @@ const LoginPage = () => {
               onResendCode={handleResendCode}
               resendCount={resendCount}
               maxResend={MAX_RESEND}
+              onBackLabelClick={()=>setStep("email")}
             />
             <div className="w-1/2 flex items-center justify-center">
               {renderRightSection()}
