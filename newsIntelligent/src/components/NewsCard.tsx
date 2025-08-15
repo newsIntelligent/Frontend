@@ -159,7 +159,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} sub={isSubscribed} />
+                <SubscribeButton id={data.id} />
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -251,7 +251,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} sub={isSubscribed} />
+                <SubscribeButton id={data.id} />
                 </div>
 
                 <div className="flex flex-col gap-4">
