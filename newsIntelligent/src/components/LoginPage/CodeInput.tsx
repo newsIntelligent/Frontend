@@ -73,32 +73,22 @@ const {
 // 1) 헤더는 무조건 즉시 세팅 → 다음 페이지에서도 인증 유지
 axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-// 2) 저장은 autoLogin에 따라
-if (autoLogin) {
-  persistAuth(
-    {
-      accessToken,
-      refreshToken,
-      expiresInSec: expiresInSec ?? 7 * 24 * 60 * 60,
-      user: {
-        email: respEmail || fullEmail,
-        name: name || (respEmail || fullEmail).split("@")[0],
-        profileImageUrl,
-      },
-    },
-    7
-  );
-} else {
-  // 저장 안 하더라도 최소한 LoginLog 위해 userInfo 정도는 남겨도 OK (선택)
-  localStorage.setItem(
-    "userInfo",
-    JSON.stringify({
+// 2) 토큰 저장 - 자동로그인 체크 여부와 관계없이 항상 저장
+// autoLogin이 true면 7일, false면 세션 종료 시까지 유지
+const rememberDays = autoLogin ? 7 : 1; // 1일로 설정 (브라우저 세션과 유사)
+persistAuth(
+  {
+    accessToken,
+    refreshToken,
+    expiresInSec: expiresInSec ?? rememberDays * 24 * 60 * 60,
+    user: {
       email: respEmail || fullEmail,
       name: name || (respEmail || fullEmail).split("@")[0],
       profileImageUrl,
-    })
-  );
-}
+    },
+  },
+  rememberDays
+);
 
 
         setIsLoading(false);
@@ -156,35 +146,37 @@ if (autoLogin) {
   };
  
   return (
-    <div className="flex flex-col gap-4 w-[499px]">
+    <div className="flex flex-col gap-4 w-full max-w-[499px]">
       {/* 코드 입력 */}
-      <div onPaste={handlePaste}>
-        {[...Array(6)].map((_, i) => {
-          let rounded = "";
-          if (i === 0) rounded = "rounded-l-md";
-          else if (i === 2) rounded = "rounded-r-md";
-          else if (i === 3) rounded = "rounded-l-md";
-          else if (i === 5) rounded = "rounded-r-md";
-          
-          return (
-            <React.Fragment key={i}>
-              <input
-                ref={setRef(i)}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                disabled={isLoading}
-                value={code[i] || ""}
-                onChange={(e) => handleChange(e.target.value, i)}
-                onKeyDown={(e) => handleKeyDown(e, i)}
-                className={`w-[60px] h-[80px] border border-gray-400 text-center text-xl 
-                  focus:outline-none focus:ring-2 focus:ring-[#0EA6C0] ${rounded} 
-                  ${isLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              />
-              {i === 2 && <span className="text-2xl"> - </span>}
-            </React.Fragment>
-          );
-        })}
+      <div onPaste={handlePaste} className="flex justify-center">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {[...Array(6)].map((_, i) => {
+            let rounded = "";
+            if (i === 0) rounded = "rounded-l-md";
+            else if (i === 2) rounded = "rounded-r-md";
+            else if (i === 3) rounded = "rounded-l-md";
+            else if (i === 5) rounded = "rounded-r-md";
+            
+            return (
+              <React.Fragment key={i}>
+                <input
+                  ref={setRef(i)}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  disabled={isLoading}
+                  value={code[i] || ""}
+                  onChange={(e) => handleChange(e.target.value, i)}
+                  onKeyDown={(e) => handleKeyDown(e, i)}
+                  className={`w-[50px] sm:w-[60px] h-[60px] sm:h-[80px] border border-gray-400 text-center text-lg sm:text-xl 
+                    focus:outline-none focus:ring-2 focus:ring-[#0EA6C0] ${rounded} 
+                    ${isLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                />
+                {i === 2 && <span className="text-xl sm:text-2xl"> - </span>}
+              </React.Fragment>
+            );
+          })}
+        </div>
       </div>
 
       {/* 자동 로그인 상태 표시 */}

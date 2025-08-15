@@ -171,11 +171,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="w-screen h-screen bg-[#DEF0F0] flex items-center justify-center overflow-hidden relative">
+    <div className="min-h-screen bg-[#DEF0F0] flex items-center justify-center p-4 relative">
       {/* 로그인 카드 영역 */}
       {step !== "complete" && (
-        <div className="w-[1440px] h-[1024px] bg-[#DEF0F0] flex items-center justify-center">
-          <div className="w-[1160px] h-[640px] bg-white rounded-[16px] shadow-md px-12 py-10 flex">
+        <div className="w-full max-w-[1440px] min-h-[600px] lg:min-h-[1024px] bg-[#DEF0F0] flex items-center justify-center">
+          <div className="w-full max-w-[1160px] min-h-[500px] lg:h-[640px] bg-white rounded-[16px] shadow-md p-6 lg:px-12 lg:py-10 flex flex-col lg:flex-row">
             <LeftSection
               step={step}
               userName={userName}
@@ -186,7 +186,7 @@ const LoginPage = () => {
               maxResend={MAX_RESEND}
               onBackLabelClick={()=>setStep("email")}
             />
-            <div className="w-1/2 flex items-center justify-center">
+            <div className="w-full lg:w-1/2 flex items-center justify-center mt-8 lg:mt-0">
               {renderRightSection()}
             </div>
           </div>

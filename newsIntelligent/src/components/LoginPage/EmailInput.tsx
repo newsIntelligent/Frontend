@@ -76,9 +76,9 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
   }, []);
 
   return (
-    <div className="w-[500px]">
+    <div className="w-full max-w-[500px]">
       {/* 입력폼 */}
-      <div className="flex sm:mt-4 gap-2 mb-3">
+      <div className="flex flex-col sm:flex-row sm:mt-4 gap-2 mb-3">
         {/* 로컬 파트 입력 */}
         <div className="relative w-full sm:w-[240px]">
           <input
@@ -98,7 +98,7 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
           )}
         </div>
 
-        <span className="self-center">@</span>
+        <span className="self-center text-center">@</span>
 
         {/* 직접입력 또는 도메인 선택 */}
         <div className="relative w-full sm:w-[240px]" ref={domainRef}>

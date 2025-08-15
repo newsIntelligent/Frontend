@@ -33,8 +33,8 @@ export const getKeywordTopic = async (keyword : string, cursor : number, size : 
 }
 
 export const getTopicRelated = async (topicId : number, lastId : number, size : number = 3) => {
-    const response = await axiosInstance.get(`/topic/{topicId}/related`, {
-        params : {topicId, lastId, size},
+    const response = await axiosInstance.get(`/topics/${topicId}/related`, {
+        params : {lastId, size},
     })
 
     return response.data;
