@@ -96,7 +96,7 @@ const SubscriptionPage = () => {
 
                     <div className="columns-2 [column-gap:1.3rem] space-y-5">
                         {newsList.map((item, idx) => (
-                            <NewsCard key={(item as any).id ?? idx} data={item} />
+                            <NewsCard key={(item as any).id ?? idx} data={item} sub={true}/>
                         ))}
 
                         {isLoading && (

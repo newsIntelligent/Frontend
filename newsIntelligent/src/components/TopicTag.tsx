@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import XIcon from "../assets/XIcon";
 import PlusIcon from "../assets/PlusIcon";
+import { useLocation } from "react-router-dom";
 
 function TopicTag({selectedTag}: {selectedTag: (tag: string | null) => void}) {
     const [tagSelected, setTagSelected] = useState(true);
+    const location = useLocation();
 
     useEffect(() => {
         selectedTag('경제'); 

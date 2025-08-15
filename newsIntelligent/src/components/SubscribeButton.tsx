@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { topicSubscribe, topicUnsubscribe } from "../api/topic";
 import { useMutation } from "@tanstack/react-query";
 type SubscribeButtonProps = {
@@ -10,6 +10,9 @@ type SubscribeButtonProps = {
 function SubscribeButton({id, size = "default", subscribe = false}: SubscribeButtonProps) {
     const [sub, setSub] = useState(subscribe); // 구독 상태 관리
     
+    useEffect(() => {
+        setSub(subscribe);
+    }, [subscribe]);
     const toggleSubscribe = useMutation ({
       mutationFn: async (next: boolean) => {
         return next? topicSubscribe(id) : topicUnsubscribe(id);
