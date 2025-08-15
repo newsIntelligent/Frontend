@@ -108,8 +108,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
         gcTime: 300000,
     });
 
-    const { data: subscriptionIds } = useSubscriptionIds();
-    const isSubscribed = !!subscriptionIds && subscriptionIds.has(data.id);
+    useSubscriptionIds();
 
     const relatedList = useMemo(() => {
         const raw =
@@ -159,7 +158,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} sub={isSubscribed} />
+                <SubscribeButton id={data.id} />
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -251,7 +250,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} sub={isSubscribed} />
+                <SubscribeButton id={data.id} />
                 </div>
 
                 <div className="flex flex-col gap-4">
