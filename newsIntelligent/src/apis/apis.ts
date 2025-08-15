@@ -1,34 +1,20 @@
 import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
 import { axiosInstance } from '../api/axios';
 
-const token = import.meta.env.VITE_API_TOKEN;
-
 export const getMemberInfo = async () : Promise<MemberInfoResponse> => {
-    const response = await axiosInstance.get(`/api/members/info`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.get(`/members/info`);
 
     return response.data;
 }
 
 export const patchNickname = async (nickname : string) => {
-    const response = await axiosInstance.patch(`/api/members/nickname`, {nickname}, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.patch(`/members/nickname`, {nickname});
 
     return response.data;
 }
 
 export const getNicknameAvailability = async (nickname : string) : Promise<NicknameAvailabilityResponse> => {
-    const response = await axiosInstance.get(`/api/members/nickname-availability`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/members/nickname-availability`, {
         params : {nickname},
     });
 
@@ -36,41 +22,25 @@ export const getNicknameAvailability = async (nickname : string) : Promise<Nickn
 }
 
 export const postEmailCode = async (newEmail : string) => {
-    const response = await axiosInstance.patch(`/api/members/notification-email/change`, {newEmail}, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.patch(`/members/notification-email/change`, {newEmail});
 
     return response.data;
 }
 
 export const postEmailCodeCheck = async (newEmail : string, code : string) => {
-    const response = await axiosInstance.patch(`/api/members/notification-email/verify`, {newEmail, code}, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.patch(`/members/notification-email/verify`, {newEmail, code});
 
     return response.data;
 }
 
 export const signout = async () => {
-    const response = await axiosInstance.post(`/api/members/logout`, null, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.post(`/members/logout`, null);
 
     return response.data;
 }
 
 export const deleteId = async () => {
-    const response = await axiosInstance.delete(`/api/members/withdraw`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const response = await axiosInstance.delete(`/members/withdraw`);
 
     return response.data;
 }

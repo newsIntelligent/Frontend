@@ -1,13 +1,7 @@
 import { axiosInstance } from "../api/axios";
 
-const token = import.meta.env.VITE_API_TOKEN;
-
 export const getTopics = async (keyword : string, cursor : number, size : number = 10) => {
-    const response = await axiosInstance.get(`/api/topics/search`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/topics/search`, {
         params : {keyword, cursor, size},
     });
 
@@ -15,11 +9,7 @@ export const getTopics = async (keyword : string, cursor : number, size : number
 }
 
 export const getSubscriptions = async (cursor : number, size : number = 10) => {
-    const response = await axiosInstance.get(`/api/mypage/subscriptions`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/mypage/subscriptions`, {
         params : {cursor, size},
     });
 
@@ -27,11 +17,7 @@ export const getSubscriptions = async (cursor : number, size : number = 10) => {
 }
 
 export const getReadTopic = async (cursor: number, size: number = 10) => {
-    const response = await axiosInstance.get(`/api/mypage/read-topics`, { 
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/mypage/read-topics`, { 
         params : {cursor, size},
     });
         
@@ -39,11 +25,7 @@ export const getReadTopic = async (cursor: number, size: number = 10) => {
 };
 
 export const getKeywordTopic = async (keyword : string, cursor : number, size : number = 10) => {
-    const response = await axiosInstance.get(`/api/mypage/read-topic`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/mypage/read-topic`, {
         params : {keyword, cursor, size},
     });
 
@@ -51,11 +33,7 @@ export const getKeywordTopic = async (keyword : string, cursor : number, size : 
 }
 
 export const getTopicRelated = async (topicId : number, lastId : number, size : number = 3) => {
-    const response = await axiosInstance.get(`/api/topic/{topicId}/related`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-
+    const response = await axiosInstance.get(`/topic/{topicId}/related`, {
         params : {topicId, lastId, size},
     })
 
