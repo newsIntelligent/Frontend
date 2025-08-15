@@ -51,6 +51,7 @@ const EmailChangePage = () => {
                     setAutoLogin={()=>{}}
                     isResending={isResending}
                     fromLoginLog={false}
+                    setFromLoginLog={()=>{}}
                     verifyFn={async (email, code)=>{
                         try{
                             await verifyEmailChangeCode(email, code);

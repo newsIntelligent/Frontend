@@ -21,10 +21,18 @@ export const getNicknameAvailability = async (nickname : string) : Promise<Nickn
     return response.data;
 }
 
-export const postEmailCode = async (newEmail : string) => {
-    const response = await axiosInstance.patch(`/members/notification-email/change`, {newEmail});
-
-    return response.data;
+export const postEmailCode = async (newEmail: string) => {
+    if (!newEmail || !newEmail.includes('@')) {
+        throw new Error('Invalid email format');
+    }
+    
+    try {
+        const response = await axiosInstance.patch('/members/notification-email/change', { newEmail });
+        return response.data;
+    } catch (error) {
+        console.error('Failed to send email code:', error);
+        throw error;
+    }
 }
 
 export const postEmailCodeCheck = async (newEmail : string, code : string) => {
