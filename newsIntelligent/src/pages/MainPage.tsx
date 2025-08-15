@@ -39,7 +39,7 @@ function MainPage() {
         }
       });
 
-      const items = data?.pages.flatMap(p => p.result.topics ?? []) ?? [];4
+      const items = data?.pages.flatMap(p => p.result.topics ?? []) ?? [];
       const [main, ...list] = items;
       
       const { ref, inView } = useInView({
@@ -85,9 +85,8 @@ return (
                     </>
                   )}
                 </div>
-    
-  </div>
-  
+
+      </div>
 
 )
 }
