@@ -64,7 +64,7 @@ const SettingPage = () => {
 
                         <div className="flex flex-1 items-center justify-center mt-6 mb-12 w-[499px] h-[88px] border border-gray-200 rounded-md pl-[16px] pr-[16px]">
                             <img
-                                src=""
+                                src="/Logo.svg"
                                 alt="프로필"
                                 className="items-center w-[40px] h-[40px] rounded-full"
                             />
