@@ -24,7 +24,7 @@ function FeedBack() {
     const [tag, setTag] = useState<string | null>(null);
 
     const sending = useMutation ({
-        mutationFn: async() => {postFeedback()},
+        mutationFn: async() => postFeedback(),
         onMutate: () => {
             setMessage(prevMessages => [
                 ...prevMessages,

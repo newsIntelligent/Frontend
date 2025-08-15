@@ -141,7 +141,7 @@ const ArticlePage = () => {
 
             <div className="mb-4">
               {/* ↓↓↓ 필수 prop: id 추가 */}
-              <SubscribeButton id={article.id} sub={false} size="large" />
+              <SubscribeButton id={article.id} subscribe={false} size="large" />
             </div>
 
             {article.imageUrl && (
