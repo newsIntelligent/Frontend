@@ -58,7 +58,7 @@ function MainPage() {
 
 
 if (isLoading) return 
-if (error) return <p>에러가 발생했습니다.</p>;
+if (error) return <div className="flex items-center justify-center">에러가 발생했습니다.</div>;
 if (!data) return null;
 
 return (
@@ -87,6 +87,7 @@ return (
                 </div>
     
   </div>
+  
 
 )
 }

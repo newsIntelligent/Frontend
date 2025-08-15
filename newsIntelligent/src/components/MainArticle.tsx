@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { createSearchParams, useNavigate } from "react-router-dom";
 import { topicRead } from "../api/topic";
 import SubscribeButton from "./SubscribeButton";
 
@@ -23,10 +23,14 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
         })
     }
 
-    const navigate = useNavigate(); //희정 님이랑 이야기 해서 id어떻게 넘겨줄지  mainArticleCard도 똑같이 
+    const navigate = useNavigate();
+
     const handleClick = () => {
-      topicRead(id);
-      navigate("/article");
+        topicRead(id);
+        navigate({
+            pathname: "/article",
+            search: `?${createSearchParams({ id: String(id) })}`,
+        })
     }
 
     return(
