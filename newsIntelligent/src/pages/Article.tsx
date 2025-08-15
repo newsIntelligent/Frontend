@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import UpdatesSidebar from '../components/UpdatesSideBar'
 import SubscribeButton from '../components/SubscribeButton'
 import { axiosInstance } from '../api/axios' // 경로 확인
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 type Topic = {
   id: number
