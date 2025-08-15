@@ -33,6 +33,6 @@ export const getSetting = async () : Promise<MemberSettingResponse> => {
 
 export const deleteSettingTime = async (timeId : number) => {
     const response = await axiosInstance.delete(`/members/setting/time/${timeId}`);
-
+    
     return response.data;
 }
