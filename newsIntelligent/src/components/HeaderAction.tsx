@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Notification from "./Notification";
 import BellIcon from "../assets/BellIcon";
 import ProfileIcon from "../assets/ProfileIcon";
 import { useNavigate } from "react-router-dom";
+import LoginAlertModal from "./LoginAlertModal";
+
+function getAccessTokenFromStorage() {
+  const token = localStorage.getItem("accessToken");
+  if (token) return token;
+}
+
 
 function HeaderAction() {
     const [openNotification, setOpenNotification] = useState(false); //알림창 열기
@@ -26,7 +33,19 @@ function HeaderAction() {
       navigation('/subscriptions'); //프로필 클릭 시 설정 페이지로 이동
     }
 
+    useEffect(() => {
+      const token = getAccessTokenFromStorage();
+      if (!token) {
+        setIsLogin(false); // 로그인 상태가 아니면 false로 설정
+      }
+      setOpenNotification(false); // 컴포넌트 마운트 시 알림창 닫기
+    }, [])
     
+    useEffect(() => {
+      if (showNotification && !isLogin) {
+        setOpenNotification(false); // 로그인 아니면 알림창 닫기
+      }
+    }, [showNotification, isLogin]);
 
     return(
         <div className={`flex  justify-between h-[40px]} gap-[28px]
@@ -38,8 +57,11 @@ function HeaderAction() {
                           ${openNotification? 'bg-[#0EBEBE1F] rounded-[20px]':''}`} 
                         onClick={handleBellClick}/>
                     {newNotification && <span className="absolute top-[2px] right-[1px] w-[12px] h-[12px] bg-[#0B8E8E] rounded-full"/>}
-                    {showNotification && (
+                    {showNotification && isLogin &&  (
                       <Notification isOpen={openNotification} setNotification={setNewNotification} onClose={handleNotificationClose}/>
+                    )}
+                    {showNotification && !isLogin && (
+                      <LoginAlertModal />
                     )}
                   </div>
                   { isLogin 

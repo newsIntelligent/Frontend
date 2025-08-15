@@ -2,10 +2,6 @@ import { axiosInstance } from "../api/axios";
 
 export const getTopics = async (keyword : string, cursor : number, size : number = 10) => {
     const response = await axiosInstance.get(`/topics/search`, {
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
         params : {keyword, cursor, size},
     });
 
@@ -14,10 +10,6 @@ export const getTopics = async (keyword : string, cursor : number, size : number
 
 export const getSubscriptions = async (cursor : number, size : number = 10) => {
     const response = await axiosInstance.get(`/mypage/subscriptions`, {
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
         params : {cursor, size},
     });
 
@@ -26,10 +18,6 @@ export const getSubscriptions = async (cursor : number, size : number = 10) => {
 
 export const getReadTopic = async (cursor: number, size: number = 10) => {
     const response = await axiosInstance.get(`/mypage/read-topics`, { 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
         params : {cursor, size},
     });
         
@@ -38,11 +26,8 @@ export const getReadTopic = async (cursor: number, size: number = 10) => {
 
 export const getKeywordTopic = async (keyword : string, cursor : number, size : number = 10) => {
     const response = await axiosInstance.get(`/mypage/read-topic`, {
-<<<<<<< Updated upstream
-=======
 
 
->>>>>>> Stashed changes
         params : {keyword, cursor, size},
     });
 
@@ -50,12 +35,8 @@ export const getKeywordTopic = async (keyword : string, cursor : number, size : 
 }
 
 export const getTopicRelated = async (topicId : number, lastId : number, size : number = 3) => {
-<<<<<<< Updated upstream
-    const response = await axiosInstance.get(`/topic/${topicId}/related`, {
-=======
     const response = await axiosInstance.get(`/topic/{topicId}/related`, {
 
->>>>>>> Stashed changes
         params : {topicId, lastId, size},
     })
 

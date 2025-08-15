@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import Loading from "./Loading";
-import { persistAuth, verifyLoginCode, verifySignupCode, type ApiEnvelope, type AuthResult } from '../../apis/auth';
+import { persistAuth, sendLoginCode, verifyLoginCode, verifySignupCode, type AuthResult } from '../../apis/auth';
 import { axiosInstance } from "../../api/axios";
 
 interface CodeInputProps {
@@ -11,9 +11,10 @@ interface CodeInputProps {
   email: string;
   fromLoginLog: boolean;
   verifyFn?: (email: string, code: string) => Promise<boolean>;
+  setFromLoginLog?: (v: boolean)=> void;
 }
 
-const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog }: CodeInputProps) => {
+const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog, verifyFn, setFromLoginLog }: CodeInputProps) => {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -52,53 +53,74 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
         const fullCode = code.replace(/\D/g, "").slice(0, 6);
         const fullEmail = email.trim().toLowerCase();
 
+        // verifyFn이 주어지면(이메일 변경) 그것만 사용하고 종료
+        if (verifyFn) {
+          const ok = await verifyFn(fullEmail, fullCode);
+          if (!ok) throw new Error("유효하지 않은 코드");
+          setIsLoading(false);
+          onComplete();
+          return;
+        }
+
         // 검증 API 호출 (로그인/회원가입 분기 유지)
-        const resp: ApiEnvelope<AuthResult> = fromLoginLog
+        const resp = fromLoginLog
           ? await verifyLoginCode(fullEmail, fullCode)
           : await verifySignupCode(fullEmail, fullCode);
 
-        if (!resp?.isSuccess || !resp?.result?.accessToken) {
-          throw new Error("유효하지 않은 코드");
+        // 1) 응답 성공 여부 먼저
+        if (!resp?.isSuccess) {
+        throw new Error("유효하지 않은 코드");
         }
 
-        // 응답에서 토큰/유저정보 꺼내기
-        // 로그인 코드 검증 성공 후
-const {
-  accessToken,
-  refreshToken,
-  expiresInSec,
-  user: { email: respEmail, name, profileImageUrl },
-} = resp.result!;
+        // 2) 토큰 추출 (서버 응답 스키마 방어적으로 대응)
+        const result = resp.result as AuthResult | undefined;
+        const accessTokenMaybe = result?.accessToken;
 
-// 1) 헤더는 무조건 즉시 세팅 → 다음 페이지에서도 인증 유지
-axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+        // 3) 회원가입 검증은 성공했는데 토큰이 없는 서버라면 → 로그인 코드 발송으로 전환
+        if (!fromLoginLog && !accessTokenMaybe) {
+          try {
+            // 로그인용 코드 발송
+            await sendLoginCode(fullEmail, /* isLogin */ true);
+            // 다음 입력부터는 로그인 코드 검증을 타도록 전환
+            setFromLoginLog?.(true);
+            // 입력창 리셋 & 안내없이 자연스럽게 대기
+            setCode("");
+            setIsLoading(false);
+            inputRefs.current[0]?.focus();
+            return; // 여기서 종료 (아래 토큰 저장 분기로 내려가지 않음)
+          } catch (e) {
+            console.error("회원가입 후 로그인 코드 전송 실패:", e);
+          }
+        }
 
-// 2) 저장은 autoLogin에 따라
-if (autoLogin) {
-  persistAuth(
-    {
-      accessToken,
-      refreshToken,
-      expiresInSec: expiresInSec ?? 7 * 24 * 60 * 60,
-      user: {
-        email: respEmail || fullEmail,
-        name: name || (respEmail || fullEmail).split("@")[0],
-        profileImageUrl,
-      },
-    },
-    7
-  );
-} else {
-  // 저장 안 하더라도 최소한 LoginLog 위해 userInfo 정도는 남겨도 OK (선택)
-  localStorage.setItem(
-    "userInfo",
-    JSON.stringify({
-      email: respEmail || fullEmail,
-      name: name || (respEmail || fullEmail).split("@")[0],
-      profileImageUrl,
-    })
-  );
-}
+        // 4) 여기까지 왔으면 accessToken이 존재해야 함
+        const {
+          accessToken,
+          refreshToken,
+          expiresInSec,
+          user: { email: respEmail, name, profileImageUrl },
+        } = result!;
+
+        // 로그인 토큰 관리
+        // 1) 헤더는 무조건 즉시 세팅 → 다음 페이지에서도 인증 유지
+        axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+        // 2) 토큰 저장 - 자동로그인 체크 여부와 관계없이 항상 저장
+        // autoLogin이 true면 7일, false면 세션 종료 시까지 유지
+        const rememberDays = autoLogin ? 7 : 1; // 1일로 설정 (브라우저 세션과 유사)
+        persistAuth(
+          {
+            accessToken,
+            refreshToken,
+            expiresInSec: expiresInSec ?? rememberDays * 24 * 60 * 60,
+            user: {
+              email: respEmail || fullEmail,
+              name: name || (respEmail || fullEmail).split("@")[0],
+              profileImageUrl,
+            },
+          },
+          rememberDays
+        );
 
 
         setIsLoading(false);
@@ -111,7 +133,7 @@ if (autoLogin) {
         inputRefs.current[0]?.focus();
       }
     })();
-  }, [code, isLoading, error, isResending, autoLogin, fromLoginLog, email, onComplete]);
+  }, [code, isLoading, error, isResending, autoLogin, fromLoginLog, email, onComplete, verifyFn, setFromLoginLog]);
       
   const handleChange = (value: string, index: number) => {
     const digit = value.replace(/[^0-9]/g, "");
@@ -156,7 +178,7 @@ if (autoLogin) {
   };
  
   return (
-    <div className="flex flex-col gap-4 w-[499px]">
+    <div className="flex flex-col gap-4 w-full max-w-[499px]">
       {/* 코드 입력 */}
       <div onPaste={handlePaste}>
         {[...Array(6)].map((_, i) => {
