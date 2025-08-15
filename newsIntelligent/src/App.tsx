@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import ArticlePage from './pages/Article';
 import HeaderLayout from './layout/HeaderLayout';
 import FeedBackLayout from './layout/FeedBackLayout';
+import ProtectedRoute from './Routes/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -22,11 +23,14 @@ function App() {
             <Route path='/' element={<FeedBackLayout />}>
             <Route path='/' element={<HeaderLayout />}>
               <Route path="/" element={<MainPage />} />
+              <Route element={<ProtectedRoute />}>
               <Route path="/subscriptions" element={<SubscriptionPage />} />
               <Route path="/read-topic" element={<ReadPage />} />
               <Route path="/notification" element={<NotificationSettingPage />} />
               <Route path="/settings" element={<SettingPage />} />
               <Route path="/settings/changes" element={<SettingChangePage />} />
+              </Route>
+              
               <Route path="/article" element={<ArticlePage />} />
               </Route>
               <Route path="/login" element={<LoginPage />} />      
