@@ -50,7 +50,7 @@ useEffect(() => {
 
     const [mail, setMail] = useState(``);
     const [isEditMail, setIsEditMail] = useState(false);
-    const [isMailValid, setIsMailValid] = useState(true); 
+    const [isMailValid] = useState(true); 
 
     const clickNameChange = () => {
         setIsEditName(true);
