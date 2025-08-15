@@ -34,6 +34,7 @@ function MainPage() {
   const items = data?.pages.flatMap((p) => p.result.topics ?? []) ?? []
   const [main, ...list] = items
 
+
   const { ref, inView } = useInView({
     threshold: 0,
     rootMargin: '0px 0px 200px 0px',
@@ -51,6 +52,7 @@ function MainPage() {
   if (isLoading) return
   if (error) return <p>에러가 발생했습니다.</p>
   if (!data) return null
+
 
   return (
     <div className="flex justify-center">

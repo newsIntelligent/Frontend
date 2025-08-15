@@ -31,7 +31,7 @@ function Header() {
     <header
   className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#C1C1C1]
   transition-all duration-300 
-  ${isScrolled ? "h-[60px]" : "h-[142px] pt-[16px]"} overflow-x-hidden`}
+  ${isScrolled ? "h-[60px]" : "h-[142px] pt-[16px]"} `}
 >
   <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300  pb-0 mx-auto">
     {isScrolled ? (
