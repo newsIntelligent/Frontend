@@ -64,7 +64,7 @@ const SettingPage = () => {
 
                         <div className="flex flex-1 items-center justify-center mt-6 mb-12 w-[499px] h-[88px] border border-gray-200 rounded-md pl-[16px] pr-[16px]">
                             <img
-                                src="https://phinf.wevpstatic.net/MjAyNTAxMTVfMzgg/MDAxNzM2OTE1NTk2Mzcx.JRqA0uhzWgtiEN4mqp0rZVqzO2okeV24SY9Pw3irbtcg.0zLaSiAEiSJpD3RQ6T6MyI9216eC1G4VKsI89uf7Q2sg.JPEG/Weverse_a1852.jpg?type=e1920"
+                                src="/Logo.svg"
                                 alt="프로필"
                                 className="items-center w-[40px] h-[40px] rounded-full"
                             />

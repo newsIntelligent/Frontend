@@ -26,6 +26,8 @@ export const getReadTopic = async (cursor: number, size: number = 10) => {
 
 export const getKeywordTopic = async (keyword : string, cursor : number, size : number = 10) => {
     const response = await axiosInstance.get(`/mypage/read-topic`, {
+
+
         params : {keyword, cursor, size},
     });
 
@@ -33,7 +35,8 @@ export const getKeywordTopic = async (keyword : string, cursor : number, size : 
 }
 
 export const getTopicRelated = async (topicId : number, lastId : number, size : number = 3) => {
-    const response = await axiosInstance.get(`/topic/${topicId}/related`, {
+    const response = await axiosInstance.get(`/topic/{topicId}/related`, {
+
         params : {topicId, lastId, size},
     })
 
