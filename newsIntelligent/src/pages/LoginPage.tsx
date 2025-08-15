@@ -69,18 +69,24 @@ const LoginPage = () => {
   // “로그인 먼저 → 필요 시 회원가입 폴백” 판단
   const needSignupFallback = (e: unknown) => {
     if (!isAxiosError(e)) return false;
-    const status = e.response?.status;
+    const status = e.response?.status ?? 0;
     const data = e.response?.data as { code?: string; message?: string } | undefined;
-    const code = data?.code?.toString().toUpperCase();
+    const code = (data?.code || "").toString().toUpperCase();
     const msg  = (data?.message || "").toString();
 
+
+    // 상태코드 범위 확대
+    const statusHit = [400, 401, 404, 409, 422].includes(status);
+
     // 서버 코드/메시지 케이스 보강
-    const codeHit = !!code && [
+    const codeHit = [
       "NEED_SIGNUP",
       "MEMBER_NOT_FOUND",
       "MEMBERA04",
       "MEMBERA404",
       "USER_NOT_FOUND",
+      "NOT_FOUND",
+      "LOGIN_NEED_SIGNUP"
     ].includes(code);
 
     const msgHit = [
@@ -92,8 +98,8 @@ const LoginPage = () => {
       /not\s*registered/i,
     ].some((re) => re.test(msg));
 
-    // 400/404 류에서 코드나 메시지가 맞으면 폴백
-    return (status === 400 || status === 404) && (codeHit || msgHit);
+    // 코드나 메시지가 맞으면 폴백
+    return statusHit && (codeHit || msgHit);
   };
 
   const renderRightSection = () => {
@@ -163,6 +169,7 @@ const LoginPage = () => {
                   isResending={isResending}
                   email={email}              // 이미 canonical 상태
                   fromLoginLog={fromLoginLog}
+                  setFromLoginLog={setFromLoginLog}
                 />;
 
       default:

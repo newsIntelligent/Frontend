@@ -24,11 +24,11 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
   ];
 
   const handleSubmit = () => {
-    if (!isFormValid()) return;
+    if (!isFormValid() || isSubmitting) return;
     setIsSubmitting(true);
     const pickedDomain = customInput ? domain.trim() : domain;
     const fullEmail = `${localEmail}@${pickedDomain}`;
-    onNext(fullEmail);
+    Promise.resolve(onNext(fullEmail)).finally(()=>setIsSubmitting(false));
   };
 
   const handleLocalEmailChange = (e: React.ChangeEvent<HTMLInputElement>)=>{

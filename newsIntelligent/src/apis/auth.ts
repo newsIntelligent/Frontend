@@ -91,13 +91,6 @@ export const clearAuth = (keepUserInfo = true) => {
   if (!keepUserInfo) localStorage.removeItem(USER_KEY);
 };
 
-// 만료된 토큰 정리
-// export function enforceAuthExpiry() {
-//   if (isTokenExpired()) {
-//     clearAuth(true); // userInfo 유지
-//   }
-// }
-
 // Axios 인스턴스 부착
 export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.request.use((config) => {
@@ -141,113 +134,29 @@ if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.
   delete axiosInstance.defaults.headers.common.Authorization;
 }
 
+type NormalizeOpts = { allowMissingAccessToken?: boolean };
 
-// 서버 검증 응답 정규화
-// 서버에서 올 수 있는 검증 응답의 result 형태를 포괄
-type ServerVerifyResult =
-  | {
-      id?: number;
-      email?: string;           // 최상위 email일 수도 있고
-      name?: string;
-      profileImageUrl?: string;
-      accessToken?: string;
-      refreshToken?: string;
-      expiresInSec?: number;    // 초
-      expiresAt?: string;       // ISO
-    }
-  | {
-      user: {
-        id?: number;
-        email: string;          // user.email 로 오는 경우
-        name?: string;
-        profileImageUrl?: string;
-      };
-      accessToken?: string;
-      refreshToken?: string;
-      expiresInSec?: number;
-      expiresAt?: string;       // ISO
-    };
+// 응답 정규화
+function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
+  const { allowMissingAccessToken = false } = opts;
+  const p = payload?.result ?? payload ?? {};
+  const accessToken = p.accessToken;
 
-    /** expiresAt(ISO) → 남은 초 수(음수면 0) */
-function secondsFromExpiresAt(expiresAt?: string): number | undefined {
-  if (!expiresAt || typeof expiresAt !== 'string') return undefined;
-  
-  try {
-    const t = new Date(expiresAt).getTime();
-    if (Number.isNaN(t)) {
-      console.warn('Invalid date format in expiresAt:', expiresAt);
-      return undefined;
+  if (!accessToken || typeof accessToken !== "string" || accessToken.trim() === "") {
+    if (!allowMissingAccessToken) {
+      console.warn("Invalid or missing access token in payload");
+      return undefined; // 또는 throw new Error('MISSING_ACCESS_TOKEN')
     }
-    const diffSec = Math.floor((t - Date.now()) / 1000);
-    return diffSec > 0 ? diffSec : 0;
-  } catch (error) {
-    console.error('Error parsing expiresAt:', error, expiresAt);
+    // ✅ 토큰 없어도 통과 (회원가입 검증 성공 케이스 지원)
     return undefined;
   }
-}
 
-// 서버 응답의 result → AuthResult 로 정규화
-function normalizeToAuthResult(
-  payload: ServerVerifyResult,
-  emailFallback: string
-): AuthResult | null {
-  try {
-    // 공통 필드 꺼내기 (user 또는 최상위)
-    const topEmail = "email" in payload ? payload.email : undefined;
-    const topName = "name" in payload ? payload.name : undefined;
-    const topProfile = "profileImageUrl" in payload ? payload.profileImageUrl : undefined;
-
-    const userEmail = "user" in payload ? payload.user?.email : undefined;
-    const userName = "user" in payload ? payload.user?.name : undefined;
-    const userProfile = "user" in payload ? payload.user?.profileImageUrl : undefined;
-
-    const accessToken = "accessToken" in payload ? payload.accessToken : undefined;
-    const refreshToken = "refreshToken" in payload ? payload.refreshToken : undefined;
-    const expiresInSecRaw = "expiresInSec" in payload ? payload.expiresInSec : undefined;
-    const expiresAt = "expiresAt" in payload ? payload.expiresAt : undefined;
-
-    // 토큰이 없으면 로그인 상태로 사용할 수 없음
-    if (!accessToken || typeof accessToken !== 'string' || accessToken.trim() === '') {
-      console.warn('Invalid or missing access token in payload');
-      return null;
-    }
-
-    // 이메일/이름 우선순위: user.email > top.email > fallback
-    const resolvedEmail = userEmail ?? topEmail ?? emailFallback;
-    if (!resolvedEmail || typeof resolvedEmail !== 'string' || !resolvedEmail.includes('@')) {
-      console.warn('Invalid email in payload:', { userEmail, topEmail, emailFallback });
-      return null;
-    }
-
-    const resolvedName = userName ?? topName ?? resolvedEmail.split("@")[0];
-    const resolvedProfile = userProfile ?? topProfile;
-
-    // expiresInSec가 없으면 expiresAt으로 계산(과거면 0)
-    const resolvedExpiresInSec =
-      typeof expiresInSecRaw === "number"
-        ? expiresInSecRaw
-        : secondsFromExpiresAt(expiresAt);
-
-    // ✅ 과거 만료가 오면 기본 유지기간(rememberDays) 쓰도록 undefined로 처리
-    const safeExpiresInSec =
-      typeof resolvedExpiresInSec === "number" && resolvedExpiresInSec > 0
-        ? resolvedExpiresInSec
-        : undefined;
-
-    return {
-      accessToken,
-      refreshToken,
-      expiresInSec: safeExpiresInSec,
-      user: {
-        email: resolvedEmail,
-        name: resolvedName,
-        profileImageUrl: resolvedProfile,
-      },
-    };
-  } catch (error) {
-    console.error('Error normalizing auth result:', error, payload);
-    return null;
-  }
+  return {
+    accessToken,
+    refreshToken: p.refreshToken,
+    expiresInSec: p.expiresInSec ?? p.expiresIn,
+    user: p.user ?? { email: p.email, name: p.name, profileImageUrl: p.profileImageUrl },
+  };
 }
 
 
@@ -292,16 +201,14 @@ export const verifyLoginCode = async (
 
   try {
     const { data } = await axiosInstance.post("/members/login/verify", { email, code });
-    const normalized = data?.result
-      ? normalizeToAuthResult(data.result as ServerVerifyResult, email)
-      : null;
+    const normalized = normalizeToAuthResult(data);
 
     return {
-      isSuccess: !!(data?.isSuccess && normalized),
+      isSuccess: !!((data?.isSuccess ?? true) && normalized),
       status: data?.status,
       code: data?.code,
       message: data?.message,
-      result: normalized || undefined,
+      result: normalized as AuthResult | undefined,
     };
   } catch (error) {
     console.error('Failed to verify login code:', error);
@@ -309,35 +216,13 @@ export const verifyLoginCode = async (
   }
 };
 
-export const verifySignupCode = async (
-  email: string,
-  code: string
-): Promise<ApiEnvelope<AuthResult>> => {
-  if (!email || !email.includes('@')) {
-    throw new Error('Invalid email format');
-  }
-  if (!code || code.trim().length === 0) {
-    throw new Error('Code cannot be empty');
-  }
-
-  try {
-    const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
-    const normalized = data?.result
-      ? normalizeToAuthResult(data.result as ServerVerifyResult, email)
-      : null;
-
-    return {
-      isSuccess: !!(data?.isSuccess && normalized),
-      status: data?.status,
-      code: data?.code,
-      message: data?.message,
-      result: normalized || undefined,
-    };
-  } catch (error) {
-    console.error('Failed to verify signup code:', error);
-    throw error;
-  }
-};
+// 회원가입 인증 코드 검증
+export async function verifySignupCode(email: string, code: string){
+  const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
+  // ✅ 토큰이 없어도 성공으로 처리되게
+  const result = normalizeToAuthResult(data, { allowMissingAccessToken: true });
+  return { isSuccess: true, result, message: data?.message, code: data?.code } as ApiEnvelope<AuthResult | undefined>;;
+}
 
 // 로그인/회원가입 코드 재요청
 export const resendMagicLink = (
@@ -386,4 +271,13 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
     email, 
     redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
   });
+};
+
+// 매직 링크 검증
+export const verifyMagicLink = async (
+  mode: "login" | "signup" | "notification-email",
+  token: string
+) => {
+  const resp = await axiosInstance.post("/api/auth/magic/verify", { mode, token });
+  return resp.data; // ApiEnvelope<AuthResult>
 };

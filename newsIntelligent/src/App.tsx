@@ -11,6 +11,8 @@ import LoginPage from './pages/LoginPage';
 import ArticlePage from './pages/Article';
 import HeaderLayout from './layout/HeaderLayout';
 import FeedBackLayout from './layout/FeedBackLayout';
+import EmailChangePage from './pages/EmailChangePage';
+import MagicLink from './pages/MagicLink';
 
 const queryClient = new QueryClient();
 
@@ -29,7 +31,11 @@ function App() {
               <Route path="/settings/changes" element={<SettingChangePage />} />
               <Route path="/article" element={<ArticlePage />} />
               </Route>
-              <Route path="/login" element={<LoginPage />} />      
+              <Route path="/login" element={<LoginPage />} /> 
+              <Route path="/email-change" element={<EmailChangePage />} />
+              <Route path="/login/magic" element={<MagicLink />} />
+              <Route path="/signup/magic" element={<MagicLink />} />
+              <Route path="/settings/notification-email/magic" element={<MagicLink />} />    
             </Route>
            
                     
