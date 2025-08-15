@@ -1,8 +1,6 @@
 import type { MemberInfoResponse, NicknameAvailabilityResponse } from '../types/members';
 import { axiosInstance } from '../api/axios';
 
-const token = import.meta.env.VITE_API_KEY;
-
 export const getMemberInfo = async () : Promise<MemberInfoResponse> => {
     const response = await axiosInstance.get(`/members/info`);
 

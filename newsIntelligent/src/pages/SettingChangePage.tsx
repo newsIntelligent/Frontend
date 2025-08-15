@@ -96,11 +96,6 @@ useEffect(() => {
         setMail(value);
     }
 
-    const clickMailChange = () => {
-        setIsEditMail(true);
-        setIsMailValid(true);
-    }
-
     const handleMailSave = async () => {
         if (!isMailValid) return;
 
