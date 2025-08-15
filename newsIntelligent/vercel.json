@@ -7,6 +7,10 @@
         { "source": "/settings/changes", "destination": "/" },
         { "source": "/login", "destination": "/" },
         { "source": "/article", "destination": "/" },
-        { "source": "/", "destination": "/" }
+        { "source": "/", "destination": "/" },
+        { "source": "/email-change", "destination": "/" },
+        { "source": "/login/magic", "destination": "/" },
+        { "source": "/signup/magic", "destination": "/" },
+        { "source": "/settings/notification-email/magic", "destination": "/" }
     ]
 }

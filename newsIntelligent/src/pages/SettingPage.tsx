@@ -29,6 +29,7 @@ const SettingPage = () => {
             console.log("로그아웃 성공");
 
             await signout();
+            localStorage.removeItem("accessToken"); //로그아웃 시 토큰 제거
 
             navigate("/");
         } catch (error) {

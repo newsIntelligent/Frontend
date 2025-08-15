@@ -1,3 +1,4 @@
+import { createSearchParams, useNavigate } from "react-router-dom";
 import { topicRead } from "../api/topic";
 import SubscribeButton from "./SubscribeButton";
 
@@ -22,8 +23,14 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
         })
     }
 
+    const navigate = useNavigate();
+
     const handleClick = () => {
-      topicRead(id);
+        topicRead(id);
+        navigate({
+            pathname: "/article",
+            search: `?${createSearchParams({ id: String(id) })}`,
+        })
     }
 
     return(

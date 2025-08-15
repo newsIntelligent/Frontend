@@ -2,7 +2,6 @@ function Chatting({ messages }: { messages: {text:string; isUser?: boolean; tag?
     return (
         <div className="flex flex-col w-full pt-[26px] gap-[12px] px-[20px]">
             {messages.map((message, index) => (
-                console.log("message: ", message),
                 <div key={index} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[316px] px-[16px] py-[12px] rounded-[12px] gap-10px whitespace-pre-line
                          text-sm font-normal leading-none

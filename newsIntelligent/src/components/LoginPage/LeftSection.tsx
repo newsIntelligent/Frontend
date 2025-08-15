@@ -30,14 +30,15 @@ const LeftSection = ({ step, userName, email, fromLoginLog = false, onResendCode
     }
     if (step === "verify") {
         if (fromLoginLog) {
-        return <p className="text-2xl font-semibold text-[#07525F]">안녕하세요, {userName}님</p>;
+        return <p className="text-xl lg:text-2xl font-semibold text-[#07525F]">안녕하세요, {userName}님</p>;
         } else {
-        return <img src="Logo.svg" alt="로고" className="w-[355px] h-[64px] mb-6" />;
+        return <p className="text-3xl font-semibold text-[#07525F] mb-6">뉴스 인텔리전트 가입을 환영합니다.</p>;
         }
     } else if (step === "complete" && !fromLoginLog) {
-        return <p className="text-2xl font-semibold text-[#07525F]">회원가입 완료</p>;
+        return <p className="text-xl lg:text-2xl font-semibold text-[#07525F]">회원가입 완료</p>;
     } else {
-        return <img src="Logo.svg" alt="로고" className="w-[355px] h-[64px] mb-6" />;
+        return <img src="Logo.svg" alt="로고" className="w-full max-w-[355px] h-auto mb-6 cursor-pointer"
+                onClick={()=> navigate("/")} />;
     }
   };
 
@@ -67,7 +68,7 @@ const LeftSection = ({ step, userName, email, fromLoginLog = false, onResendCode
       return (
         <p className="text-sm font-semibold text-[#666] leading-relaxed">
           회원가입 시<br />
-          <span className="text-[#06525F]">구독한 주제, 키워드 알림, 원문 트래픽 변경점</span>을<br />
+          <span className="text-[#06525F]">구독한 주제, 키워드 알림, 읽은 기사의 변경점</span>을<br />
           이메일로 알림 받으실 수 있습니다.
         </p>
       );
@@ -84,7 +85,7 @@ const LeftSection = ({ step, userName, email, fromLoginLog = false, onResendCode
       ? "다른 이메일로 로그인하기"
       : "다른 메일로 가입한 이력이 있으신가요? (돌아가기)";
     return (
-      <button onClick={handleBack} className="text-sm text-[#666] underline flex flex-row items-center gap-2 absolute left-8 bottom-8">
+      <button onClick={handleBack} className="text-sm text-[#666] underline flex flex-row items-center gap-2 absolute left-4 lg:left-8 bottom-4 lg:bottom-8">
         <img
           src="BackArrow.svg"
           alt="뒤로가기 버튼"
@@ -95,7 +96,7 @@ const LeftSection = ({ step, userName, email, fromLoginLog = false, onResendCode
   };
 
   return (
-    <div className="w-1/2 pl-8 pt-8 relative">
+    <div className="w-full lg:w-1/2 px-4 lg:pl-8 pt-4 lg:pt-8 relative">
       {renderHeader()}
       <div className="mt-4">{renderMessage()}</div>
       {renderBackButton()}
