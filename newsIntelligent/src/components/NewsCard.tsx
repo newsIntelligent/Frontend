@@ -108,8 +108,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
         gcTime: 300000,
     });
 
-    const { data: subscriptionIds } = useSubscriptionIds();
-    const isSubscribed = !!subscriptionIds && subscriptionIds.has(data.id);
+    useSubscriptionIds();
 
     const relatedList = useMemo(() => {
         const raw =
