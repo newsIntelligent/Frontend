@@ -18,8 +18,6 @@ const SettingPage = () => {
             } catch (error) {
                 console.log("데이터를 받아오지 못했습니다.", error);
                 alert("로그인 후 다시 실행해 주세요.");
-    
-                navigate("/login");
             }
         };
 
