@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { topicRead } from "../api/topic";
 import SubscribeButton from "./SubscribeButton";
 
@@ -20,8 +21,10 @@ function MainArticleCard({id, topicName, aiSummary, imageUrl, summaryTime}: Main
         hour12: false
     })
 }
+const navigate = useNavigate();
 const handleClick = () => {
   topicRead(id);
+  navigate("/article")
 }
 
   return (

@@ -51,7 +51,7 @@ export default function MagicLink() {
         );
 
         setStatus("done");
-        // 현재 프로젝트 패턴: 성공 시 /settings로 이동
+        // 성공 시 /settings로 이동
         navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/settings", { replace: true });
       } catch (e: any) {
         console.error(e);
