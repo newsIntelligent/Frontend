@@ -1,9 +1,15 @@
+export interface Image {
+    press : string;
+    title : string;
+}
+
 export interface Topics {
     id : number;
     topicName : string;
     aiSummary : string;
     summaryTime : string;
     imageUrl : string;
+    imageSource : Image;
 }
 
 export interface Result {
