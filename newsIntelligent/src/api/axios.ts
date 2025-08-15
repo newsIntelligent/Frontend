@@ -2,7 +2,6 @@ import type { AxiosInstance } from "axios";
 import axios from "axios";
 
 export const axiosInstance: AxiosInstance = axios.create({
-<<<<<<< HEAD
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     Authorization: `Bearer ${import.meta.env.VITE_API_KEY || ''}`,
@@ -38,10 +37,3 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-=======
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_API_KEY || ''}`,
-    }
-})
->>>>>>> c847d92f7dbe05319c9733a1af37c4aaa0df1d77
