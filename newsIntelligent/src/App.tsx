@@ -10,6 +10,7 @@ import SettingChangePage from './pages/SettingChangePage';
 import LoginPage from './pages/LoginPage';
 import ArticlePage from './pages/Article';
 import HeaderLayout from './layout/HeaderLayout';
+import FeedBackLayout from './layout/FeedBackLayout';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
           <Routes>
+            <Route path='/' element={<FeedBackLayout />}>
             <Route path='/' element={<HeaderLayout />}>
               <Route path="/" element={<MainPage />} />
               <Route path="/subscriptions" element={<SubscriptionPage />} />
@@ -27,7 +29,10 @@ function App() {
               <Route path="/settings/changes" element={<SettingChangePage />} />
               <Route path="/article" element={<ArticlePage />} />
               </Route>
-              <Route path="/login" element={<LoginPage />} />             
+              <Route path="/login" element={<LoginPage />} />      
+            </Route>
+           
+                    
           </Routes>
       </BrowserRouter>
     </QueryClientProvider>

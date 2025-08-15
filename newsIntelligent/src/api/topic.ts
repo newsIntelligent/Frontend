@@ -32,3 +32,20 @@ export const topicRead = async (topicId: number) => {
         throw error;
     }
 }
+
+export const topicHome = async (cursor: number, size = 10) => {
+    try {
+        const {data} = await axiosInstance.get('/topics/home', {
+            params: {
+                cursor,
+                size
+            }
+        })
+        console.log("홈 토픽 조회 성공", data);
+        return data;
+    } catch (error) {
+        console.error("홈 토픽 조회 실패", error);
+        throw error;
+    }
+}
+

@@ -1,12 +1,12 @@
 import MainArticle from "../components/MainArticle";
 import MainArticleCard from "../components/MainArticleCard";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery} from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
-import { fetchMockArticles } from "../api/fetchMockArticles";
 import SkeletonCard from "../components/SkeletonCard";
 import UpdatesSidebar from "../components/UpdatesSideBar";
+import { topicHome } from "../api/topic";
 
 
 function MainPage() {
@@ -21,6 +21,7 @@ function MainPage() {
       return () => window.removeEventListener('scroll', handleScroll)
     }, [])
     
+
     const {
         data,
         error,
@@ -29,15 +30,21 @@ function MainPage() {
         hasNextPage,
         isFetchingNextPage,
       } = useInfiniteQuery({
-        queryKey: ['articles'],
-        queryFn: fetchMockArticles,
-        initialPageParam: 1, 
-        getNextPageParam: (lastPage) => lastPage.nextPage, 
+        queryKey: ['articles', 10],
+        initialPageParam: 0,
+        queryFn: ({ pageParam = 0 }) => topicHome(pageParam, 10),
+        getNextPageParam: (lastPage) => {
+          const nextCursor = lastPage?.result;
+          return nextCursor && nextCursor.hasNext? nextCursor.cursor : undefined;
+        }
       });
+
+      const items = data?.pages.flatMap(p => p.result.topics ?? []) ?? [];4
+      const [main, ...list] = items;
       
       const { ref, inView } = useInView({
         threshold: 0,
-        rootMargin: '200px',
+        rootMargin: '0px 0px 200px 0px',
       });
       
         const throttleInView = useThrottle(inView, 1000);
@@ -47,7 +54,7 @@ function MainPage() {
           fetchNextPage();
           console.log("다음페이지 요청")
         }
-      }, [throttleInView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+      }, [throttleInView, fetchNextPage, hasNextPage]);
 
 
 if (isLoading) return 
@@ -65,16 +72,13 @@ return (
         </div>
 
     <div className="pl-[140px] pr-8">
-                  {data && (
+                  {data && items.length > 0 && (
                     <>
-                    <MainArticle {...data.pages[0].articles[0]}/>
+                    {main && <MainArticle {...main} />}
                     <div className="grid grid-cols-2 w-[840px] gap-x-[20px] gap-y-[20px] py-[24px]">
-                    {data.pages.map((page, pageIndex) =>
-                page.articles.map((article) => (
-                  <MainArticleCard key={`${pageIndex}-${article.id}`} {...article} />
-                ))
-                
-              )}
+                    {list.map((topic) => (
+                      <MainArticleCard key={topic.id} {...topic} />
+                    ))}
                {(isFetchingNextPage || throttleInView) && <SkeletonCard />}
                     </div>
                     <div ref={ref}/>

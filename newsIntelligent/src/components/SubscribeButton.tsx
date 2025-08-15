@@ -1,21 +1,24 @@
+import { useState } from "react";
 import { topicSubscribe, topicUnsubscribe } from "../api/topic";
 import { useMutation } from "@tanstack/react-query";
 type SubscribeButtonProps = {
     id: number;
-    sub: boolean;
+    subscribe?: boolean; // 구독 상태, 기본값은 false
     size?: 'default' | 'large';
 }
 
-function SubscribeButton({id, sub, size = "default"}: SubscribeButtonProps) {
+function SubscribeButton({id, size = "default", subscribe = false}: SubscribeButtonProps) {
+    const [sub, setSub] = useState(subscribe); // 구독 상태 관리
+    
     const toggleSubscribe = useMutation ({
       mutationFn: async (next: boolean) => {
-        next? topicSubscribe(id) : topicUnsubscribe(id);
+        return next? topicSubscribe(id) : topicUnsubscribe(id);
       }, //next: 구독 상태 받음 true일때 구독
 
-      onMutate: (next:boolean) => {sub = next}, //구독 상태 변경
+      onMutate: (next:boolean) => {setSub(next)}, //구독 상태 변경
       onError: (error, next) => {
         console.error("구독 상태 변경 실패:", error);
-        sub = !next; // 에러 발생 시 이전 상태로 되돌림
+        setSub(!next); // 에러 발생 시 이전 상태로 되돌림
       }
     })
     
@@ -29,6 +32,7 @@ function SubscribeButton({id, sub, size = "default"}: SubscribeButtonProps) {
         ${sub
             ? 'border-[#919191] text-[#919191]'
             :'bg-transparent border-[#0EA6C0] text-[#0EA6C0] hover:bg-[#0EBEBE26]'}
+            transition-all duration-300
        `}
         onClick={() => toggleSubscribe.mutate(!sub)}>
       {sub ? '구독 중' : '+ 구독'}
