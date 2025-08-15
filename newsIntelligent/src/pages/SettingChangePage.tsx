@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
-import { getMemberInfo, getNicknameAvailability, patchNickname, postEmailCode } from '../apis/apis';
+import { getMemberInfo, getNicknameAvailability, patchNickname } from '../apis/apis';
 import type { MemberInfo } from "../types/members";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
@@ -104,21 +104,7 @@ useEffect(() => {
     const handleMailSave = async () => {
         if (!isMailValid) return;
 
-        try {
-            await postEmailCode(mail);
-
-            setMember((prev) => prev ? {...prev, email : mail} : prev);
-
-            setIsEditMail(false);
-
-            navigate("/")
-        } catch (error) {
-            console.log("이메일 변경 실패", error);
-
-            setIsMailValid(false);
-
-            navigate("/email-change");
-        }
+        navigate("/email-change");
     }
 
     const handleReturnSettingPage = () => {
@@ -234,7 +220,7 @@ useEffect(() => {
                                     (
                                         <button
                                             className="w-[64px] h-[32px] ml-auto px-4 py-2 border rounded-md text-[14px] font-regular text-[#C1C1C1] hover:bg-white hover:text-[#C1C1C1]"
-                                            onClick={clickMailChange}
+                                            onClick={handleMailSave}
                                         >
                                             변경
                                         </button>
