@@ -65,7 +65,7 @@ function SubscribeButton({id, size = "default", subscribe = false}: SubscribeBut
         onClick={handleClick}>
       {sub ? '구독 중' : '+ 구독'}
     </button>
-    {isOpen && <LoginAlertModal />}
+    {isOpen && <LoginAlertModal open={isOpen} onClose={()=>setIsOpen(false)}/>}
     
     </>
     

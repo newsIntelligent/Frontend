@@ -56,27 +56,27 @@ function FeedBack() {
       };
 
       useEffect(() => {
-        if (!openFeedback) return;
+        if (!openFeedback) return; //피드백이 닫혀있을 때는 작동 X
       
         const handleClickOutside = (e: MouseEvent) => {
           const target = e.target as Node;
-          if (feedbackRef.current && !feedbackRef.current.contains(target)) {
+          if (feedbackRef.current && !feedbackRef.current.contains(target)) { // 피드백 영역 외부 클릭 감지
             setOpenFeedback(false);
           }
         };
       
-        document.addEventListener("mousedown", handleClickOutside); // ✅ 추가
+        document.addEventListener("mousedown", handleClickOutside); 
         return () => {
-          document.removeEventListener("mousedown", handleClickOutside); // ✅ 해제
+          document.removeEventListener("mousedown", handleClickOutside);
         };
-      }, [openFeedback]); // ref는 의존성에 넣지 마세요
+      }, [openFeedback]); 
   
 
       
 
     return(
         <div className="fixed bottom-[69px] right-[141px] z-50 flex flex-col items-end gap-[8px]"
-        ref={feedbackRef}>
+        ref={feedbackRef}>  
             {openFeedback && 
                 <div className="flex flex-col w-[380px] shadow-[2px_4px_8px_0px_rgba(0,0,0,0.15)] backdrop-blur-lg rounded-t-[16px]"
                    >

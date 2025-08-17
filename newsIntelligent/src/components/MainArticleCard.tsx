@@ -3,7 +3,6 @@ import type { MainArticleCardProps } from '../types/article'
 import SubscribeButton from './SubscribeButton'
 import { useNavigate, createSearchParams } from 'react-router-dom'
 
-
 function MainArticleCard({
   id,
   topicName,
@@ -23,8 +22,12 @@ function MainArticleCard({
 
     return `${mm}/${dd} ${hh}:${mi}`
   }
+
   const handleClick = () => {
-    topicRead(id)
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      topicRead(id)
+    }
     navigate({
       pathname: '/article',
       search: `?${createSearchParams({ id: String(id) })}`,
