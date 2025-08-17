@@ -1,9 +1,9 @@
 import { axiosInstance } from "./axios";
 
-export const postFeedback = async (  ) => {
+export const postFeedback = async (content:string) => {
     try {
         const {data} = await axiosInstance.post("/feedbacks", {
-            content: "test",
+            content,
         });
         console.log("feedback 전송", data)
         return data;
