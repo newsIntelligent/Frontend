@@ -10,7 +10,7 @@ function getAccessTokenFromStorage() {
     const accessToken = getAccessTokenFromStorage();
 
     if (!accessToken) {
-        return <LoginAlertModal/>;
+        return <LoginAlertModal open={true} onClose={()=>false}/>;
     }
 
     return <Outlet />;
