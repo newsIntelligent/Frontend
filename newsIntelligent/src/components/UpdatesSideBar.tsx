@@ -16,8 +16,16 @@ type LatestItem = {
   isSubscribed?: boolean
 }
 
-/** 서버 응답 타입(스웨거 스키마 기준) */
-type LatestApiResult = {
+/** 서버 응답 타입(최신 스키마) */
+type RelatedArticle = {
+  id: number
+  press?: string
+  title?: string
+  publishDate?: string
+  newsSummary?: string
+}
+
+type LatestApiItem = {
   id: number
   topicName: string
   aiSummary?: string
@@ -25,13 +33,11 @@ type LatestApiResult = {
   summaryTime?: string
   imageSource?: { press?: string; title?: string }
   isSubscribed?: boolean
-  relatedArticles?: Array<{
-    id: number
-    press?: string
-    title?: string
-    publishDate?: string
-    newsSummary?: string
-  }>
+  relatedArticles?: RelatedArticle[] // ← 여기!
+}
+
+type LatestApiResultV2 = {
+  items: LatestApiItem[]
 }
 
 /** 날짜 포맷 */
@@ -46,7 +52,7 @@ export default function UpdatesSidebar() {
   const [items, setItems] = useState<LatestItem[]>([])
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [topicId, setTopicId] = useState<number | null>(null) // 대표 토픽 id 저장(구독용)
+  const [topicId, setTopicId] = useState<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -54,29 +60,33 @@ export default function UpdatesSidebar() {
         setLoading(true)
         setErr(null)
 
-        // 실제 API 호출 ─ baseURL이 .../api 라면 '/topic/latest' 그대로 사용
         const { data } = await axiosInstance.get('/topic/latest')
-        const result: LatestApiResult | undefined = data?.result
-        if (!result) {
+        const raw = data?.result as LatestApiResultV2 | undefined
+
+        const topic: LatestApiItem | undefined =
+          raw && Array.isArray(raw.items) && raw.items.length > 0 ? raw.items[0] : undefined
+
+        if (!topic) {
           setItems([])
           setTopicId(null)
           return
         }
-        setTopicId(result.id)
+
+        setTopicId(topic.id)
 
         // 대표 카드
         const hero: LatestItem = {
-          id: result.id,
-          press: result.imageSource?.press ?? '이미지',
-          title: result.topicName,
-          summary: result.aiSummary,
-          updatedAt: result.summaryTime,
-          imageUrl: result.imageUrl ?? '/src/assets/stk.jpg',
-          isSubscribed: result.isSubscribed ?? false,
+          id: topic.id,
+          press: topic.imageSource?.press ?? '이미지',
+          title: topic.topicName,
+          summary: topic.aiSummary,
+          updatedAt: topic.summaryTime,
+          imageUrl: topic.imageUrl ?? '/src/assets/stk.jpg',
+          isSubscribed: topic.isSubscribed ?? false,
         }
 
-        // 관련 기사 목록
-        const rest: LatestItem[] = (result.relatedArticles ?? []).map((r) => ({
+        // 관련 기사: 최신 스키마에서는 topic.relatedArticles에 존재
+        let related: LatestItem[] = (topic.relatedArticles ?? []).map((r) => ({
           id: r.id,
           press: r.press,
           title: r.title,
@@ -84,7 +94,26 @@ export default function UpdatesSidebar() {
           updatedAt: r.publishDate,
         }))
 
-        setItems([hero, ...rest])
+        // 폴백: 만약 배열이 비어 있으면 /topic/{id}/related 호출
+        if (related.length === 0) {
+          try {
+            const rel = await axiosInstance.get(`/topic/${topic.id}/related`, {
+              params: { size: 6 },
+            })
+            const content = rel?.data?.result?.content ?? []
+            related = (content as any[]).map((it) => ({
+              id: it.id ?? it.topicId,
+              press: it.press,
+              title: it.title,
+              summary: it.newsSummary,
+              updatedAt: it.publishDate,
+            }))
+          } catch {
+            /* ignore */
+          }
+        }
+
+        setItems([hero, ...related])
       } catch (e: any) {
         const code = e?.response?.status
         if (code === 404) setItems([])
@@ -104,7 +133,7 @@ export default function UpdatesSidebar() {
   // 구독에 넘길 ID 결정(토픽/기사)
   const subIdFor = (it?: LatestItem) => {
     if (SUBSCRIBE_SCOPE === 'article') return it?.id ?? topicId ?? 0
-    return topicId ?? it?.id ?? 0 // 기본은 대표 토픽 id
+    return topicId ?? it?.id ?? 0
   }
 
   return (
@@ -122,15 +151,20 @@ export default function UpdatesSidebar() {
 
             {/* 대표 카드 */}
             {!loading && !err && hero && (
-              <div className="mb-5">
-                <div className="mb-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-sm">{hero.title ?? '제목'}</span>
-                    <SubscribeButton
-                      id={subIdFor(hero)}
-                      subscribe={hero.isSubscribed ?? false}
-                      size="default"
-                    />
+              <div className="mb-2">
+                <div className="mb-2">
+                  {/*  제목은 flex-1 + min-w-0 로 공간 제한, 버튼은 flex-shrink-0 로 고정 */}
+                  <div className="flex items-start gap-2 mb-1">
+                    <span className="flex-1 min-w-0 font-semibold text-sm leading-snug truncate">
+                      {hero.title ?? '제목'}
+                    </span>
+                    <div className="flex-shrink-0">
+                      <SubscribeButton
+                        id={subIdFor(hero)}
+                        subscribe={hero.isSubscribed ?? false}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <span className="text-xs text-gray-500">업데이트 {fmt(hero.updatedAt)}</span>
                 </div>
