@@ -174,8 +174,8 @@ export const sendLoginCode = (
   try {
     const url = isLogin ? "/members/login/email" : "/members/signup/email";
     const defaultRedirectBaseUrl = isLogin 
-      ? "https://www.newsintelligent.site/login/magic?token="
-      : "https://www.newsintelligent.site/signup/magic?token=";
+      ? "https://www.newsintelligent.site/login/magic#token="
+      : "https://www.newsintelligent.site/signup/magic#token=";
     
     return axiosInstance.post(url, { 
       email, 
@@ -231,9 +231,10 @@ export const resendMagicLink = (
   redirectBaseUrl?: string
 ) => {
   const url = isLogin ? "/members/login/magic" : "/members/signup/magic";
+  // 해시 기반으로 토큰을 전달
   const defaultRedirectBaseUrl = isLogin 
-    ? "https://www.newsintelligent.site/login/magic?token="
-    : "https://www.newsintelligent.site/signup/magic?token=";
+    ? "https://www.newsintelligent.site/login/magic#token="
+    : "https://www.newsintelligent.site/signup/magic#token=";
   
   return axiosInstance.post(url, { 
     email, 
@@ -243,7 +244,7 @@ export const resendMagicLink = (
 
 // 이메일 변경 코드 전송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic?token=";
+  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
   
   return axiosInstance.post("/members/notification-email/change", { 
     email, 
@@ -265,7 +266,7 @@ export const verifyEmailChangeCode = async (
 
 //이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic?token=";
+  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
   
   return axiosInstance.post("/members/notification-email/magic", { 
     email, 
@@ -273,11 +274,7 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
   });
 };
 
-// 매직 링크 검증
-export const verifyMagicLink = async (
-  mode: "login" | "signup" | "notification-email",
-  token: string
-) => {
-  const resp = await axiosInstance.post("/api/auth/magic/verify", { mode, token });
-  return resp.data; // ApiEnvelope<AuthResult>
+// 매직 링크 검증 API는 더 이상 사용하지 않음 (백엔드가 리다이렉트로 토큰을 해시로 전달)
+export const verifyMagicLink = async () => {
+  throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
 };
