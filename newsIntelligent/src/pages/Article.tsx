@@ -1,18 +1,59 @@
+// src/pages/Article.tsx
 import { useEffect, useMemo, useRef, useState } from 'react'
 import UpdatesSidebar from '../components/UpdatesSideBar'
 import SubscribeButton from '../components/SubscribeButton'
 import { axiosInstance } from '../api/axios'
+import axios from 'axios'
 import { useSearchParams } from 'react-router-dom'
 
+// ---- 타입 선언 ----
+type Article = {
+  id: number
+  topicName: string
+  aiSummary?: string
+  imageUrl?: string
+  summaryTime?: string
+}
+
+type RelatedAPIItem = {
+  id: number
+  title: string
+  newsSummary: string
+  newsLink: string
+  press: string
+  publishDate?: string
+  pressLogoUrl?: string
+}
+
+type TopicCard = {
+  id: number
+  title: string
+  text: string
+  link: string
+  media: string
+  publishDate?: string
+  mediaLogo: string
+}
+
+type RelatedListResult = {
+  content: RelatedAPIItem[]
+  hasNext?: boolean
+  lastId?: number | null
+}
+
+// ---- 로고 맵 & 안전한 접근 ----
 const logoFileMap = {
   조선일보: 'media-chosun.svg',
   한겨레: 'media-hani.svg',
   경향신문: 'media-khan.svg',
   연합뉴스: 'media-yonhap.svg',
-}
+} as const
 
-function resolveLogo(press) {
-  const file = (press && logoFileMap[press]) || 'default.svg'
+function resolveLogo(press?: string) {
+  let file = 'default.svg'
+  if (press && press in logoFileMap) {
+    file = logoFileMap[press as keyof typeof logoFileMap]
+  }
   try {
     return new URL(`../assets/${file}`, import.meta.url).href
   } catch {
@@ -21,13 +62,14 @@ function resolveLogo(press) {
 }
 
 const ArticlePage = () => {
-  const [topics, setTopics] = useState([])
+  const [topics, setTopics] = useState<TopicCard[]>([])
   const [isScrolled, setIsScrolled] = useState(false)
-  const [article, setArticle] = useState(null)
-  const [lastId, setLastId] = useState(null)
-  const [hasNext, setHasNext] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [article, setArticle] = useState<Article | null>(null)
+  const [lastId, setLastId] = useState<number | null>(null)
+  const [hasNext, setHasNext] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+
   const [searchParams] = useSearchParams()
   const topicId = useMemo(() => {
     const raw = searchParams.get('id')
@@ -36,15 +78,21 @@ const ArticlePage = () => {
   }, [searchParams])
 
   const pageSize = 3
-  const fetchingRef = useRef(false)
+  const fetchingRef = useRef<boolean>(false)
 
+  // 스크롤 고정
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 142)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // 상단 기사 로딩
   useEffect(() => {
+    if (!topicId) {
+      setArticle(null)
+      return
+    }
     const controller = new AbortController()
     setError(null)
     ;(async () => {
@@ -52,31 +100,33 @@ const ArticlePage = () => {
         const res = await axiosInstance.get(`/topic/${topicId}`, {
           signal: controller.signal,
         })
-        setArticle(res.data?.result ?? null)
-      } catch (e) {
-        if (e.name !== 'CanceledError') {
-          setError('상단 기사 정보를 불러오지 못했습니다.')
-        }
+        const result = (res.data?.result ?? null) as Article | null
+        setArticle(result)
+      } catch (e: unknown) {
+        if (axios.isCancel(e)) return
+        setError('상단 기사 정보를 불러오지 못했습니다.')
       }
     })()
     return () => controller.abort()
   }, [topicId])
 
+  // 관련 토픽 로딩
   const fetchRelatedArticles = async (append = false) => {
+    if (!topicId) return
     if (fetchingRef.current || (append && !hasNext)) return
 
     fetchingRef.current = true
     setLoading(true)
     setError(null)
     try {
-      const params = { size: pageSize }
+      const params: { size: number; lastId?: number | null } = { size: pageSize }
       if (append && lastId) params.lastId = lastId
 
       const res = await axiosInstance.get(`/topic/${topicId}/related`, { params })
-      const result = res.data?.result ?? {}
-      const content = Array.isArray(result.content) ? result.content : []
+      const result = (res.data?.result ?? {}) as RelatedListResult
+      const content = Array.isArray(result.content) ? (result.content as RelatedAPIItem[]) : []
 
-      const mapped = content.map((item) => ({
+      const mapped: TopicCard[] = content.map((item: RelatedAPIItem) => ({
         id: item.id,
         title: item.title,
         text: item.newsSummary,
@@ -89,8 +139,8 @@ const ArticlePage = () => {
       setTopics((prev) => (append ? [...prev, ...mapped] : mapped))
       setHasNext(Boolean(result.hasNext))
       setLastId(result.lastId ?? null)
-    } catch (e) {
-      if (e.name !== 'CanceledError') {
+    } catch (e: unknown) {
+      if (!axios.isCancel(e)) {
         setError('관련 토픽을 불러오지 못했습니다.')
       }
     } finally {
@@ -101,8 +151,10 @@ const ArticlePage = () => {
 
   useEffect(() => {
     fetchRelatedArticles(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId])
 
+  // 요약 시간 포맷팅
   const formattedSummaryTime = useMemo(() => {
     if (!article?.summaryTime) return ''
     try {
@@ -135,11 +187,13 @@ const ArticlePage = () => {
             {formattedSummaryTime && (
               <p className="text-xs text-black mb-4">업데이트: {formattedSummaryTime}</p>
             )}
-            <SubscribeButton id={article?.id} subscribe={false} size="large" />
+
+            {article && <SubscribeButton id={article.id} subscribe={false} size="large" />}
+
             {article?.imageUrl && (
               <img
                 src={article.imageUrl}
-                alt={article.topicName}
+                alt={article.topicName || 'topic image'}
                 className="w-full h-[360px] object-cover rounded my-3"
               />
             )}
@@ -147,7 +201,7 @@ const ArticlePage = () => {
 
             {article?.aiSummary && (
               <article className="text-sm text-gray-800 leading-relaxed mb-8">
-                <p className={`line-clamp-${expanded ? 'none' : '3'} transition-all`}>
+                <p className={!expanded ? 'line-clamp-3 transition-all' : 'transition-all'}>
                   {article.aiSummary}
                 </p>
                 {!expanded && (
@@ -168,9 +222,9 @@ const ArticlePage = () => {
           {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
 
           <div className="flex flex-wrap gap-4 mb-8">
-            {topics.map((topic, idx) => (
+            {topics.map((topic) => (
               <a
-                key={`${topic.media}-${idx}`}
+                key={topic.id}
                 href={topic.link}
                 target="_blank"
                 rel="noopener noreferrer"
