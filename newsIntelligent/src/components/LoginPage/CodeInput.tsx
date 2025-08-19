@@ -19,6 +19,8 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
   const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
+  // 중복 검증 요청 방지 가드 (일회용 코드 특성 반영)
+  const verifyInFlightRef = useRef(false);
 
   // input 배열형 ref 설정 함수
   const setRef = (index: number) => (el: HTMLInputElement | null) => {
@@ -37,6 +39,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
       setIsLoading(false);
       setCode("");
       inputRefs.current[0]?.focus();
+      verifyInFlightRef.current = false; // 재전송 시 중복 요청 방지 플래그 초기화
     }    
   }, [isResending]);
 
@@ -44,9 +47,11 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
   useEffect(() => {
     const isComplete = code.length === 6 && code.split("").every((c) => c);
     if (!isComplete || isLoading || error || isResending) return;
+    if (verifyInFlightRef.current) return; // 중복 호출 방지
 
     (async () => {
       try {
+        verifyInFlightRef.current = true;
         setIsLoading(true);
         setError(false);
 
@@ -105,9 +110,8 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
         // 1) 헤더는 무조건 즉시 세팅 → 다음 페이지에서도 인증 유지
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-        // 2) 토큰 저장 - 자동로그인 체크 여부와 관계없이 항상 저장
-        // autoLogin이 true면 7일, false면 세션 종료 시까지 유지
-        const rememberDays = autoLogin ? 7 : 1; // 1일로 설정 (브라우저 세션과 유사)
+        // 2) 토큰 저장 - 자동로그인 체크 여부와 관계없이 항상 7일 유지
+        const rememberDays = 7;
         persistAuth(
           {
             accessToken,
@@ -124,6 +128,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
 
 
         setIsLoading(false);
+        setCode(""); // 입력창 리셋 (재전송 방지)
         onComplete(); // 성공 시 다음 단계로 이동
       } catch (e) {
         console.error(e);
@@ -131,6 +136,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
         setError(true);
         setCode("");
         inputRefs.current[0]?.focus();
+        verifyInFlightRef.current = false;
       }
     })();
   }, [code, isLoading, error, isResending, autoLogin, fromLoginLog, email, onComplete, verifyFn, setFromLoginLog]);

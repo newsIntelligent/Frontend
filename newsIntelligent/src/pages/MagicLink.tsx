@@ -1,16 +1,22 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../api/axios";
-import { type ApiEnvelope, type AuthResult, persistAuth, verifyMagicLink } from "../apis/auth";
+import { persistAuth } from "../apis/auth";
 
 type Mode = "login" | "signup" | "notification-email";
 
 export default function MagicLink() {
-  const [params] = useSearchParams();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const navigate = useNavigate();
-  const token = params.get("token") || "";
+  // 해시에서 토큰 파싱
+  const parseTokenFromHash = (h: string): string => {
+    if (!h) return "";
+    const raw = h.startsWith("#") ? h.slice(1) : h;
+    const params = new URLSearchParams(raw);
+    return params.get("token") || raw.replace(/^token=/, "").split("&")[0] || "";
+  };
+  const token = parseTokenFromHash(hash);
 
   // 경로로 mode 판단: /login/magic | /signup/magic | /settings/notification-email/magic
   const mode: Mode | null =
@@ -31,28 +37,26 @@ export default function MagicLink() {
       try {
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-        const resp: ApiEnvelope<AuthResult> = await verifyMagicLink(mode, token);
-        if (!resp?.isSuccess || !resp?.result?.accessToken) {
-          throw new Error(resp?.message || "매직 링크 검증 실패");
-        }
-
-        const { accessToken, refreshToken, expiresInSec, user } = resp.result;
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+        // 백엔드가 리다이렉트로 전달한 토큰을 그대로 저장
+        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
         const rememberDays = 7;
         persistAuth(
           {
-            accessToken,
-            refreshToken,
-            expiresInSec: expiresInSec ?? rememberDays * 86400,
-            user: { email: user.email, name: user.name || user.email.split("@")[0], profileImageUrl: user.profileImageUrl },
+            accessToken: token,
+            refreshToken: undefined,
+            expiresInSec: rememberDays * 86400,
+            user: { email: "", name: "", profileImageUrl: undefined },
           },
           rememberDays
         );
 
         setStatus("done");
-        // 성공 시 /settings로 이동
-        navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/settings", { replace: true });
+        // 성공 시 이동 경로: 로그인/회원가입 → 홈, 이메일 변경 → settings
+        navigate(
+          mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+          { replace: true }
+        );
       } catch (e: any) {
         console.error(e);
         setStatus("error");

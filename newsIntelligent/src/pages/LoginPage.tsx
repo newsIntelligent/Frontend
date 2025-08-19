@@ -45,7 +45,22 @@ const LoginPage = () => {
       console.error(error);
       setHasLoginHistory(false);
     }
-  }, []);
+
+    // 새로고침 시 확인 모달 추가
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (step === "verify") {
+        e.preventDefault();
+        e.returnValue = "이 페이지를 벗어나면 현재 작성 중인 내용이 사라집니다.";
+        return "이 페이지를 벗어나면 현재 작성 중인 내용이 사라집니다.";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [step]);
 
   // 새 코드 요청
   const handleResendCode = async () => {
@@ -163,7 +178,7 @@ const LoginPage = () => {
 
       case "verify":
         return <CodeInput 
-                  onComplete={()=> navigate("/settings")}
+                  onComplete={()=> navigate("/")}
                   autoLogin={autoLogin}
                   setAutoLogin={setAutoLogin}
                   isResending={isResending}
