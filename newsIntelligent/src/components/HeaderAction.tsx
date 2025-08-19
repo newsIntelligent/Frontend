@@ -41,11 +41,6 @@ function HeaderAction() {
       setOpenNotification(false); // 컴포넌트 마운트 시 알림창 닫기
     }, [])
     
-    useEffect(() => {
-      if (showNotification && !isLogin) {
-        setOpenNotification(false); // 로그인 아니면 알림창 닫기
-      }
-    }, [showNotification, isLogin]);
 
     return(
         <div className={`flex  justify-between h-[40px]} gap-[28px]
@@ -61,7 +56,7 @@ function HeaderAction() {
                       <Notification isOpen={openNotification} setNotification={setNewNotification} onClose={handleNotificationClose}/>
                     )}
                     {showNotification && !isLogin && (
-                      <LoginAlertModal />
+                      <LoginAlertModal open={openNotification} onClose={()=>setOpenNotification(false)}/>
                     )}
                   </div>
                   { isLogin 

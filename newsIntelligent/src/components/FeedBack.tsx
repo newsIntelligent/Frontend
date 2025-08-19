@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TopicTag from "./TopicTag";
 import Chatting from "./Chatting";
 import ChatIcon from "../assets/ChatIcon";
@@ -22,9 +22,10 @@ function FeedBack() {
     )
     const [inputText, setInputText] = useState("");
     const [tag, setTag] = useState<string | null>(null);
+    const feedbackRef = useRef<HTMLDivElement | null>(null);
 
     const sending = useMutation ({
-        mutationFn: async() => postFeedback(),
+        mutationFn: async() => postFeedback(inputText),
         onMutate: () => {
             setMessage(prevMessages => [
                 ...prevMessages,
@@ -47,11 +48,38 @@ function FeedBack() {
         }
     })
   
+    const onKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) { 
+          e.preventDefault();          
+          sending.mutate();      
+        }
+      };
+
+      useEffect(() => {
+        if (!openFeedback) return; //피드백이 닫혀있을 때는 작동 X
+      
+        const handleClickOutside = (e: MouseEvent) => {
+          const target = e.target as Node;
+          if (feedbackRef.current && !feedbackRef.current.contains(target)) { // 피드백 영역 외부 클릭 감지
+            setOpenFeedback(false);
+          }
+        };
+      
+        document.addEventListener("mousedown", handleClickOutside); 
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+      }, [openFeedback]); 
+  
+
+      
 
     return(
-        <div className="fixed bottom-[69px] right-[141px] z-50 flex flex-col items-end gap-[8px]">
+        <div className="fixed bottom-[69px] right-[141px] z-50 flex flex-col items-end gap-[8px]"
+        ref={feedbackRef}>  
             {openFeedback && 
-                <div className="flex flex-col w-[380px] shadow-[2px_4px_8px_0px_rgba(0,0,0,0.15)] backdrop-blur-lg rounded-t-[16px]">
+                <div className="flex flex-col w-[380px] shadow-[2px_4px_8px_0px_rgba(0,0,0,0.15)] backdrop-blur-lg rounded-t-[16px]"
+                   >
                     <div className="flex flex-col w-full h-[78px] rounded-t-[16px] bg-[#0EA6C0] pl-[33px] pt-[16px] text-white gap-[-6px]">
                         <div className="font-bold text-[16px h-[28px]">의견 창구</div>
                         <div className="font-semibold text-[12px] h-[28px]">더 나은 서비스를 위해 의견을 보내주세요</div>
@@ -70,7 +98,8 @@ function FeedBack() {
                             placeholder:text-[#919191] font-normal leading-none resize-none"
                             placeholder="메세지 입력"
                             value={inputText}
-                            onChange={(e)=>setInputText(e.target.value)}/>
+                            onChange={(e)=>setInputText(e.target.value)}
+                            onKeyDown={onKeyPress}/>
                         <button className="w-[59px] h-[30px] rounded-[4px] px-[16px] py-[6px] bg-[#0EA6C0]
                             absolute right-[5px] bottom-[7px]  text-white text-[12px] text-center leading-none"
                             onClick={() => sending.mutate()}>

@@ -1,14 +1,7 @@
 import { topicRead } from '../api/topic'
+import type { MainArticleCardProps } from '../types/article'
 import SubscribeButton from './SubscribeButton'
 import { useNavigate, createSearchParams } from 'react-router-dom'
-
-type MainArticleCardProps = {
-  id: number
-  topicName: string
-  aiSummary: string
-  imageUrl: string
-  summaryTime: string
-}
 
 function MainArticleCard({
   id,
@@ -16,21 +9,25 @@ function MainArticleCard({
   aiSummary,
   imageUrl,
   summaryTime,
+  imageSource,
 }: MainArticleCardProps) {
   const navigate = useNavigate()
 
   const formatTime = (iso: string): string => {
     const time = new Date(iso)
-    return time.toLocaleTimeString('ko-KR', {
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
+    const mm = time.getMonth() + 1
+    const dd = time.getDate()
+    const hh = time.getHours()
+    const mi = time.getMinutes()
+
+    return `${mm}/${dd} ${hh}:${mi}`
   }
+
   const handleClick = () => {
-    topicRead(id)
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      topicRead(id)
+    }
     navigate({
       pathname: '/article',
       search: `?${createSearchParams({ id: String(id) })}`,
@@ -40,7 +37,9 @@ function MainArticleCard({
   return (
     <div className="flex flex-col w-[410px] h-[265px] rounded-[8px] border border-[#919191] px-[26px] pt-[17px] pb-[21px]">
       <div className="flex justify-between items-center text-[12px] text-[#919191]">
-        <span className="truncate w-[300px]">업데이트 {formatTime(summaryTime)}</span>
+        
+        <span className="truncate w-[300px]">업데이트 {formatTime(summaryTime)} · 이미지  {imageSource?.press}  <a className="underline" > "{imageSource?.title}"</a>
+        </span> 
         <SubscribeButton id={id} />
       </div>
 

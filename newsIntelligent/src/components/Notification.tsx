@@ -43,8 +43,6 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
   }, [data])
 
 
-
-
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => setVisible(true), 10); // 마운트 후 트랜지션 시작
@@ -108,6 +106,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
 
       else return `${diffDays}일 전`; //하루가 지난 알람은 일수로 표시
   }; //알림 시간 표시 
+
   
   return (
     <div
@@ -135,11 +134,11 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
       { notifications.length > 0
       //알림이 있는 경우
         ? <ul className="overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        {notifications.map ((item, index) => (
+        {notifications.map ((item) => (
            <li 
-            key={index} 
+            key={item.id} 
             className="flex justify-between h-11 gap-3 px-[12px] py-[6px] border-b border-b-[#E6E6E6]"
-            onClick={() => handleCheck(index)}>
+            onClick={() => handleCheck(item.id)}>
              <div className="flex justify-start items-center gap-2.5">
                <div className={`w-14 h-5 px2.5 rounded-[20px] text-xs  text-center font-semibold
                   ${item.isChecked ? 'bg-[#F5F5F5] text-[#777777]':'bg-[#0EA6C01A] text-[#0B8E8E]'} `}> 

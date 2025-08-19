@@ -57,6 +57,7 @@ function Header() {
                     ? "text-[#07525F] font-semibold border-b-2 border-[#07525F] "
                     : "text-[#1D1D1D]"
                 }`}
+                onClick={menu === "경제" ? () => navigation("/") : undefined}
               >
                 {menu}
               </button>
