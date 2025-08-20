@@ -1,32 +1,29 @@
-import { useNavigate } from "react-router-dom";
+import { createSearchParams, useNavigate } from "react-router-dom";
 import { topicRead } from "../api/topic";
 import SubscribeButton from "./SubscribeButton";
+import type { MainArticleCardProps } from "../types/article";
 
-type MainArticleCardProps = {
-    id: number;
-    topicName: string;
-    aiSummary: string;
-    imageUrl: string;
-    summaryTime: string;
-  }
 
-function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArticleCardProps) {
+function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime, imageSource}: MainArticleCardProps) {
 
-    const formatTime = (iso: string) : string => {
-        const time = new Date(iso);
-        return time.toLocaleTimeString("ko-KR", {
-            month: "numeric",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        })
-    }
+    const formatTime = (iso: string): string => {
+        const time = new Date(iso)
+        const mm = time.getMonth() + 1
+        const dd = time.getDate()
+        const hh = time.getHours()
+        const mi = time.getMinutes()
+    
+        return `${mm}/${dd} ${hh}:${mi}`
+      }
 
-    const navigate = useNavigate(); //희정 님이랑 이야기 해서 id어떻게 넘겨줄지  mainArticleCard도 똑같이 
+    const navigate = useNavigate();
+
     const handleClick = () => {
-      topicRead(id);
-      navigate("/article");
+        topicRead(id);
+        navigate({
+            pathname: "/article",
+            search: `?${createSearchParams({ id: String(id) })}`,
+        })
     }
 
     return(
@@ -52,6 +49,7 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime}: MainArti
                         </p>
                     </div>
                 </div>
+                <div className="w-full h-[20px] text-[10px] text-[#919191] ">이미지 · {imageSource?.press}  <a className="underline" > "{imageSource?.title}"</a></div>
                 <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(summaryTime)}</div>
         </div>
     )

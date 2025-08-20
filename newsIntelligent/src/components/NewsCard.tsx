@@ -86,7 +86,7 @@ const formatSummaryTime = (isoString: string) => {
   return `${mm}/${dd} ${hh}:${min}`;
 };
 
-const NewsCard = ({ data }: { data: Topics }) => {
+const NewsCard = ({ data, sub }: { data: Topics, sub?:boolean }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const toggleDropdown = () => setIsExpanded((v) => !v);
 
@@ -158,7 +158,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} />
+                <SubscribeButton id={data.id} subscribe={sub} />
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -250,7 +250,7 @@ const NewsCard = ({ data }: { data: Topics }) => {
                     SourceText
                     )}
                 </p>
-                <SubscribeButton id={data.id} />
+                <SubscribeButton id={data.id} subscribe={sub}/>
                 </div>
 
                 <div className="flex flex-col gap-4">

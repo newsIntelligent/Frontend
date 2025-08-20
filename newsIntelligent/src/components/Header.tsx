@@ -31,9 +31,9 @@ function Header() {
     <header
   className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#C1C1C1]
   transition-all duration-300 
-  ${isScrolled ? "h-[60px]" : "h-[142px] pt-[16px]"} flex justify-center`}
+  ${isScrolled ? "h-[60px]" : "h-[142px] pt-[16px]"} `}
 >
-  <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300  pb-0">
+  <div className="w-[1440px] px-[104px] flex flex-col transition-all duration-300  pb-0 mx-auto">
     {isScrolled ? (
       <div className="flex justify-between items-center h-[60px] gap-[300px]">
         <img src="/SmallLogo.svg" alt="Logo" className="w-[42px]" onClick={handleLogoClick}/>
@@ -57,6 +57,7 @@ function Header() {
                     ? "text-[#07525F] font-semibold border-b-2 border-[#07525F] "
                     : "text-[#1D1D1D]"
                 }`}
+                onClick={menu === "경제" ? () => navigation("/") : undefined}
               >
                 {menu}
               </button>

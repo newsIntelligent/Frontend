@@ -1,15 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { topicSubscribe, topicUnsubscribe } from "../api/topic";
 import { useMutation } from "@tanstack/react-query";
+import LoginAlertModal from "./LoginAlertModal";
+
 type SubscribeButtonProps = {
     id: number;
     subscribe?: boolean; // 구독 상태, 기본값은 false
     size?: 'default' | 'large';
+
+}
+
+function getAccessTokenFromStorage() {
+  const token = localStorage.getItem("accessToken");
+  if (token) return token;
 }
 
 function SubscribeButton({id, size = "default", subscribe = false}: SubscribeButtonProps) {
     const [sub, setSub] = useState(subscribe); // 구독 상태 관리
+    const [isOpen, setIsOpen] = useState(false); // 로그인 알림 모달 상태
     
+    useEffect(() => {
+        setSub(subscribe);
+    }, [subscribe]);
     const toggleSubscribe = useMutation ({
       mutationFn: async (next: boolean) => {
         return next? topicSubscribe(id) : topicUnsubscribe(id);
@@ -21,9 +33,25 @@ function SubscribeButton({id, size = "default", subscribe = false}: SubscribeBut
         setSub(!next); // 에러 발생 시 이전 상태로 되돌림
       }
     })
+
+    const handleClick = () => {
+      const token = getAccessTokenFromStorage();
+      console.log("토큰 확인:", token);
+      if (!token) {
+        console.log("로그인 필요");
+        setIsOpen(true); // 로그인 알림 모달 열기
+    }
+    else {
+        console.log("구독 상태 변경", sub);
+        toggleSubscribe.mutate(!sub); 
+    }
+
+  }
+    
     
 
   return (
+    <>
     <button className={`
       ${size === 'default' ? 'w-[50px] h-[20px] text-xs' : 'w-[76px] h-[32px] text-[16px]'}
         rounded-[20px] border text-center font-semibold 
@@ -34,9 +62,13 @@ function SubscribeButton({id, size = "default", subscribe = false}: SubscribeBut
             :'bg-transparent border-[#0EA6C0] text-[#0EA6C0] hover:bg-[#0EBEBE26]'}
             transition-all duration-300
        `}
-        onClick={() => toggleSubscribe.mutate(!sub)}>
+        onClick={handleClick}>
       {sub ? '구독 중' : '+ 구독'}
     </button>
+    {isOpen && <LoginAlertModal open={isOpen} onClose={()=>setIsOpen(false)}/>}
+    
+    </>
+    
   );
 }
 
