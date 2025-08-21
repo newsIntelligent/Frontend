@@ -95,7 +95,8 @@ function FeedBack() {
                             </div>
                         </div>
                         <textarea className="w-full h-[121px] bg-white border border-[#E6E6E6] p-[12px] relative focus:outline-none text-sm
-                            placeholder:text-[#919191] font-normal leading-none resize-none"
+                            placeholder:text-[#919191] font-normal leading-none resize-none "
+                            autoFocus
                             placeholder="메세지 입력"
                             value={inputText}
                             onChange={(e)=>setInputText(e.target.value)}
