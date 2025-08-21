@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import useThrottle from "../hooks/useThrottle";
@@ -7,9 +7,10 @@ import { checkAllNotification, checkNotification, getNotification } from "../api
 import { useNavigate } from "react-router-dom";
 
 function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, setNotification: (value: boolean) => void, onClose?: () => void }) {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(isOpen);
   const [newNotification, setNewNotification] = useState(false); //읽지 않은 알람이 있으면 true
   const navigation = useNavigate();
+  const notificationRef = useRef<HTMLDivElement | null>(null);
 
   const {data, 
     fetchNextPage, 
@@ -44,12 +45,12 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
 
 
   useEffect(() => {
-    if (isOpen) {
+    if (visible) {
       setTimeout(() => setVisible(true), 10); // 마운트 후 트랜지션 시작
     } else {
       setVisible(false);
     }
-  }, [isOpen]);
+  }, [visible]);
 
   const handleAllCheck = () => {
     checkAllNotification();
@@ -64,6 +65,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
     navigation('/notification')
   }//알림 설정 페이지로 이동
 
+/*
   const highlightQuotedText = (text: string): React.ReactNode => {
     const regex = /'([^']+)'/g;
     const parts: React.ReactNode[] = [];
@@ -88,6 +90,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
   
     return parts;
   };  //구독 토픽 강조
+*/
 
   const formatTime = (iso: string) : string => {
       const now = new Date();
@@ -107,7 +110,24 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
       else return `${diffDays}일 전`; //하루가 지난 알람은 일수로 표시
   }; //알림 시간 표시 
 
+  useEffect(() => {
+    if (!visible) return; //피드백이 닫혀있을 때는 작동 X
   
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (notificationRef.current && !notificationRef.current.contains(target)) { // 피드백 영역 외부 클릭 감지
+        setVisible(false);
+        onClose?.(); // 트랜지션 끝나면 DOM에서 제거
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside); 
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [visible]); 
+
+
   return (
     <div
       className={`absolute right-0 top-[48px] w-[440px] h-[400px] 
@@ -117,6 +137,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
         ${visible ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-8 pointer-events-none'}
       `}
       onTransitionEnd={() => { if (!isOpen && onClose) onClose(); }}
+      ref={notificationRef}
     >
       <div className="flex justify-between items-center px-4 py-2 text-sm font-semibold  text-[#919191]">
         { newNotification 
@@ -146,7 +167,7 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen:boolean, se
                 <div className="flex flex-col justify-center text-sm w-[305px] h-[42px] ">
                   {item.type === "READ_TOPIC" && <div className="text-xs text-[#777777]">읽은 기사에 새로운 업데이트가 있습니다.</div>}
                 <div className={`justify-center text-sm w-[305px] line-clamp-1 ${item.isChecked ? 'text-[#777777]':'text-black'}`}>
-               {highlightQuotedText(item.content)}
+               {item.content}
                </div>
                 </div>
              </div>

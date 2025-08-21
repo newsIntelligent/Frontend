@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Notification from "./Notification";
 import BellIcon from "../assets/BellIcon";
 import ProfileIcon from "../assets/ProfileIcon";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import LoginAlertModal from "./LoginAlertModal";
 
 function getAccessTokenFromStorage() {
@@ -17,6 +17,14 @@ function HeaderAction() {
     const [isLogin, setIsLogin] = useState(true); //로그인 상태 구분
     const [showNotification, setShowNotification] = useState(false); //DOM 렌더링 여부
     const navigation = useNavigate();
+    const {pathname} = useLocation();
+
+    const isMypage = pathname === "/subscriptions" 
+    || pathname === "/settings" 
+    || pathname === "/notification" 
+    || pathname === "/read-topic"
+    || pathname === "/settings/changes";
+
 
     const handleBellClick = () => {
         if (!openNotification) setShowNotification(true); // 열 때만 바로 렌더
@@ -61,7 +69,7 @@ function HeaderAction() {
                   </div>
                   { isLogin 
                     ? <ProfileIcon 
-                      className="w-[32px] cursor-pointer"
+                      className= {`w-[32px] cursor-pointer ${isMypage? 'bg-[#0EBEBE1F] rounded-[20px]':''}`}
                       onClick={handleProfileClick}
                     />
                     : <button className="w-[126px] h-[36px] inline-flex items-center justify-center
