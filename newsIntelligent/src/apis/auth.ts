@@ -262,11 +262,12 @@ export const resendMagicLink = (
 
 // 이메일 변경 코드 전송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
-  // 백엔드 명세: PATCH + newEmail 필드 사용
-  return axiosInstance.patch("/members/notification-email/change", { 
-    newEmail: email, 
-    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
+  // POST /members/notification-email/change
+  // 일부 환경에서 리다이렉트 URL 요구 → 기본값 제공
+  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
+  return axiosInstance.post("/members/notification-email/change", {
+    newEmail: email,
+    redirectBaseUrl: redirectBaseUrl,
   });
 };
 
@@ -275,8 +276,7 @@ export const verifyEmailChangeCode = async (
   email: string,
   code: string
 ): Promise<ApiEnvelope<void>> => {
-  // 백엔드 명세: PATCH + newEmail 필드 사용
-  const { data } = await axiosInstance.patch("/members/notification-email/verify", {
+  const { data } = await axiosInstance.post("/members/notification-email/verify", {
     newEmail: email,
     code,
   });
@@ -285,10 +285,10 @@ export const verifyEmailChangeCode = async (
 
 //이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
-  return axiosInstance.post("/members/notification-email/change", { 
-    newEmail: email, 
-    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
+  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/change#token=";
+  return axiosInstance.post("/members/notification-email/change", {
+    newEmail: email,
+    redirectBaseUrl: redirectBaseUrl,
   });
 };
 

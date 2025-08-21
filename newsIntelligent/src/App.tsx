@@ -40,12 +40,12 @@ function App() {
                 <Route path="/notification" element={<NotificationSettingPage />} />
                 <Route path="/settings" element={<SettingPage />} />
                 <Route path="/settings/changes" element={<SettingChangePage />} />
+                <Route path="/email-change" element={<EmailChangePage />} />
               </Route>
 
               <Route path="/article" element={<ArticlePage />} />
             </Route>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/email-change" element={<EmailChangePage />} />
             <Route path="/login/magic" element={<MagicLink />} />
             <Route path="/signup/magic" element={<MagicLink />} />
             <Route path="/settings/notification-email/magic" element={<MagicLink />} />

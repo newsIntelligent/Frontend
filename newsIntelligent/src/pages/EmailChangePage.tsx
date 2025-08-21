@@ -34,10 +34,17 @@ const EmailChangePage = () => {
                 <EmailInput
                     autoLogin={false}
                     onToggleAutoLogin={()=>{}}
+                    showAutoLogin={false}
+                    submitLabel="알림 받을 이메일 변경하기"
                     onNext={async (inputEmail)=>{
-                        setEmail(inputEmail);
-                        await sendEmailChangeCode(inputEmail);
-                        setStep("verify");
+                        try{
+                            const canonical = inputEmail.trim().toLowerCase();
+                            setEmail(canonical);
+                            await sendEmailChangeCode(canonical);
+                            setStep("verify");
+                        } catch (e) {
+                            console.error("이메일 변경 코드 전송 실패", e);
+                        }
                     }}
                 />
             );
