@@ -10,6 +10,7 @@ export interface Topics {
     summaryTime : string;
     imageUrl : string;
     imageSource : Image;
+    isSub : boolean;
 }
 
 export interface Result {
