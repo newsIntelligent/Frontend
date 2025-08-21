@@ -4,6 +4,7 @@ import BellIcon from "../assets/BellIcon";
 import ProfileIcon from "../assets/ProfileIcon";
 import { useNavigate } from "react-router-dom";
 import LoginAlertModal from "./LoginAlertModal";
+import { isTokenExpired } from '../apis/auth';
 
 function getAccessTokenFromStorage() {
   const token = localStorage.getItem("accessToken");
@@ -35,8 +36,10 @@ function HeaderAction() {
 
     useEffect(() => {
       const token = getAccessTokenFromStorage();
-      if (!token) {
-        setIsLogin(false); // 로그인 상태가 아니면 false로 설정
+      if (!token || isTokenExpired()) {
+        setIsLogin(false); // 토큰이 없거나 만료되면 false
+      } else {
+        setIsLogin(true);
       }
       setOpenNotification(false); // 컴포넌트 마운트 시 알림창 닫기
     }, [])
