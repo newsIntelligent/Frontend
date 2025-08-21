@@ -170,8 +170,6 @@ const ArticlePage = () => {
     }
   }, [article?.summaryTime])
 
-  const [expanded, setExpanded] = useState(false)
-
   return (
     <div className="flex justify-center bg-gray-50 overflow-visible">
       <div className="w-[1440px] flex overflow-visible min-h-screen">
