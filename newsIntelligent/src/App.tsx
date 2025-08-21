@@ -14,10 +14,19 @@ import FeedBackLayout from './layout/FeedBackLayout'
 import ProtectedRoute from './Routes/ProtectedRoute'
 import EmailChangePage from './pages/EmailChangePage'
 import MagicLink from './pages/MagicLink'
+import { useEffect } from 'react';
+import { isTokenExpired, clearAuth } from './apis/auth';
 
 const queryClient = new QueryClient()
 
 function App() {
+  // 토큰 만료 시 토큰만 삭제, userInfo는 유지(LoginLog에서 사용용)
+  useEffect(() => {
+    if (isTokenExpired()) {
+      clearAuth(true); // 토큰만 삭제, userInfo는 남김
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -31,12 +40,12 @@ function App() {
                 <Route path="/notification" element={<NotificationSettingPage />} />
                 <Route path="/settings" element={<SettingPage />} />
                 <Route path="/settings/changes" element={<SettingChangePage />} />
+                <Route path="/email-change" element={<EmailChangePage />} />
               </Route>
 
               <Route path="/article" element={<ArticlePage />} />
             </Route>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/email-change" element={<EmailChangePage />} />
             <Route path="/login/magic" element={<MagicLink />} />
             <Route path="/signup/magic" element={<MagicLink />} />
             <Route path="/settings/notification-email/magic" element={<MagicLink />} />

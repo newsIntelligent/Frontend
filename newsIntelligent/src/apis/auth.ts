@@ -217,11 +217,29 @@ export const verifyLoginCode = async (
 };
 
 // 회원가입 인증 코드 검증
-export async function verifySignupCode(email: string, code: string){
-  const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
-  // ✅ 토큰이 없어도 성공으로 처리되게
-  const result = normalizeToAuthResult(data, { allowMissingAccessToken: true });
-  return { isSuccess: true, result, message: data?.message, code: data?.code } as ApiEnvelope<AuthResult | undefined>;;
+export async function verifySignupCode(email: string, code: string): Promise<ApiEnvelope<AuthResult>> {
+  if (!email || !email.includes('@')) {
+    throw new Error('Invalid email format');
+  }
+  if (!code || code.trim().length === 0) {
+    throw new Error('Code cannot be empty');
+  }
+
+  try {
+    const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
+    const normalized = normalizeToAuthResult(data);
+
+    return {
+      isSuccess: !!((data?.isSuccess ?? true) && normalized),
+      status: data?.status,
+      code: data?.code,
+      message: data?.message,
+      result: normalized as AuthResult | undefined,
+    };
+  } catch (error) {
+    console.error('Failed to verify signup code:', error);
+    throw error;
+  }
 }
 
 // 로그인/회원가입 코드 재요청
@@ -230,7 +248,7 @@ export const resendMagicLink = (
   isLogin: boolean,
   redirectBaseUrl?: string
 ) => {
-  const url = isLogin ? "/members/login/magic" : "/members/signup/magic";
+  const url = isLogin ? "/members/login/email" : "/members/signup/email";
   // 해시 기반으로 토큰을 전달
   const defaultRedirectBaseUrl = isLogin 
     ? "https://www.newsintelligent.site/login/magic#token="
@@ -244,11 +262,12 @@ export const resendMagicLink = (
 
 // 이메일 변경 코드 전송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
-  
-  return axiosInstance.post("/members/notification-email/change", { 
-    email, 
-    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
+  // POST /members/notification-email/change
+  // 일부 환경에서 리다이렉트 URL 요구 → 기본값 제공
+  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
+  return axiosInstance.post("/members/notification-email/change", {
+    newEmail: email,
+    redirectBaseUrl: redirectBaseUrl,
   });
 };
 
@@ -258,7 +277,7 @@ export const verifyEmailChangeCode = async (
   code: string
 ): Promise<ApiEnvelope<void>> => {
   const { data } = await axiosInstance.post("/members/notification-email/verify", {
-    email,
+    newEmail: email,
     code,
   });
   return data;
@@ -266,11 +285,10 @@ export const verifyEmailChangeCode = async (
 
 //이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
-  
-  return axiosInstance.post("/members/notification-email/magic", { 
-    email, 
-    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
+  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/change#token=";
+  return axiosInstance.post("/members/notification-email/change", {
+    newEmail: email,
+    redirectBaseUrl: redirectBaseUrl,
   });
 };
 

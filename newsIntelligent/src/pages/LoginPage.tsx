@@ -131,8 +131,12 @@ const LoginPage = () => {
                 // ✅ 발급 단계에서도 canonical 처리
                 const canonical = inputEmail.trim().toLowerCase();
                 setEmail(canonical);
+                
+                // 이메일에서 사용자명 추출 (예: test@example.com → test)
+                const emailName = canonical.split('@')[0];
+                setUserName(emailName);
 
-                // 로그인 코드 전송 먼저 시도 → “가입 필요”면 회원가입 코드로 폴백
+                // 로그인 코드 전송 먼저 시도 → "가입 필요"면 회원가입 코드로 폴백
                 try {
                   await sendLoginCode(canonical, /* isLogin */ true);
                   setFromLoginLog(true);   // 검증에서도 로그인 플로우로 진행

@@ -5,11 +5,11 @@ interface LoginLogProps {
 }
 
 const LoginLog = ({onSelect}:LoginLogProps) => {
-  const token = localStorage.getItem("accessToken");
   const userInfo = localStorage.getItem("userInfo");
   const user = userInfo ? JSON.parse(userInfo) : null;
 
-  if (!token || !user) return null;
+  // 토큰이 없어도 userInfo만 있으면 노출
+  if (!user) return null;
 
   return (
     <div className="w-full max-w-[500px] h-auto min-h-[129px] flex flex-col justify-items-start">
