@@ -5,7 +5,6 @@ interface LoginLogProps {
 }
 
 const LoginLog = ({onSelect}:LoginLogProps) => {
-  const token = localStorage.getItem("accessToken");
   const userInfo = localStorage.getItem("userInfo");
   const user = userInfo ? JSON.parse(userInfo) : null;
 
