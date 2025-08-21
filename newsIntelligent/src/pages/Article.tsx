@@ -170,8 +170,6 @@ const ArticlePage = () => {
     }
   }, [article?.summaryTime])
 
-  const [expanded, setExpanded] = useState(false)
-
   return (
     <div className="flex justify-center bg-gray-50 overflow-visible">
       <div className="w-[1440px] flex overflow-visible min-h-screen">
@@ -201,14 +199,7 @@ const ArticlePage = () => {
 
             {article?.aiSummary && (
               <article className="text-sm text-gray-800 leading-relaxed mb-8">
-                <p className={!expanded ? 'line-clamp-3 transition-all' : 'transition-all'}>
-                  {article.aiSummary}
-                </p>
-                {!expanded && (
-                  <button className="text-blue-500 text-xs mt-2" onClick={() => setExpanded(true)}>
-                    더보기
-                  </button>
-                )}
+                <p className="transition-all whitespace-pre-line">{article.aiSummary}</p>
               </article>
             )}
           </div>
