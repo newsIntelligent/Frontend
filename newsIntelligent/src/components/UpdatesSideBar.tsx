@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '../api/axios'
 import SubscribeButton from '../components/SubscribeButton'
 
@@ -68,7 +67,6 @@ const clamp2: React.CSSProperties = {
 
 export default function UpdatesSidebar() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   // 화면 표시용 상태
   const [hero, setHero] = useState<LatestItem | null>(null)
   const [sources, setSources] = useState<LatestItem[]>([]) // 메인 아래 3개(출처 기사)
@@ -79,7 +77,7 @@ export default function UpdatesSidebar() {
 
   // 순환용 원본 데이터 & 인덱스
   const [items, setItems] = useState<LatestApiItem[]>([])
-  const [_currentIdx, setCurrentIdx] = useState(0)
+  const [currentIdx, setCurrentIdx] = useState(0)
 
   // 관련 기사 캐시 (topicId -> LatestItem[])
   const relatedCache = useRef<Map<number, LatestItem[]>>(new Map())
@@ -218,30 +216,6 @@ export default function UpdatesSidebar() {
     // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
   }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
 
-  // 구독 상태 업데이트 함수
-  const updateSubscriptionStatus = (topicId: number, isSubscribed: boolean) => {
-    console.log('UpdatesSideBar - updateSubscriptionStatus 호출:', topicId, isSubscribed)
-
-    // hero 업데이트
-    if (hero && hero.id === topicId) {
-      setHero((prev) => (prev ? { ...prev, isSubscribed } : null))
-    }
-
-    // others 업데이트
-    setOthers((prev) =>
-      prev.map((item) => (item.id === topicId ? { ...item, isSubscribed } : item))
-    )
-
-    // items 업데이트 (원본 데이터도 업데이트)
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === topicId ? { ...item, isSubscribed, isSub: isSubscribed } : item
-      )
-    )
-
-    // 이벤트는 SubscribeButton의 onSuccess에서 발생하므로 여기서는 제거
-  }
-
   // 다른 페이지에서 구독 상태가 변경되었을 때 감지
   useEffect(() => {
     const handleSubscriptionChange = (e: CustomEvent) => {
@@ -270,30 +244,6 @@ export default function UpdatesSidebar() {
     return () =>
       window.removeEventListener('subscriptionChanged', handleSubscriptionChange as EventListener)
   }, [hero])
-
-  // 최신 데이터 새로고침 함수
-  const refreshLatestData = async () => {
-    try {
-      const { data } = await axiosInstance.get('/topic/latest')
-      const raw = data?.result as LatestApiResultV2 | undefined
-      const list = raw?.items ?? []
-
-      if (list.length > 0) {
-        setItems(list)
-        // 현재 표시 중인 아이템이 여전히 존재하는지 확인
-        const currentItem = list.find((item) => item.id === topicId)
-        if (currentItem) {
-          await applyViewFromItem(currentItem)
-        } else {
-          // 현재 아이템이 없으면 첫 번째 아이템으로 변경
-          await applyViewFromItem(list[0])
-          setCurrentIdx(0)
-        }
-      }
-    } catch (error) {
-      console.error('최신 데이터 새로고침 실패:', error)
-    }
-  }
 
   // 구독 ID 결정
   const subIdFor = (it?: LatestItem) => {
