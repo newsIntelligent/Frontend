@@ -56,7 +56,7 @@ function MainPage() {
 
   return (
     <div className="w-full overflow-x-hidden "> 
-    <div className='w-[1440px] flex  min-h-screen mx-auto gap-[4g0px]'>
+    <div className='w-[1440px] flex  min-h-screen mx-auto '>
     <aside
                 className={`sticky w-[320px] ml-[25px] self-start 
                   ${isScrolled ? 'top-[75px]' : ""}`}
