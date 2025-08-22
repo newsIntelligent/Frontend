@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth } from "../apis/auth";
+import { persistAuthRelaxed } from "../apis/auth"; // ✅ 여기
 
 export default function MagicLink() {
   const { search, hash } = useLocation();
@@ -10,50 +10,71 @@ export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ 해시에서 token 추출 (#token=abcd1234)
-  const getTokenFromHash = () => {
-    const params = new URLSearchParams(hash.replace(/^#/, ""));
-    return params.get("token") || "";
+  // ✅ hash 에서 token 추출
+  const getTokenFromUrl = (): string => {
+    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
+    return hashParams.get("token") || "";
   };
 
-  // ✅ 쿼리에서 token 추출 (?token=abcd1234)
-  const getTokenFromQuery = () => {
-    const params = new URLSearchParams(search);
-    return params.get("token") || "";
+  // ✅ query 에서 token 추출
+  const getQueryToken = (): string => {
+    const queryParams = new URLSearchParams(search);
+    return queryParams.get("token") || "";
   };
 
   useEffect(() => {
     if (once.current) return;
     once.current = true;
 
-    try {
-      const token = getTokenFromHash() || getTokenFromQuery();
+    const tryLogin = async () => {
+      try {
+        // 1️⃣ 우선 hash 기반
+        const hashToken = getTokenFromUrl();
+        if (hashToken) {
+          console.log("🔑 매직링크 accessToken(hash):", hashToken);
+          persistAuthRelaxed(
+            {
+              accessToken: hashToken,
+              refreshToken: "",
+              expiresInSec: 7 * 86400,
+              user: { email: "", name: "", profileImageUrl: "" },
+            },
+            7
+          );
+          setStatus("done");
+          setTimeout(() => navigate("/", { replace: true }), 800);
+          return;
+        }
 
-      if (!token) {
+        // 2️⃣ query 기반 (백업)
+        const queryToken = getQueryToken();
+        if (queryToken) {
+          console.log("🔑 매직링크 accessToken(query):", queryToken);
+          persistAuthRelaxed(
+            {
+              accessToken: queryToken,
+              refreshToken: "",
+              expiresInSec: 7 * 86400,
+              user: { email: "", name: "", profileImageUrl: "" },
+            },
+            7
+          );
+          setStatus("done");
+          setTimeout(() => navigate("/", { replace: true }), 800);
+          return;
+        }
+
+        // 3️⃣ 둘 다 없음
         setStatus("error");
         setMsg("토큰이 없습니다.");
-        return;
+      } catch (err) {
+        console.error("로그인 처리 실패:", err);
+        setStatus("error");
+        setMsg("로그인 처리 실패");
       }
+    };
 
-      console.log("🔑 매직링크 accessToken:", token);
-
-      persistAuth(
-        {
-          accessToken: token,
-          refreshToken: "",
-          expiresInSec: 7 * 86400,
-          user: { email: "", name: "" },
-        },
-        7
-      );
-
-      setStatus("done");
-      setTimeout(() => navigate("/", { replace: true }), 800);
-    } catch (err) {
-      console.error("로그인 처리 실패:", err);
-      setStatus("error");
-      setMsg("로그인 처리 실패");
-    }
+    tryLogin();
   }, [hash, search, navigate]);
 
   return (
