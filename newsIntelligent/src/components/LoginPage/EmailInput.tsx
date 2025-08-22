@@ -4,9 +4,11 @@ interface EmailInputProps {
   onNext: (email: string) => void;
   autoLogin: boolean;
   onToggleAutoLogin:()=> void;
+  submitLabel?: string;
+  showAutoLogin?: boolean;
 }
 
-const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) => {
+const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이메일로 간편 로그인/회원가입", showAutoLogin = true }: EmailInputProps) => {
   const [localEmail, setLocalEmail] = useState("");
   const [domain, setDomain] = useState("");
   const [customInput, setCustomInput] = useState(true); // 직접입력을 기본값으로 설정
@@ -262,18 +264,26 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
       </div>
 
       {/* 자동 로그인 */}
-      <label className="inline-flex items-center gap-2 mb-4 text-sm text-gray-600">
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded-[4px] border border-gray-400
-            appearance-none checked:bg-[#0EA6C0] checked:border-[#0EA6C0]
-            transition cursor-pointer"
-          checked={autoLogin}
-          onChange={onToggleAutoLogin}
-          tabIndex={3}
-        />
-        자동 로그인
-      </label>
+      {showAutoLogin && (
+        <label className="inline-flex items-center gap-2 mb-4 text-sm text-gray-600">
+          <input
+            type="checkbox"
+            className="w-4 h-4 rounded-[4px] border border-gray-400
+              appearance-none checked:bg-[#0EA6C0] checked:border-[#0EA6C0]
+              transition cursor-pointer"
+            checked={autoLogin}
+            onChange={onToggleAutoLogin}
+            tabIndex={3}
+            onKeyDown={(e)=>{
+              if (e.key==="Enter"){
+                e.preventDefault();           // 기본 제출/포커스 이동 방지
+                onToggleAutoLogin();          // Enter로 선택/해제
+              }
+            }}
+          />
+          자동 로그인
+        </label>
+      )}
 
       {/* 버튼 */}
       <button
@@ -284,7 +294,7 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin }: EmailInputProps) =
                     ${isFormValid() && !isSubmitting? "bg-[#0EA6C0] cursor-pointer" : "bg-[#B7E5EC] cursor-not-allowed"}`}
         tabIndex={4}
       >
-        이메일로 간편 로그인/회원가입
+        {submitLabel}
       </button>
     </div>
   );

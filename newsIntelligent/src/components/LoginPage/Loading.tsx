@@ -1,4 +1,4 @@
-const Loading = ({ error }: { error?: boolean }) => {
+const Loading = ({ error, message="코드 확인 중..." }: { error?: boolean; message?: string }) => {
   return (
     <div className="w-[499px]">
       {/* 로딩 아이콘과 메시지 */}
@@ -14,7 +14,7 @@ const Loading = ({ error }: { error?: boolean }) => {
                   }} />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[#0EA6C0]" />
           </div>
-          <p className="text-[#0EA6C0] font-semibold text-md">코드 확인 중...</p>
+          <p className="text-[#0EA6C0] font-semibold text-md">{message}</p>
         </div>
       )}
 

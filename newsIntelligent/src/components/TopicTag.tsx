@@ -10,11 +10,11 @@ function TopicTag({selectedTag}: {selectedTag: (tag: string | null) => void}) {
     const pathTag: Record<string, string> = {
         "/": "메인",
         "/subscriptions": "구독",
-        "/read-topic": "읽기",
+        "/read-topic": "읽은 토픽",
         "/notification": "알림",
         "/settings": "설정",
         "/settings/changes": "설정 변경",
-        "/article": "기사",
+        "/article": "토픽",
         "/login": "로그인"
     }
 

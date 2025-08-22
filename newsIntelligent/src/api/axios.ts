@@ -8,32 +8,17 @@ export const axiosInstance: AxiosInstance = axios.create({
   },
 })
 
-// 요청 인터셉터
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('API 요청:', config.method?.toUpperCase(), config.url)
-    return config
-  },
-  (error) => {
-    console.error('API 요청 에러:', error)
-    return Promise.reject(error)
-  }
-)
+    const token = localStorage.getItem("accessToken");
 
-// 응답 인터셉터
-axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('API 응답 성공:', response.status, response.config.url)
-    return response
+    if (token && token !== "null" && token !== "undefined" && token.trim() !== "") {
+      // ⭐ 로그인한 경우 accessToken 으로 덮어쓰기
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    // ⭐ 로그인 안 한 경우에는 기본값(VITE_API_KEY)이 그대로 유지됨
+
+    return config;
   },
-  (error) => {
-    console.error('API 응답 에러:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      message: error.message,
-      data: error.response?.data,
-    })
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);

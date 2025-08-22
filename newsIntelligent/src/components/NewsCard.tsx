@@ -14,11 +14,11 @@ const formatSummaryTime = (isoString: string) => {
     const dd = String(d.getDate()).padStart(2, "0");
     const hh = String(d.getHours()).padStart(2, "0");
     const mi = String(d.getMinutes()).padStart(2, "0");
-    
+
     return `${mm}/${dd} ${hh}:${mi}`;
 };
 
-type TopicWithSub = Topics & { isSub?: boolean; imageSource?: { press?: string; title?: string } };
+type TopicWithSub = Topics & { isSub?: boolean; imageSource?: { press?: string; title?: string }, newsLink? :string };
 
 const getImageSourceLink = (related: any[], data: TopicWithSub): string | null => {
     const title = data.imageSource?.title?.trim()?.toLowerCase() ?? "";
@@ -43,7 +43,7 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
     const subscribed = sub ?? !!data.isSub;
 
     const fetchTopicRelated = async (): Promise<ContentResultResponse> => {
-        const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 10 } });
+        const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 3 } });
         return res.data as ContentResultResponse;
     };
 
@@ -76,7 +76,7 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 
     const sourceLink = getImageSourceLink(relatedList, data);
     const sourceTitle = data.imageSource?.title ?? "";
-
+    const newsLink = data.newsLink;
     return (
         <div
         className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? "h-[597px]" : "h-[288px]"} cursor-pointer`}
@@ -88,16 +88,16 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                 <div className="flex flex-1 justify-between items-center">
                 <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">
                     업데이트 {formatSummaryTime(data.summaryTime)} ·{" "}
-                    {sourceLink ? (
+                    {newsLink ? (
                     <a
-                        href={sourceLink}
+                        href={newsLink}
                         target="_blank"
                         rel="noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"
                         title={sourceTitle}
                     >
-                        {sourceTitle}
+                        {newsLink}
                     </a>
                     ) : (
                     <span className="underline underline-offset-2 decoration-[#919191]">{sourceTitle}</span>
