@@ -49,14 +49,14 @@ export const persistAuthRelaxed = (
   const now = Date.now();
   const ttlMs = result.expiresInSec != null
     ? result.expiresInSec * 1000
-    : rememberDays * 24 * 60 * 60 * 1000;
+    : rememberDays * MS.day;
   const exp = now + ttlMs;
 
-  localStorage.setItem("auth:accessToken", result.accessToken);
-  localStorage.setItem("auth:expiresAt", String(exp));
-  localStorage.setItem("auth:user", JSON.stringify(result.user ?? {}));
+  // ✅ 키 네이밍을 persistAuth 와 통일
+  localStorage.setItem(ACCESS_KEY, result.accessToken);
+  localStorage.setItem(EXPIRES_KEY, String(exp));
+  localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
 
-  // ✅ axiosInstance에도 바로 반영
   if (result.accessToken && result.accessToken.trim() !== "") {
     axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
   } else {
