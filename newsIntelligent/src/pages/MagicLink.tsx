@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuthRelaxed, attachAxiosAuth } from "../apis/auth";
+import { persistAuth } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
-import { getMemberInfo } from "../apis/apis";
 
 export default function MagicLink() {
   const { search, hash } = useLocation();
@@ -12,7 +11,7 @@ export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ URL에서 token 추출 (쿼리 + 해시 둘 다 지원)
+  // ✅ URL에서 token 추출 (쿼리 + 해시 모두 지원)
   const getTokenFromUrl = (): string => {
     const queryParams = new URLSearchParams(search);
     const queryToken = queryParams.get("token");
@@ -40,25 +39,23 @@ export default function MagicLink() {
 
     const doLogin = async () => {
       try {
-        // ✅ 1) accessToken 저장
-        persistAuthRelaxed(
+        // ✅ 1) 매직링크 검증 API 호출
+        const { data } = await axiosInstance.get(`/members/login/magic`, {
+          params: { token },
+        });
+
+        console.log("✅ 매직링크 응답:", data);
+
+        // ✅ 2) 응답을 persistAuth에 저장
+        persistAuth(
           {
-            accessToken: token,
-            refreshToken: "",
-            expiresInSec: 7 * 86400,
-            user: { email: "", name: "" }, // 임시 구조
+            accessToken: data.result.accessToken,
+            refreshToken: data.result.refreshToken,
+            expiresInSec: data.result.expiresInSec,
+            user: data.result.user,
           },
           7
         );
-
-        // ✅ 2) axios 인터셉터 적용
-        attachAxiosAuth(axiosInstance);
-
-        // ✅ 3) 서버에서 실제 유저 정보 가져와서 갱신
-        const user = await getMemberInfo();
-        localStorage.setItem("userInfo", JSON.stringify(user));
-
-        console.log("👤 불러온 유저 정보:", user);
 
         setStatus("done");
         setTimeout(() => {
