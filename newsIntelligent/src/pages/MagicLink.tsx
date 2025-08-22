@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
-import { axiosInstance } from "../api/axios"; // 추가
+import { axiosInstance } from "../api/axios";
 
 type Mode = "login" | "signup" | "notification-email";
 
@@ -43,23 +43,28 @@ export default function MagicLink() {
 
       const rememberDays = 7;
 
-      // 최소 구조라도 올바르게 넣어줘야 axios 가 헤더에 토큰 붙임
+      // accessToken, refreshToken 모두 저장
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "",
+          refreshToken: "dummy-refresh-token", // ⚠️ 서버에서 실제 refreshToken 내려주면 교체
           expiresInSec: rememberDays * 86400,
           user: {
-            email: "",
-            name: "",
+            email: "unknown", // 최소한 값이라도 채움
+            name: "사용자",
             profileImageUrl: undefined,
           },
         },
         rememberDays
       );
 
-      // ✅ axios 헤더에도 즉시 반영
-      axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // axios 헤더에 즉시 반영
+      axiosInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${token}`;
+
+      // localStorage 에도 직접 저장 (새로고침 대비)
+      localStorage.setItem("accessToken", token);
 
       setStatus("done");
       setTimeout(() => {
