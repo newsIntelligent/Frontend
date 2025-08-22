@@ -203,20 +203,20 @@ export default function UpdatesSidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 10초 자동 전환 (아이템이 2개 이상일 때만) - 임시 비활성화
-  // useEffect(() => {
-  //   if (items.length <= 1) return
+  // 10초 자동 전환 (아이템이 2개 이상일 때만)
+  useEffect(() => {
+    if (items.length <= 1) return
 
-  //   const tick = async () => {
-  //     const next = (currentIdx + 1) % items.length
-  //     setCurrentIdx(next)
-  //     await applyViewFromItem(items[next])
-  //   }
+    const tick = async () => {
+      const next = (currentIdx + 1) % items.length
+      setCurrentIdx(next)
+      await applyViewFromItem(items[next])
+    }
 
-  //   const id = setInterval(tick, 10_000)
-  //   return () => clearInterval(id)
-  //   // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
-  // }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
+    const id = setInterval(tick, 10_000)
+    return () => clearInterval(id)
+    // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
+  }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
 
   // 구독 상태 업데이트 함수
   const updateSubscriptionStatus = (topicId: number, isSubscribed: boolean) => {
