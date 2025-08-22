@@ -11,7 +11,7 @@ export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("확인 중…");
 
-  // ✅ 토큰 파싱 함수 (쿼리 & 해시 둘 다 커버)
+  // ✅ 토큰 파싱 (쿼리, 해시 둘 다 지원)
   const getTokenFromUrl = (): string => {
     const params = new URLSearchParams(search || hash.replace(/^#/, "?"));
     return params.get("token") || "";
@@ -23,16 +23,21 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
+    console.log("🔎 현재 URL:", window.location.href);
+    console.log("🔑 파싱된 토큰:", token);
+
     try {
       if (!token) throw new Error("토큰이 없습니다.");
 
       const rememberDays = 7;
 
-      // ✅ accessToken을 무조건 localStorage에 저장
+      // ✅ accessToken 무조건 저장
       localStorage.setItem("accessToken", token);
+      console.log("✅ accessToken 저장됨:", localStorage.getItem("accessToken"));
 
-      // ✅ axios에도 즉시 반영
+      // ✅ axios에도 반영
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+      console.log("✅ axios 헤더 설정 완료:", axiosInstance.defaults.headers.common.Authorization);
 
       // ✅ auth 상태에도 반영
       persistAuthRelaxed(
@@ -48,7 +53,7 @@ export default function MagicLink() {
       setStatus("done");
       setTimeout(() => {
         navigate("/", { replace: true });
-      }, 500);
+      }, 800);
     } catch (e: any) {
       setStatus("error");
       setMsg(e?.message || "로그인 처리 실패");
