@@ -137,7 +137,6 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-<<<<<<< HEAD
       const status = err?.response?.status;
       const url = err?.config?.url || '';
       
@@ -159,12 +158,6 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
       }
       
       // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
-=======
-      if (err?.response?.status === 400) {
-        clearAuth(true);
-        delete instance.defaults.headers.common.Authorization;
-      }
->>>>>>> 40fe7eef293dcc3ec786cc247b044a14ef8dc953
       return Promise.reject(err);
     }
   );
