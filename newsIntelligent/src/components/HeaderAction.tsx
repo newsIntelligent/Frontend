@@ -28,20 +28,18 @@ function HeaderAction() {
 
 
   const handleBellClick = () => {
-    console.log("Bell clicked, current state:", { openNotification, showNotification });
     if (!openNotification) {
       setShowNotification(true); // 열 때만 바로 렌더
     }
     setOpenNotification(!openNotification);
   };
+
   const handleNotificationClose = () => {
     setOpenNotification(false); // 알림창 닫기
     // 트랜지션이 끝난 후 DOM에서 제거하기 위해 약간의 지연
-    setTimeout(() => {
       setShowNotification(false);
-    }, 300);
-    console.log("handleNotificationClose called");
   };
+
   const handleLogin = () => {
     navigation('/login'); //로그인 페이지로 이동
     setIsLogin(true); //로그인 상태로 변경
@@ -55,7 +53,8 @@ function HeaderAction() {
     if (!token) {
       setIsLogin(false); // 로그인 상태가 아니면 false로 설정
     }
-    setOpenNotification(false); // 컴포넌트 마운트 시 알림창 닫기
+    setOpenNotification(false); 
+    setShowNotification(true); // 컴포넌트가 마운트될 때 알림창 닫기
   }, [])
 
 
