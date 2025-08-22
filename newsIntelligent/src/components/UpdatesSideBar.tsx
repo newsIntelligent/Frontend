@@ -76,8 +76,7 @@ export default function UpdatesSidebar() {
 
   // 순환용 원본 데이터 & 인덱스
   const [items, setItems] = useState<LatestApiItem[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [currentIdx, setCurrentIdx] = useState(0)
+  const [_currentIdx, setCurrentIdx] = useState(0)
 
   // 관련 기사 캐시 (topicId -> LatestItem[])
   const relatedCache = useRef<Map<number, LatestItem[]>>(new Map())
