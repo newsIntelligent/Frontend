@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuth } from "../apis/auth";
 
 export default function MagicLink() {
-  const { hash } = useLocation();
+  const { search, hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
@@ -11,8 +11,14 @@ export default function MagicLink() {
   const [msg, setMsg] = useState("로그인 확인 중…");
 
   // ✅ 해시에서 token 추출 (#token=abcd1234)
-  const getAccessTokenFromHash = () => {
+  const getTokenFromHash = () => {
     const params = new URLSearchParams(hash.replace(/^#/, ""));
+    return params.get("token") || "";
+  };
+
+  // ✅ 쿼리에서 token 추출 (?token=abcd1234)
+  const getTokenFromQuery = () => {
+    const params = new URLSearchParams(search);
     return params.get("token") || "";
   };
 
@@ -21,23 +27,22 @@ export default function MagicLink() {
     once.current = true;
 
     try {
-      const accessToken = getAccessTokenFromHash();
+      const token = getTokenFromHash() || getTokenFromQuery();
 
-      if (!accessToken) {
+      if (!token) {
         setStatus("error");
         setMsg("토큰이 없습니다.");
         return;
       }
 
-      console.log("🔑 해시 기반 accessToken:", accessToken);
+      console.log("🔑 매직링크 accessToken:", token);
 
-      // ✅ 기존 로그인 로직처럼 persistAuth 호출
       persistAuth(
         {
-          accessToken,
-          refreshToken: "", // 매직링크에선 안 오니까 빈 값
-          expiresInSec: 7 * 86400, // 기본 7일
-          user: { email: "", name: "" }, // 서버에서 정보 가져오는 로직 있으면 추가 가능
+          accessToken: token,
+          refreshToken: "",
+          expiresInSec: 7 * 86400,
+          user: { email: "", name: "" },
         },
         7
       );
@@ -49,7 +54,7 @@ export default function MagicLink() {
       setStatus("error");
       setMsg("로그인 처리 실패");
     }
-  }, [hash, navigate]);
+  }, [hash, search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
