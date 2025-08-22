@@ -43,37 +43,23 @@ export default function MagicLink() {
 
       const rememberDays = 7;
 
-      // accessToken, refreshToken 모두 저장
+      // ✅ accessToken 저장
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "dummy-refresh-token", // ⚠️ 서버에서 실제 refreshToken 내려주면 교체
+          refreshToken: "", // refreshToken 내려오면 교체
           expiresInSec: rememberDays * 86400,
-          user: {
-            email: "unknown", // 최소한 값이라도 채움
-            name: "사용자",
-            profileImageUrl: undefined,
-          },
+          user: { email: "unknown", name: "사용자" },
         },
         rememberDays
       );
 
-      // axios 헤더에 즉시 반영
-      axiosInstance.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${token}`;
-
-      // localStorage 에도 직접 저장 (새로고침 대비)
-      localStorage.setItem("accessToken", token);
+      // ✅ axios 에도 즉시 반영
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
       setStatus("done");
       setTimeout(() => {
-        navigate(
-          mode === "notification-email"
-            ? "/settings?emailUpdated=1"
-            : "/",
-          { replace: true }
-        );
+        navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
       }, 400);
     } catch (e: any) {
       setStatus("error");
