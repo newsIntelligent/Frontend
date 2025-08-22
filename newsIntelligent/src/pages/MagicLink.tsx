@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth } from "../apis/auth";
+import { persistAuthRelaxed } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
 
 type Mode = "login" | "signup" | "notification-email";
@@ -10,16 +10,18 @@ export default function MagicLink() {
   const navigate = useNavigate();
   const once = useRef(false);
 
-  // ✅ #token=xxx, ?token=xxx 모두 커버
   const parseToken = (raw: string): string => {
     if (!raw) return "";
-    const cleaned = raw.startsWith("#") || raw.startsWith("?") ? raw.slice(1) : raw;
+    const cleaned = raw.startsWith("#") ? raw.slice(1) : raw;
     const params = new URLSearchParams(cleaned);
-    return params.get("token") || "";
+    return (
+      params.get("token") ||
+      cleaned.replace(/^token=/, "").split("&")[0] ||
+      ""
+    );
   };
 
   const token = parseToken(hash) || parseToken(search);
-
   const mode: Mode | null =
     pathname.startsWith("/login/magic")
       ? "login"
@@ -36,53 +38,45 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
-    (async () => {
-      try {
-        if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
+    try {
+      if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-        const rememberDays = 7;
+      const rememberDays = 7;
 
-        // 1️⃣ accessToken 을 axiosInstance 에 먼저 반영
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+      // ✅ accessToken 로컬스토리지에 저장
+      localStorage.setItem("accessToken", token);
 
-        // 2️⃣ accessToken 저장 (userInfo 는 일단 빈 값)
-        persistAuth(
-          {
-            accessToken: token,
-            refreshToken: "",
-            expiresInSec: rememberDays * 86400,
-            user: { email: "", name: "" }, // 임시
-          },
-          rememberDays
-        );
+      // ✅ persistAuth도 그대로 호출
+      persistAuthRelaxed(
+        {
+          accessToken: token,
+          refreshToken: "", // refreshToken 내려오면 교체
+          expiresInSec: rememberDays * 86400,
+          user: { email: "unknown", name: "사용자" },
+        },
+        rememberDays
+      );
 
-        // 3️⃣ 이제 /members/info 로 실제 사용자 정보 가져오기
-        const { data } = await axiosInstance.get("/members/info");
-        if (data?.result) {
-          persistAuth(
-            {
-              accessToken: token,
-              refreshToken: "",
-              expiresInSec: rememberDays * 86400,
-              user: data.result, // 실제 유저 정보로 교체
-            },
-            rememberDays
-          );
-        }
+      // ✅ axios 에도 즉시 반영
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-        setStatus("done");
-        setTimeout(() => {
-          navigate(
-            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
-            { replace: true }
-          );
-        }, 400);
-      } catch (e: any) {
-        setStatus("error");
-        setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
-      }
-    })();
+      setStatus("done");
+      setTimeout(() => {
+        navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
+      }, 400);
+    } catch (e: any) {
+      setStatus("error");
+      setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
+    }
   }, [mode, navigate, token]);
+
+  // ✅ 새로고침했을 때 accessToken 다시 반영
+  useEffect(() => {
+    const savedToken = localStorage.getItem("accessToken");
+    if (savedToken) {
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${savedToken}`;
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
