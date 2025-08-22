@@ -5,113 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>이메일 주소 확인</title>
   <style>
-    body {
-      font-family: 'Pretendard', sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: #fff;
-      padding: 32px;
-      width: 400px;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    .logo {
-      color: #174347;
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 24px;
-    }
-    .title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .desc {
-      font-size: 14px;
-      color: #333;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-    .code-box {
-      background: #f4f4f4;
-      padding: 24px;
-      text-align: center;
-      font-size: 32px;
-      font-weight: 600;
-      color: #555;
-      letter-spacing: 4px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-    }
-    .login-btn {
-      display: block;
-      text-align: center;
-      background-color: #4da3b6;
-      color: white;
-      padding: 12px;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-    .login-btn:hover {
-      background-color: #3e92a1;
-    }
-    .footer {
-      font-size: 12px;
-      color: #666;
-      line-height: 1.4;
-    }
+    body { font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif; background:#f5f5f5; margin:0; padding:0; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .container { background:#fff; padding:32px; width:400px; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
+    .logo { color:#174347; font-size:24px; font-weight:bold; margin-bottom:24px; }
+    .title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .desc { font-size:14px; color:#333; line-height:1.5; margin-bottom:24px; }
+    .code-box { background:#f4f4f4; padding:24px; text-align:center; font-size:32px; font-weight:600; color:#555; letter-spacing:4px; border-radius:8px; margin-bottom:24px; }
+    .login-btn { display:block; text-align:center; background-color:#4da3b6; color:#fff; padding:12px; text-decoration:none; border-radius:6px; font-size:14px; font-weight:600; margin-bottom:16px; }
+    .login-btn:hover { background-color:#3e92a1; }
+    .footer { font-size:12px; color:#666; line-height:1.4; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo">News Intelligent</div>
     <div class="title">이메일 주소 확인</div>
-    <div class="desc">
-      여기에 확인 코드가 있습니다. 열린 브라우저 창에 복사하거나 아래 링크를 클릭하여 이 이메일 주소를 확인할 수 있습니다.
-    </div>
+    <div class="desc">여기에 확인 코드가 있습니다. 열린 브라우저 창에 복사하거나 아래 링크를 클릭하여 이 이메일 주소를 확인할 수 있습니다.</div>
     <div id="codeBox" class="code-box">___</div>
-    <a class="login-btn" href="#">확인 및 로그인</a>
-    <div class="footer">
-      이메일을 요청하지 않았다더라도 걱정하지 마세요.<br />
-      이메일을 무시하면 됩니다.
-    </div>
+    <a id="actionLink" class="login-btn" href="#">확인 및 로그인</a>
+    <div class="footer">이메일을 요청하지 않았다더라도 걱정하지 마세요.<br />이메일을 무시하면 됩니다.</div>
   </div>
-
-  
   <script>
-    // URL 파라미터 읽기
     const params = new URLSearchParams(window.location.search);
-    const mode = params.get("mode"); // signup / login / notification-email
-    const token = params.get("token") || "";
-    const code = token.replace(/-/g, "").toUpperCase().match(/.{1,3}/g)?.join("-") || "";
-
-    const codeBox    = document.getElementById("codeBox");
-
-    // 코드 박스에 표시
-    document.textContent = code;
-
-    // 링크 생성
-    let baseUrl = "";
-    if (mode === "signup") {
-      baseUrl = "https://www.newsintelligent.site/signup/magic?token=";
-    } else if (mode === "login") {
-      baseUrl = "https://www.newsintelligent.site/login/magic?token=";
-    } else if (mode === "notification-email") {
-      baseUrl = "https://www.newsintelligent.site/settings/notification-email/magic?token=";
-    }
-
+    const mode = params.get("mode");
+    const token = (params.get("token") || "").trim();
+    const prettyCode = token.replace(/-/g, "").toUpperCase().match(/.{1,3}/g)?.join("-") || "";
+    const codeBox = document.getElementById("codeBox");
+    codeBox.textContent = prettyCode;
+    let path = "/login/magic";
+    if (mode === "signup") path = "/signup/magic";
+    else if (mode === "notification-email") path = "/settings/notification-email/magic";
+    const target = `https://www.newsintelligent.site${path}#token=${encodeURIComponent(token)}`;
     const actionLink = document.getElementById("actionLink");
-    actionLink.href = baseUrl + encodeURIComponent(token);
+    actionLink.href = token ? target : "#";
+    actionLink.setAttribute("role", "button");
+    actionLink.setAttribute("aria-disabled", token ? "false" : "true");
   </script>
 </body>
 </html>
