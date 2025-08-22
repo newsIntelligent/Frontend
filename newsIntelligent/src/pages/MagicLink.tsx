@@ -47,10 +47,24 @@ export default function MagicLink() {
 
           // 2️⃣ 서버에서 userInfo 가져오기
           try {
+            console.log("🔑 최종 저장된 accessToken:", localStorage.getItem("accessToken"));
+          
             const res = await axiosInstance.get("/members/info");
-            localStorage.setItem("userInfo", JSON.stringify(res.data.result));
+            console.log("📡 /members/info 응답 전체:", res);
+          
+            const data = res.data;
+            console.log("📦 res.data:", data);
+          
+            const user =
+              data?.result ??
+              data?.user ??
+              data ?? {};
+          
+            console.log("🙋 최종 userInfo 저장:", user);
+          
+            localStorage.setItem("userInfo", JSON.stringify(user));
           } catch (err) {
-            console.error("유저 정보 불러오기 실패:", err);
+            console.error("❌ 유저 정보 불러오기 실패:", err);
           }
 
           setStatus("done");
