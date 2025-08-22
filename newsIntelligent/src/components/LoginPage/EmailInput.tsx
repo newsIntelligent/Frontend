@@ -274,6 +274,12 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이�
             checked={autoLogin}
             onChange={onToggleAutoLogin}
             tabIndex={3}
+            onKeyDown={(e)=>{
+              if (e.key==="Enter"){
+                e.preventDefault();           // 기본 제출/포커스 이동 방지
+                onToggleAutoLogin();          // Enter로 선택/해제
+              }
+            }}
           />
           자동 로그인
         </label>

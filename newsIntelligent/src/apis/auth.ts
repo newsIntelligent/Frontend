@@ -325,8 +325,3 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
     redirectBaseUrl: redirectBaseUrl,
   });
 };
-
-// 매직 링크 검증 API는 더 이상 사용하지 않음 (백엔드가 리다이렉트로 토큰을 해시로 전달)
-export const verifyMagicLink = async () => {
-  throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
-};
