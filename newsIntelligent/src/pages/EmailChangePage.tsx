@@ -6,7 +6,7 @@ import CodeInput from "../components/LoginPage/CodeInput";
 import { useNavigate } from "react-router-dom";
 
 const EmailChangePage = () => {
-    const [step, setStep] = useState<"email" | "verify" | "complete">("email");
+    const [step, setStep] = useState<"email" | "verify">("email");
     const [email, setEmail] = useState("");
     const [resendCount, setResendCount] = useState(0);
     const [isResending, setIsResending] = useState(false);
@@ -53,7 +53,7 @@ const EmailChangePage = () => {
             return (
                 <CodeInput
                     email={email}
-                    onComplete={() => setStep("complete")}
+                    onComplete={() => navigate("/notification", {replace:true})}
                     autoLogin={false}
                     setAutoLogin={()=>{}}
                     isResending={isResending}

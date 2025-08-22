@@ -16,7 +16,7 @@ const LoginLog = ({onSelect}:LoginLogProps) => {
       <p className="font-semibold">이미 로그인하셨네요!</p>
       <div className="flex flex-col sm:flex-row items-center justify-between w-full border border-gray-300 rounded-md p-4 bg-white mt-6 mx-auto gap-4">
         <div className="flex items-center gap-4">
-          <img src={user.profileImageUrl || undefined} alt="프로필" className="w-[50px] h-[50px] rounded-full object-cover" />
+          <img src="LogoImg.svg" alt="프로필" className="w-[50px] h-[50px] rounded-full object-cover" />
           <div className="flex flex-col">
             <p className="font-semibold">{user.name} 님</p>
             <p className="text-sm">{user.email}</p>

@@ -26,20 +26,27 @@
     <div class="footer">이메일을 요청하지 않았다더라도 걱정하지 마세요.<br />이메일을 무시하면 됩니다.</div>
   </div>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get("mode");
-    const token = (params.get("token") || "").trim();
-    const prettyCode = token.replace(/-/g, "").toUpperCase().match(/.{1,3}/g)?.join("-") || "";
-    const codeBox = document.getElementById("codeBox");
-    codeBox.textContent = prettyCode;
-    let path = "/login/magic";
+    (function () {
+    // 이메일 링크의 쿼리에서 token 과 mode(login|signup|notification-email) 읽기
+    var params = new URLSearchParams(location.search);
+    var token = (params.get("token") || "").trim();
+    var mode = (params.get("mode") || "login").trim();
+
+    // 앱에서 토큰을 받는 진입 경로
+    var path = "/login/magic";
     if (mode === "signup") path = "/signup/magic";
     else if (mode === "notification-email") path = "/settings/notification-email/magic";
-    const target = `https://www.newsintelligent.site${path}#token=${encodeURIComponent(token)}`;
-    const actionLink = document.getElementById("actionLink");
-    actionLink.href = token ? target : "#";
-    actionLink.setAttribute("role", "button");
-    actionLink.setAttribute("aria-disabled", token ? "false" : "true");
+    
+    var origin = "https://www.newsintelligent.site";
+
+    var href = token ? origin + path + "#token=" + encodeURIComponent(token) : "#";
+
+    var btn = document.getElementById("magicButton");
+    if (btn) {
+      btn.href = href;
+      if (!token) btn.setAttribute("aria-disabled", "true");
+    }
+  })();
   </script>
 </body>
 </html>

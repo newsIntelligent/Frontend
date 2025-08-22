@@ -213,7 +213,8 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
       </label>
 
       {/* 로딩 또는 오류 메시지 */}
-      {(isLoading || isResending) && <Loading error={false} />}
+      {(isLoading || isResending) && (
+        <Loading error={false} message={isResending?"코드 전송 중...": "코드 확인 중..."} />)}
       {!isLoading && error && (
         <div className="flex flex-col items-center gap-2 mt-2">
           <img src="Error.svg" alt="오류아이콘" className="w-[36px] h-[36px]" />
