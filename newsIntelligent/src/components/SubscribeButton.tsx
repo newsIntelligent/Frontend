@@ -19,7 +19,6 @@ function SubscribeButton({
   id,
   size = 'default',
   subscribe = false,
-  onSubscriptionChange,
 }: SubscribeButtonProps) {
   const [sub, setSub] = useState(subscribe) // 구독 상태 관리
   const [isOpen, setIsOpen] = useState(false) // 로그인 알림 모달 상태
@@ -37,7 +36,7 @@ function SubscribeButton({
       setSub(next)
       // onMutate에서는 콜백을 호출하지 않음 (중복 방지)
     }, //구독 상태 변경
-    onSuccess: (data, next: boolean) => {
+    onSuccess: (next: boolean) => {
       // 성공 시에만 이벤트 발생
       console.log('SubscribeButton - onSuccess 호출, 이벤트 발생:', id, next)
       window.dispatchEvent(
