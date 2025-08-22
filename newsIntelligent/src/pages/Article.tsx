@@ -77,14 +77,25 @@ const ArticlePage = () => {
     return Number.isFinite(n) && n > 0 ? n : null
   }, [searchParams])
 
-  const pageSize = 3
+  const pageSize = 9
   const fetchingRef = useRef<boolean>(false)
 
-  // 스크롤 고정
+  // 스크롤 고정: lg 이상에서만 sticky 오프셋 적용
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 142)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const handleScrollOrResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsScrolled(window.scrollY > 142)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+    handleScrollOrResize()
+    window.addEventListener('scroll', handleScrollOrResize)
+    window.addEventListener('resize', handleScrollOrResize)
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize)
+      window.removeEventListener('resize', handleScrollOrResize)
+    }
   }, [])
 
   // 상단 기사 로딩
@@ -171,16 +182,18 @@ const ArticlePage = () => {
   }, [article?.summaryTime])
 
   return (
-    <div className="flex justify-center bg-gray-50 overflow-visible">
-      <div className="w-[1440px] flex overflow-visible min-h-screen">
-        <aside
-          className={`sticky w-[320px] ml-[25px] self-start ${isScrolled ? 'top-[75px]' : 'top-[167px]'}`}
-        >
-          <UpdatesSidebar />
-        </aside>
+    <div className="w-full overflow-x-hidden"> 
+    <div className='w-[1440px] flex  min-h-screen px-[max(16px,calc((100vw-1280px)/2))] gap-[90px]'>
+    <aside
+                className={`sticky w-[320px] self-start 
+                  ${isScrolled ? 'top-[75px]' : ""}`}
+              >
+                <UpdatesSidebar />
+              </aside>
 
-        <main className="flex-1 pl-[120px] pr-8 max-w-[1000px]">
-          <div className="border-t-2 px-6 py-6 w-full">
+      
+    <main className="w-[840px]">
+          <div className="flex flex-col border-t-2 px-6 py-6 w-[840px]">
             <h1 className="text-xl font-bold leading-tight mb-2">{article?.topicName}</h1>
             {formattedSummaryTime && (
               <p className="text-xs text-black mb-4">업데이트: {formattedSummaryTime}</p>
@@ -242,9 +255,14 @@ const ArticlePage = () => {
             </div>
           )}
         </main>
-      </div>
+
+    
+
+    </div>
+      
     </div>
   )
+
 }
 
 export default ArticlePage

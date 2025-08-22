@@ -2,7 +2,6 @@ import type { AxiosInstance } from "axios";
 import { axiosInstance } from "../api/axios";
 import axios from "axios";
 
-// 공용 응답 envelope & 로그인 결과 타입
 export interface ApiEnvelope<T = unknown> {
   isSuccess: boolean;
   status?: string;
@@ -39,7 +38,7 @@ const ACCESS_KEY = "accessToken";
 const EXPIRES_KEY = "expiresAt";
 const USER_KEY = "userInfo";
 
-const DEFAULT_DAYS = 7; // 7일동안 유효
+const DEFAULT_DAYS = 7;
 const MS = { day: 24 * 60 * 60 * 1000 };
 
 export const persistAuthRelaxed = (
@@ -49,14 +48,14 @@ export const persistAuthRelaxed = (
   const now = Date.now();
   const ttlMs = result.expiresInSec != null
     ? result.expiresInSec * 1000
-    : rememberDays * 24 * 60 * 60 * 1000;
+    : rememberDays * MS.day;
   const exp = now + ttlMs;
 
-  localStorage.setItem("auth:accessToken", result.accessToken);
-  localStorage.setItem("auth:expiresAt", String(exp));
-  localStorage.setItem("auth:user", JSON.stringify(result.user ?? {}));
+  // ✅ persistAuth 와 같은 키로 저장
+  localStorage.setItem(ACCESS_KEY, result.accessToken);
+  localStorage.setItem(EXPIRES_KEY, String(exp));
+  localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
 
-  // ✅ axiosInstance에도 바로 반영
   if (result.accessToken && result.accessToken.trim() !== "") {
     axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
   } else {
@@ -64,12 +63,10 @@ export const persistAuthRelaxed = (
   }
 };
 
-// 토큰/유저 정보 저장
 export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_DAYS) => {
-  // 입력값 검증
   if (!result?.accessToken || !result?.user?.email) {
-    console.error('Invalid auth result:', result);
-    throw new Error('Invalid authentication result');
+    console.error("Invalid auth result:", result);
+    throw new Error("Invalid authentication result");
   }
 
   const now = Date.now();
@@ -83,7 +80,6 @@ export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_D
     localStorage.setItem(EXPIRES_KEY, String(exp));
     localStorage.setItem(USER_KEY, JSON.stringify(result.user));
 
-    // 토큰 값 검증 후 axiosInstance 헤더 반영
     const t = result.accessToken;
     if (t && t !== "null" && t !== "undefined" && t.trim() !== "") {
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
@@ -91,11 +87,10 @@ export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_D
       delete axiosInstance.defaults.headers.common.Authorization;
     }
   } catch (error) {
-    console.error('Failed to persist auth data:', error);
-    throw new Error('Failed to save authentication data');
+    console.error("Failed to persist auth data:", error);
+    throw new Error("Failed to save authentication data");
   }
 };
-
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_KEY);
@@ -117,14 +112,12 @@ export function isTokenExpired(): boolean {
   return Date.now() > exp;
 }
 
-// 로그아웃
 export const clearAuth = (keepUserInfo = true) => {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(EXPIRES_KEY);
   if (!keepUserInfo) localStorage.removeItem(USER_KEY);
 };
 
-// Axios 인스턴스 부착
 export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.request.use((config) => {
     const raw = getAccessToken();
@@ -136,7 +129,6 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
     if (token && !isTokenExpired()) {
       (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
     } else {
-      // 🔑 토큰이 없거나 이상하면 헤더 자체를 제거 (Bearer만 나가던 문제 방지)
       delete (config.headers as Record<string, string | undefined>).Authorization;
     }
     return config;
@@ -145,6 +137,7 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
+<<<<<<< HEAD
       const status = err?.response?.status;
       const url = err?.config?.url || '';
       
@@ -166,6 +159,12 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
       }
       
       // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
+=======
+      if (err?.response?.status === 400) {
+        clearAuth(true);
+        delete instance.defaults.headers.common.Authorization;
+      }
+>>>>>>> 40fe7eef293dcc3ec786cc247b044a14ef8dc953
       return Promise.reject(err);
     }
   );
@@ -175,8 +174,8 @@ export function hasLoginHistory(): boolean {
   return !!localStorage.getItem(USER_KEY);
 }
 
-// 저장된 토큰 헤더 적용
-const bootToken = localStorage.getItem("accessToken");
+// ✅ 저장된 토큰 적용 (boot)
+const bootToken = localStorage.getItem(ACCESS_KEY);
 if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.trim() !== "") {
   axiosInstance.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
 } else {
@@ -185,7 +184,6 @@ if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.
 
 type NormalizeOpts = { allowMissingAccessToken?: boolean };
 
-// 응답 정규화
 function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
   const { allowMissingAccessToken = false } = opts;
   const p = payload?.result ?? payload ?? {};
@@ -194,9 +192,8 @@ function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
   if (!accessToken || typeof accessToken !== "string" || accessToken.trim() === "") {
     if (!allowMissingAccessToken) {
       console.warn("Invalid or missing access token in payload");
-      return undefined; // 또는 throw new Error('MISSING_ACCESS_TOKEN')
+      return undefined;
     }
-    // 토큰 없어도 통과 (회원가입 검증 성공 케이스 지원)
     return undefined;
   }
 
@@ -208,121 +205,79 @@ function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
   };
 }
 
-
-
-
-// 로그인/회원가입 인증 코드 전송
-export const sendLoginCode = (
-  email: string,
-  isLogin: boolean,
-  redirectBaseUrl?: string
-) => {
-  if (!email || !email.includes('@')) {
-    throw new Error('Invalid email format');
+export const sendLoginCode = (email: string, isLogin: boolean, redirectBaseUrl?: string) => {
+  if (!email || !email.includes("@")) {
+    throw new Error("Invalid email format");
   }
 
-  try {
-    const url = isLogin ? "/members/login/email" : "/members/signup/email";
-    const defaultRedirectBaseUrl = isLogin 
-      ? "https://www.newsintelligent.site/login/magic#token="
-      : "https://www.newsintelligent.site/signup/magic#token=";
-    
-    return axiosInstance.post(url, { 
-      email, 
-      redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
-    });
-  } catch (error) {
-    console.error('Failed to send login code:', error);
-    throw error;
-  }
+  const url = isLogin ? "/members/login/email" : "/members/signup/email";
+  const defaultRedirectBaseUrl = isLogin
+    ? "https://www.newsintelligent.site/login/magic#token="
+    : "https://www.newsintelligent.site/signup/magic#token=";
+
+  return axiosInstance.post(url, {
+    email,
+    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl,
+  });
 };
 
-// 로그인 인증 코드 검증
 export const verifyLoginCode = async (
   email: string,
   code: string
 ): Promise<ApiEnvelope<AuthResult>> => {
-  if (!email || !email.includes('@')) {
-    throw new Error('Invalid email format');
-  }
-  if (!code || code.trim().length === 0) {
-    throw new Error('Code cannot be empty');
-  }
+  if (!email || !email.includes("@")) throw new Error("Invalid email format");
+  if (!code || code.trim().length === 0) throw new Error("Code cannot be empty");
 
-  try {
-    const { data } = await axiosInstance.post("/members/login/verify", { email, code });
-    const normalized = normalizeToAuthResult(data);
+  const { data } = await axiosInstance.post("/members/login/verify", { email, code });
+  const normalized = normalizeToAuthResult(data);
 
-    return {
-      isSuccess: !!((data?.isSuccess ?? true) && normalized),
-      status: data?.status,
-      code: data?.code,
-      message: data?.message,
-      result: normalized as AuthResult | undefined,
-    };
-  } catch (error) {
-    console.error('Failed to verify login code:', error);
-    throw error;
-  }
+  return {
+    isSuccess: !!((data?.isSuccess ?? true) && normalized),
+    status: data?.status,
+    code: data?.code,
+    message: data?.message,
+    result: normalized as AuthResult | undefined,
+  };
 };
 
-// 회원가입 인증 코드 검증
-export async function verifySignupCode(email: string, code: string): Promise<ApiEnvelope<AuthResult>> {
-  if (!email || !email.includes('@')) {
-    throw new Error('Invalid email format');
-  }
-  if (!code || code.trim().length === 0) {
-    throw new Error('Code cannot be empty');
-  }
+export async function verifySignupCode(
+  email: string,
+  code: string
+): Promise<ApiEnvelope<AuthResult>> {
+  if (!email || !email.includes("@")) throw new Error("Invalid email format");
+  if (!code || code.trim().length === 0) throw new Error("Code cannot be empty");
 
-  try {
-    const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
-    const normalized = normalizeToAuthResult(data);
+  const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
+  const normalized = normalizeToAuthResult(data);
 
-    return {
-      isSuccess: !!((data?.isSuccess ?? true) && normalized),
-      status: data?.status,
-      code: data?.code,
-      message: data?.message,
-      result: normalized as AuthResult | undefined,
-    };
-  } catch (error) {
-    console.error('Failed to verify signup code:', error);
-    throw error;
-  }
+  return {
+    isSuccess: !!((data?.isSuccess ?? true) && normalized),
+    status: data?.status,
+    code: data?.code,
+    message: data?.message,
+    result: normalized as AuthResult | undefined,
+  };
 }
 
-// 로그인/회원가입 코드 재요청
-export const resendMagicLink = (
-  email: string,
-  isLogin: boolean,
-  redirectBaseUrl?: string
-) => {
+export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl?: string) => {
   const url = isLogin ? "/members/login/email" : "/members/signup/email";
-  // 해시 기반으로 토큰을 전달
-  const defaultRedirectBaseUrl = isLogin 
+  const defaultRedirectBaseUrl = isLogin
     ? "https://www.newsintelligent.site/login/magic#token="
     : "https://www.newsintelligent.site/signup/magic#token=";
-  
-  return axiosInstance.post(url, { 
-    email, 
-    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl 
+
+  return axiosInstance.post(url, {
+    email,
+    redirectBaseUrl: redirectBaseUrl || defaultRedirectBaseUrl,
   });
 };
 
-// 이메일 변경 코드 전송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const base =
-    redirectBaseUrl ??
-    `${window.location.origin}/settings/notification-email/magic#token=`;
-
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: base,
+    redirectBaseUrl,
   });
 };
 
-// 이메일 변경 코드 검증
 export const verifyEmailChangeCode = async (
   email: string,
   code: string
@@ -334,14 +289,9 @@ export const verifyEmailChangeCode = async (
   return data;
 };
 
-//이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const base =
-    redirectBaseUrl ??
-    `${window.location.origin}/settings/notification-email/magic#token=`;
-    
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: base,
+    redirectBaseUrl,
   });
 };
