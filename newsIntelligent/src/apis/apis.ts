@@ -29,7 +29,13 @@ export const getNicknameAvailability = async (nickname : string) : Promise<Nickn
 
 export const postEmailCode = async (newEmail : string) => {
     const response = await axiosInstance.patch( `/members/notification-email/change`, {newEmail}, {
+    });
 
+    return response.data;
+}
+
+export const postEmailCodeCheck = async (newEmail : string, code : string) => {
+    const response = await axiosInstance.patch(`/members/notification-email/verify`, {newEmail, code}, {
     });
 
     return response.data;
