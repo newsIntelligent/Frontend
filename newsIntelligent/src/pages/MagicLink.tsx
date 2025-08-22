@@ -1,6 +1,7 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { axiosInstance } from "../api/axios";
 import { persistAuth } from "../apis/auth";
 
 type Mode = "login" | "signup" | "notification-email";
@@ -38,31 +39,40 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
-    try {
-      if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
+    (async () => {
+      try {
+        if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-      const rememberDays = 7;
-      persistAuth(
-        {
-          accessToken: token,
-          refreshToken: "",
-          expiresInSec: rememberDays * 86400,
-          user: { email: "", name: "", profileImageUrl: undefined }, // 서버에서 자동 관리
-        },
-        rememberDays
-      );
+        // 토큰을 axios 기본 헤더에 세팅
+        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-      setStatus("done");
-      setTimeout(() => {
-        navigate(
-          mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
-          { replace: true }
+        // 유저 정보 가져오기
+        const res = await axiosInstance.get("/members/info");
+        const user = res.data.result;
+
+        const rememberDays = 7;
+        persistAuth(
+          {
+            accessToken: token,
+            refreshToken: "",
+            expiresInSec: rememberDays * 86400,
+            user, // user.email 이 반드시 포함되어야 함
+          },
+          rememberDays
         );
-      }, 400);
-    } catch (e: any) {
-      setStatus("error");
-      setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
-    }
+
+        setStatus("done");
+        setTimeout(() => {
+          navigate(
+            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+            { replace: true }
+          );
+        }, 400);
+      } catch (e: any) {
+        setStatus("error");
+        setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
+      }
+    })();
   }, [mode, navigate, token]);
 
   return (
@@ -96,4 +106,3 @@ export default function MagicLink() {
     </div>
   );
 }
-
