@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar'
 import ToggleButton from '../components/ToggleButton';
 import SettingTime from '../components/SettingTime';
 import { ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { patchSetSubscribeNotification, patchSetReadTopicNotification, patchSetDailyReport, getSetting } from '../apis/members';
 import { getMemberInfo } from '../apis/apis';
 import type { MemberInfo, MemberSettingResponse } from '../types/members';
@@ -18,23 +18,50 @@ const NotificationSettingPage = () => {
     const [member, setMember] = useState<MemberInfo>(); 
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const getData = async() => {
+        try {
+            console.log("🔍 getData 호출됨 - 현재 URL:", window.location.href);
+            const response = await getMemberInfo();
+            console.log("🔍 getMemberInfo 응답:", response);
+            console.log("🔍 설정할 member 데이터:", response.result[0]);
+
+            setMember(response.result[0]);
+        } catch (error) {
+            console.log("데이터를 받아오지 못했습니다.", error);
+            alert("로그인 후 다시 실행해 주세요.");
+
+            navigate("/login");
+        }
+    };
 
     useEffect(() => {
-        const getData = async() => {
-            try {
-                const response = await getMemberInfo();
-                console.log("응답 성공:", response);
-    
-                setMember(response.result[0]);
-            } catch (error) {
-                console.log("데이터를 받아오지 못했습니다.", error);
-                alert("로그인 후 다시 실행해 주세요.");
-    
-                navigate("/login");
+        console.log("🔄 useEffect 트리거됨 - location 변경:", location);
+        getData();
+    }, [location]); // location 객체 전체가 변경될 때마다 데이터 새로고침
+
+    // 페이지가 포커스될 때마다 데이터 새로고침 (이메일 변경 완료 후 돌아올 때)
+    useEffect(() => {
+        const handleFocus = () => {
+            console.log("페이지 포커스됨 - 데이터 새로고침");
+            getData();
+        };
+
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                console.log("페이지 가시성 변경됨 - 데이터 새로고침");
+                getData();
             }
         };
 
-        getData();
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     const handleSubscriptionToggle = async () => {
@@ -134,9 +161,9 @@ const NotificationSettingPage = () => {
                 <div className="absolute flex-1 h-dvh ml-[208.86px]">
                     <div className="flex flex-col gap-[16px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium"> 알림 설정 </div>
-                        <p className="text-[18px] text-[#919191] h-[21px] font-regular">
-                            데일리 리포트는 <span className='text-[18px] font-regular text-[#0EA6C0]'> {member?.email}</span> 으로 전송됩니다. 
-                        </p>
+                                                 <p className="text-[18px] text-[#919191] h-[21px] font-regular">
+                             데일리 리포트는 <span className='text-[18px] font-regular text-[#0EA6C0]'> {member?.notificationEmail || member?.email}</span> 으로 전송됩니다. 
+                         </p>
                         <button 
                             onClick={() => navigate('/settings/changes')}
                             className='flex flex-1 items-center justify-center w-[112px] h-[26px] pt-[4px] pr-[6px] pb-[4px] pl-[10px] rounded-sm border border-[1px] text-[#0EA6C0] hover:bg-[#0EA6C026] hover:text-[#0EA6C0]'>

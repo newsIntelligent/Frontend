@@ -78,6 +78,35 @@ const EmailChangePage = () => {
                 }
             }
 
+            // 3) 사용자 정보 업데이트 (이메일 변경 완료 후)
+            try {
+                console.log("🔄 사용자 정보 업데이트 시작");
+                const { getMemberInfo } = await import('../apis/apis');
+                const memberResponse = await getMemberInfo();
+                const updatedUser = memberResponse.result[0];
+                console.log("🔄 업데이트된 사용자 정보:", updatedUser);
+                
+                                 // localStorage의 userInfo 업데이트
+                 const currentUserInfo = localStorage.getItem("userInfo");
+                 if (currentUserInfo) {
+                     const parsedUserInfo = JSON.parse(currentUserInfo);
+                     const updatedUserInfo = {
+                         ...parsedUserInfo,
+                         email: updatedUser.email, // 가입 이메일
+                         notificationEmail: updatedUser.notificationEmail // 알림 이메일
+                     };
+                     localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
+                     console.log("✅ localStorage 사용자 정보 업데이트 완료:", updatedUserInfo);
+                 }
+                
+                // 추가로 accessToken도 업데이트된 사용자 정보로 갱신
+                if (updatedUser.email) {
+                    console.log("✅ 이메일 변경 완료 - 새 이메일:", updatedUser.email);
+                }
+            } catch (updateError) {
+                console.error("❌ 사용자 정보 업데이트 실패:", updateError);
+            }
+
             return true; // → onComplete()가 /notification으로 이동
         } catch (e) {
             console.error("이메일 변경 코드 검증 실패", e);
@@ -153,7 +182,15 @@ const EmailChangePage = () => {
             return (
                 <CodeInput
                     email={email}
-                    onComplete={() => navigate("/notification", {replace:true})}
+                    onComplete={() => {
+                        // 이메일 변경 완료 후 페이지 새로고침과 함께 이동
+                        console.log("✅ 이메일 변경 완료 - 페이지 새로고침 실행");
+                        navigate("/notification", {replace:true});
+                        // 강제로 페이지 새로고침
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    }}
                     autoLogin={false}
                     setAutoLogin={()=>{}}
                     isResending={isResending}
