@@ -196,19 +196,19 @@ export const sendLoginCode = (email: string, isLogin: boolean, redirectBaseUrl?:
   });
 };
 
-// 로그인 코드 검증
 export const verifyLoginCode = async (
   email: string,
   code: string
 ): Promise<ApiEnvelope<AuthResult>> => {
-  if (!email || !email.includes("@")) throw new Error("Invalid email format");
-  if (!code || code.trim().length === 0) throw new Error("Code cannot be empty");
-
   const { data } = await axiosInstance.post("/members/login/verify", { email, code });
+  
+  // ✅ 응답 구조 확인용 로그
+  console.log("🔎 /members/login/verify 응답 데이터:", JSON.stringify(data, null, 2));
+
   const normalized = normalizeToAuthResult(data);
 
   if (normalized?.accessToken) {
-    persistAuth(normalized, 7); // ✅ 토큰 저장 + axios 헤더 반영
+    persistAuth(normalized, 7);
   }
 
   return {
