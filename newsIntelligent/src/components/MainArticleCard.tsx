@@ -10,7 +10,7 @@ function MainArticleCard({
   imageUrl,
   summaryTime,
   imageSource,
-  isSub
+  isSub,
 }: MainArticleCardProps) {
   const navigate = useNavigate()
 
@@ -24,7 +24,7 @@ function MainArticleCard({
     return `${mm}/${dd} ${hh}:${mi}`
   }
 
-  const handleClick = (e:React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       topicRead(id)
@@ -36,19 +36,26 @@ function MainArticleCard({
     e.preventDefault() // Prevent default link behavior
   }
 
-
   return (
-    <div className="flex flex-col w-[410px] h-[265px] rounded-[8px] border border-[#919191] px-[26px] pt-[17px] pb-[21px] cursor-pointer"
-      onClick={handleClick}>
+    <div
+      className="flex flex-col w-[410px] h-[265px] rounded-[8px] border border-[#919191] px-[26px] pt-[17px] pb-[21px] cursor-pointer"
+      onClick={handleClick}
+    >
       <div className="flex justify-between items-center text-[12px] text-[#919191]">
-        
-        <span className="truncate w-[300px]">업데이트 {formatTime(summaryTime)} · 이미지  {imageSource?.press}  
-            <a className="underline" href={imageSource?.newsLink} onClick={(e:React.MouseEvent)=>e.stopPropagation()}> "{imageSource?.title}"</a>
-        </span> 
-        <div onClick={(e:React.MouseEvent)=>e.stopPropagation()}>
-        <SubscribeButton id={id} subscribe={isSub}/>
+        <span className="truncate w-[300px]">
+          업데이트 {formatTime(summaryTime)} · 이미지 {imageSource?.press}{' '}
+          <a
+            className="underline"
+            href={imageSource?.newsLink}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            {' '}
+            "{imageSource?.title}"
+          </a>
+        </span>
+        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <SubscribeButton id={id} subscribe={isSub} />
         </div>
-        
       </div>
 
       <div className="flex gap-[12px] pt-[16px] items-center">
