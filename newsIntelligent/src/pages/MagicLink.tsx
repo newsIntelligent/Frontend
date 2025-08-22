@@ -43,20 +43,21 @@ export default function MagicLink() {
       try {
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-        // 토큰을 axios 기본 헤더에 세팅
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
-
-        // 유저 정보 가져오기
-        const res = await axiosInstance.get("/members/info");
+        // 유저 정보 가져오기 (Authorization 헤더 직접 세팅)
+        const res = await axiosInstance.get("/members/info", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const user = res.data.result;
 
         const rememberDays = 7;
         persistAuth(
           {
             accessToken: token,
-            refreshToken: "",
+            refreshToken: "", // 타입상 string | undefined 이어서 ""로 처리
             expiresInSec: rememberDays * 86400,
-            user, // user.email 이 반드시 포함되어야 함
+            user, // user.email 반드시 있어야 통과
           },
           rememberDays
         );
