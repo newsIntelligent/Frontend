@@ -3,17 +3,22 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
 
 export default function MagicLink() {
-  const { hash } = useLocation();
+  const { search, hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ 해시에서 token 추출
+  // ✅ URL에서 token 추출 (쿼리, 해시 둘 다 지원)
   const getTokenFromUrl = (): string => {
-    const params = new URLSearchParams(hash.replace(/^#/, "?"));
-    return params.get("token") || "";
+    const queryParams = new URLSearchParams(search);
+    const queryToken = queryParams.get("token");
+
+    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
+    const hashToken = hashParams.get("token");
+
+    return queryToken || hashToken || "";
   };
 
   const token = getTokenFromUrl();
@@ -28,21 +33,26 @@ export default function MagicLink() {
       return;
     }
 
-    // ✅ 토큰 자체가 accessToken
-    persistAuthRelaxed(
-      {
-        accessToken: token,
-        refreshToken: "", // 필요시 빈값
-        expiresInSec: 7 * 86400, // 7일
-        user: {}, // 서버에서 유저 정보는 별도 API로 조회
-      },
-      7
-    );
+    try {
+      // ✅ accessToken 저장
+      persistAuthRelaxed(
+        {
+          accessToken: token,
+          refreshToken: "",
+          expiresInSec: 7 * 86400, // 7일
+          user: {}, // 유저 정보는 /members/info 등 별도 API로 조회
+        },
+        7
+      );
 
-    setStatus("done");
-    setTimeout(() => {
-      navigate("/", { replace: true });
-    }, 800);
+      setStatus("done");
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 800);
+    } catch (e: any) {
+      setStatus("error");
+      setMsg("로그인 처리 실패");
+    }
   }, [token, navigate]);
 
   return (
