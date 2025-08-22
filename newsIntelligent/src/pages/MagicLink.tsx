@@ -1,7 +1,7 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth, persistAuthRelaxed } from "../apis/auth";
+import { persistAuthRelaxed } from "../apis/auth";
 
 type Mode = "login" | "signup" | "notification-email";
 
