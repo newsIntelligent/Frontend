@@ -45,20 +45,27 @@ export default function MagicLink() {
 
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
+        // 유저 정보 요청
+        const res = await axiosInstance.get("/members/info");
+        const user = res.data.result;
+
         const rememberDays = 7;
         persistAuth(
           {
             accessToken: token,
-            refreshToken: undefined,
+            refreshToken: "", // undefined 대신 기본값
             expiresInSec: rememberDays * 86400,
-            user: { email: "", name: "", profileImageUrl: undefined },
+            user,
           },
           rememberDays
         );
 
         setStatus("done");
         setTimeout(() => {
-          navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
+          navigate(
+            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+            { replace: true }
+          );
         }, 400);
       } catch (e: any) {
         setStatus("error");
@@ -80,7 +87,12 @@ export default function MagicLink() {
           <>
             <div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div>
             <p className="text-gray-600 mb-4">{msg}</p>
-            <a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">로그인 페이지로</a>
+            <a
+              href="/login"
+              className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white"
+            >
+              로그인 페이지로
+            </a>
           </>
         )}
         {status === "done" && (
