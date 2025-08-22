@@ -265,9 +265,11 @@ export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl
 };
 
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
+  const base = redirectBaseUrl ?? `${window.location.origin}/settings/notification-email/magic#token=`;
+  
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl,
+    redirectBaseUrl: base,
   });
 };
 
@@ -283,8 +285,10 @@ export const verifyEmailChangeCode = async (
 };
 
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
+  const base = redirectBaseUrl ?? `${window.location.origin}/settings/notification-email/magic#token=`;
+  
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl,
+    redirectBaseUrl: base,
   });
 };
