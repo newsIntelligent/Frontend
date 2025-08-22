@@ -55,16 +55,16 @@ function MainPage() {
 
 
   return (
-    <div className="w-full overflow-x-hidden"> 
-    <div className='w-[1440px] flex  min-h-screen mx-auto'>
+    <div className="w-full overflow-x-hidden "> 
+    <div className='w-[1440px] flex  min-h-screen mx-auto gap-[4g0px]'>
     <aside
-                className={`sticky w-[320px] pl-[25px] self-start 
+                className={`sticky w-[320px] ml-[25px] self-start 
                   ${isScrolled ? 'top-[75px]' : ""}`}
               >
                 <UpdatesSidebar />
               </aside>
 
-      <main className='pl-[140px] pr-8 w-[840px]'>
+      <main className='w-[840px] pl-[120px]'>
       {data && items.length > 0 && (
           <>
             {main && <MainArticle {...main} />}
