@@ -8,30 +8,20 @@ export const axiosInstance: AxiosInstance = axios.create({
   },
 })
 
-// 요청 인터셉터
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken"); // 항상 localStorage에서 읽음
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+const token = localStorage.getItem("auth:accessToken");
+if (token && token !== "null" && token !== "undefined" && token.trim() !== "") {
+  axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+} else {
+  delete axiosInstance.defaults.headers.common.Authorization;
+}
 
-// 응답 인터셉터 (옵션)
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // 401 처리 로직 (토큰 만료 시)
-    if (error.response?.status === 401) {
-      console.error("토큰이 만료되었거나 유효하지 않습니다.");
-      // 필요하면 refreshToken 로직 추가
-    }
-    return Promise.reject(error);
+// ✅ 요청 인터셉터: 항상 최신 토큰을 헤더에 세팅
+axiosInstance.interceptors.request.use((config) => {
+  const t = localStorage.getItem("auth:accessToken");
+  if (t && t !== "null" && t !== "undefined" && t.trim() !== "") {
+    config.headers.Authorization = `Bearer ${t}`;
+  } else {
+    delete config.headers.Authorization;
   }
-);
-
-export default axiosInstance;
+  return config;
+});
