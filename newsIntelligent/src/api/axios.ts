@@ -20,6 +20,11 @@ axiosInstance.interceptors.request.use(
   }
 )
 
+const token = localStorage.getItem("ACCESS_KEY");
+if (token && token.trim() !== "") {
+  axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+}
+
 // 응답 인터셉터
 axiosInstance.interceptors.response.use(
   (response) => {
