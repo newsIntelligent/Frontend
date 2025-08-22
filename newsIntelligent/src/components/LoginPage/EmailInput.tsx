@@ -6,9 +6,10 @@ interface EmailInputProps {
   onToggleAutoLogin:()=> void;
   submitLabel?: string;
   showAutoLogin?: boolean;
+  isProcessing?: boolean;
 }
 
-const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이메일로 간편 로그인/회원가입", showAutoLogin = true }: EmailInputProps) => {
+const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이메일로 간편 로그인/회원가입", showAutoLogin = true, isProcessing = false }: EmailInputProps) => {
   const [localEmail, setLocalEmail] = useState("");
   const [domain, setDomain] = useState("");
   const [customInput, setCustomInput] = useState(true); // 직접입력을 기본값으로 설정
@@ -105,7 +106,7 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이�
   ];
 
   const handleSubmit = () => {
-    if (!isFormValid() || isSubmitting || inFlightRef.current) return;
+    if (!isFormValid() || isSubmitting || inFlightRef.current || isProcessing) return;
     inFlightRef.current = true; // 중복 요청 방지 플래그 활성화
 
     setIsSubmitting(true);
@@ -289,12 +290,12 @@ const EmailInput = ({ onNext, autoLogin, onToggleAutoLogin, submitLabel = "이�
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={!isFormValid() || isSubmitting}
+        disabled={!isFormValid() || isSubmitting || isProcessing}
         className={`w-full mb-12 text-white py-2 h-[49px] rounded-md text-sm font-medium
-                    ${isFormValid() && !isSubmitting? "bg-[#0EA6C0] cursor-pointer" : "bg-[#B7E5EC] cursor-not-allowed"}`}
+                    ${isFormValid() && !isSubmitting && !isProcessing? "bg-[#0EA6C0] cursor-pointer" : "bg-[#B7E5EC] cursor-not-allowed"}`}
         tabIndex={4}
       >
-        {submitLabel}
+        {isProcessing ? "처리 중..." : submitLabel}
       </button>
     </div>
   );

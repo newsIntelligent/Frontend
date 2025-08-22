@@ -203,8 +203,7 @@ export default function UpdatesSidebar() {
   }
 
   return (
-    <div className="w-full flex justify-center">
-      <div className="w-[1440px] pl-[160px] mx-auto">
+   
         <aside className="sticky top-[10px] w-[320px]">
           <div className="border-t-2 px-4 py-5 h-full">
             <h2 className="text-xl font-bold mb-2 border-b border-gray-300 pb-3">최신수정보도</h2>
@@ -310,7 +309,5 @@ export default function UpdatesSidebar() {
             )}
           </div>
         </aside>
-      </div>
-    </div>
   )
 }
