@@ -8,33 +8,33 @@ import { useNavigate } from "react-router-dom";
 
 const formatSummaryTime = (isoString: string) => {
     if (!isoString) return "";
-
     const d = new Date(isoString);
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     const hh = String(d.getHours()).padStart(2, "0");
     const mi = String(d.getMinutes()).padStart(2, "0");
-
     return `${mm}/${dd} ${hh}:${mi}`;
 };
 
-type TopicWithSub = Topics & { isSub?: boolean; imageSource?: { press?: string; title?: string }, newsLink? :string };
+type TopicWithSub = Topics & {
+    isSub?: boolean;
+    imageSource?: { press?: string; title?: string; newsLink?: string };
+    newsLink?: string;
+};
+
+const normalizeUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    if (/^https?:\/\//i.test(url)) return url;
+    return `https://${url.replace(/^\/+/, "")}`;
+};
 
 const getImageSourceLink = (related: any[], data: TopicWithSub): string | null => {
     const title = data.imageSource?.title?.trim()?.toLowerCase() ?? "";
-    const press = data.imageSource?.press?.trim()?.toLowerCase() ?? "";
-    const img = data.imageUrl?.trim() ?? "";
-
-    const byTitle = related.find((c: any) => (c?.title ?? "").trim().toLowerCase() === title)?.newsLink;
-    if (byTitle) return byTitle;
-
-    const byPress = related.find((c: any) => (c?.press ?? "").trim().toLowerCase() === press)?.newsLink;
-    if (byPress) return byPress;
-
-    const byImageUrl = related.find((c: any) => (c as any)?.imageUrl && (c as any).imageUrl === img)?.newsLink;
-    if (byImageUrl) return byImageUrl;
-
-    return null;
+    if (!title) return normalizeUrl(data.imageSource?.newsLink);
+    const byTitle = related.find(
+        (c: any) => (c?.title ?? "").trim().toLowerCase() === title
+    )?.newsLink;
+    return normalizeUrl(byTitle ?? data.imageSource?.newsLink);
 };
 
 const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
@@ -74,12 +74,14 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 
     const handleCardClick = () => navigate(`/article?id=${data.id}`);
 
-    const sourceLink = getImageSourceLink(relatedList, data);
-    const sourceTitle = data.imageSource?.title ?? "";
-    const newsLink = data.newsLink;
+    const sourceLink = getImageSourceLink(relatedList, data) ?? "#";
+    const sourceTitle = data.imageSource?.title ?? "출처 기사";
+
     return (
         <div
-        className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? "h-[597px]" : "h-[288px]"} cursor-pointer`}
+        className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${
+            isExpanded ? "h-[597px]" : "h-[288px]"
+        } cursor-pointer`}
         onClick={handleCardClick}
         >
         {isExpanded ? (
@@ -87,21 +89,17 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
             <div className="flex flex-col p-6 gap-4">
                 <div className="flex flex-1 justify-between items-center">
                 <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">
-                    업데이트 {formatSummaryTime(data.summaryTime)} ·{" "}
-                    {newsLink ? (
+                    업데이트 {formatSummaryTime(data.summaryTime)} · 이미지 {data.imageSource?.press}{" "}
                     <a
-                        href={newsLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"
-                        title={sourceTitle}
+                    className="underline underline-offset-2 decoration-[#919191] hover:decoration-black"
+                    href={sourceLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title={sourceTitle}
                     >
-                        {newsLink}
+                    "{sourceTitle}"
                     </a>
-                    ) : (
-                    <span className="underline underline-offset-2 decoration-[#919191]">{sourceTitle}</span>
-                    )}
                 </p>
                 <div onClick={(e) => e.stopPropagation()}>
                     <SubscribeButton id={data.id} subscribe={subscribed} />
@@ -110,7 +108,11 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 
                 <div className="flex flex-col gap-4">
                 <div className="flex">
-                    <img src={data.imageUrl} alt="" className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]" />
+                    <img
+                    src={data.imageUrl}
+                    alt=""
+                    className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]"
+                    />
                     <div className="w-[169px] h-[59px] text-[24px] font-semibold leading-tight line-clamp-3 mb-[4px]">
                     {data.topicName}
                     </div>
@@ -142,7 +144,6 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                         <span className="pl-4 text-[12px] text-[#919191]">출처 기사를 불러오는 중...</span>
                     </div>
                     )}
-
                     {isError && (
                     <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">
                         <span className="pl-4 text-[12px] text-red-500">
@@ -150,7 +151,6 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                         </span>
                     </div>
                     )}
-
                     {!isLoading &&
                     !isError &&
                     (relatedList.length === 0 ? (
@@ -167,7 +167,7 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                             </span>
                             </div>
                             <a
-                            href={c.newsLink}
+                            href={normalizeUrl(c.newsLink) ?? "#"}
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -188,21 +188,17 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
             <div className="flex flex-col m-6 gap-4">
                 <div className="flex flex-1 justify-between items-center">
                 <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">
-                    업데이트 {formatSummaryTime(data.summaryTime)} ·{" "}
-                    {sourceLink ? (
+                    업데이트 {formatSummaryTime(data.summaryTime)} · 이미지 {data.imageSource?.press}{" "}
                     <a
-                        href={sourceLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"
-                        title={sourceTitle}
+                    className="underline underline-offset-2 decoration-[#919191] hover:decoration-black"
+                    href={sourceLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title={sourceTitle}
                     >
-                        {sourceTitle}
+                    "{sourceTitle}"
                     </a>
-                    ) : (
-                    <span className="underline underline-offset-2 decoration-[#919191]">{sourceTitle}</span>
-                    )}
                 </p>
                 <div onClick={(e) => e.stopPropagation()}>
                     <SubscribeButton id={data.id} subscribe={subscribed} />
@@ -211,7 +207,11 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 
                 <div className="flex flex-col gap-4">
                 <div className="flex">
-                    <img src={data.imageUrl} alt="" className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]" />
+                    <img
+                    src={data.imageUrl}
+                    alt=""
+                    className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]"
+                    />
                     <div className="w-[169px] h-[59px] text-[24px] font-semibold leading-tight line-clamp-3 mb-[4px]">
                     {data.topicName}
                     </div>
@@ -245,5 +245,4 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 };
 
 export default NewsCard;
-
 
