@@ -5,77 +5,99 @@ import { persistAuth, verifyLoginCode, verifySignupCode, verifyEmailChangeCode }
 
 type Mode = "login" | "signup" | "notification-email";
 
-function pickParamAll(href: string, key: string): string {
-  if (!href) return "";
-  const url = new URL(href);
-  const fromSearch = url.searchParams.get(key) || "";
-  const rawHash = url.hash.startsWith("#") ? url.hash.slice(1) : url.hash;
-  const hashParams = new URLSearchParams(rawHash);
-  const fromHash = hashParams.get(key) || "";
+const isValidEmail = (v: string) => /\S+@\S+\.\S+/.test(v.trim());
+
+const pickParam = (href: string, key: string) => {
+  const u = new URL(href);
+  const fromSearch = u.searchParams.get(key) || "";
+  const rawHash = u.hash.startsWith("#") ? u.hash.slice(1) : u.hash;
+  const fromHash = new URLSearchParams(rawHash).get(key) || "";
   const m = href.match(new RegExp(`[#?&]${key}=([^&#]+)`));
   const fromRegex = m?.[1] ?? "";
   return decodeURIComponent(fromSearch || fromHash || fromRegex).trim();
-}
+};
 
-const EMAIL_KEYS = ["auth:pendingEmail","auth:newEmail","auth:loginEmail","auth:signupEmail","auth:notificationEmail","pendingEmail","newEmail","email","loginEmail","signupEmail"];
-function loadEmailFallback(): string {
-  for (const k of EMAIL_KEYS) {
-    const v = localStorage.getItem(k);
-    if (v && /\S+@\S+\.\S+/.test(v)) return v;
+const pickToken = (href: string) =>
+  pickParam(href, "token") || pickParam(href, "code") || pickParam(href, "t");
+
+const pickEmail = (href: string) =>
+  pickParam(href, "email") ||
+  pickParam(href, "newEmail") ||
+  pickParam(href, "e");
+
+const loadEmailFallback = () => {
+  const keys = [
+    "auth:pendingEmail",
+    "auth:loginEmail",
+    "auth:signupEmail",
+    "auth:newEmail",
+    "pendingEmail",
+    "loginEmail",
+    "signupEmail",
+    "newEmail",
+    "email",
+  ];
+  for (const k of keys) {
+    const v = localStorage.getItem(k) || "";
+    if (isValidEmail(v)) return v.trim();
   }
   return "";
-}
+};
 
 export default function MagicLink() {
-  const { pathname, search, hash } = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const href = typeof window !== "undefined" ? window.location.href : "";
 
-  const [status, setStatus] = useState<"loading" | "input" | "error" | "done">("loading");
-  const [msg, setMsg] = useState("확인 중…");
-  const [manualEmail, setManualEmail] = useState("");
+  const href = typeof window !== "undefined" ? window.location.href : "";
+  const mode: Mode | null =
+    pathname.includes("/login/magic") ? "login" :
+    pathname.includes("/signup/magic") ? "signup" :
+    pathname.includes("/settings/notification-email/magic") ? "notification-email" :
+    null;
 
   const tokenRef = useRef("");
   const emailRef = useRef("");
-  const modeRef = useRef<Mode | null>(null);
+
+  const [status, setStatus] = useState<"loading" | "need-email" | "error" | "done">("loading");
+  const [msg, setMsg] = useState("확인 중…");
+  const [emailInput, setEmailInput] = useState("");
 
   useEffect(() => {
-    const token = pickParamAll(href, "token") || pickParamAll(href, "code") || pickParamAll(href, "t");
-    const urlEmail = pickParamAll(href, "email") || pickParamAll(href, "newEmail");
-    const fallbackEmail = loadEmailFallback();
-
-    const mode: Mode | null =
-      pathname.includes("/login/magic") ? "login" :
-      pathname.includes("/signup/magic") ? "signup" :
-      pathname.includes("/settings/notification-email/magic") ? "notification-email" :
-      null;
+    const token = pickToken(href);
+    const emailFromUrl = pickEmail(href);
+    const emailFallback = loadEmailFallback();
 
     tokenRef.current = token;
-    emailRef.current = urlEmail || fallbackEmail;
-    modeRef.current = mode;
+    emailRef.current = (emailFromUrl || emailFallback || "").trim();
 
     if (!mode || !token) {
       setStatus("error");
       setMsg("잘못된 링크입니다 (mode/token 누락).");
       return;
     }
-    if ((mode === "login" || mode === "signup" || mode === "notification-email") && !emailRef.current) {
-      setStatus("input");
+
+    if (!isValidEmail(emailRef.current)) {
+      setStatus("need-email");
       setMsg("이메일을 입력하면 인증을 완료할 수 있어요.");
       return;
     }
+
     setStatus("loading");
-  }, [pathname, search, hash, href]);
+  }, [href, mode]);
 
   useEffect(() => {
     const run = async () => {
       if (status !== "loading") return;
-      const token = tokenRef.current;
-      const email = emailRef.current;
-      const mode = modeRef.current;
-
       try {
+        const token = tokenRef.current;
+        const email = emailRef.current;
+
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
+        if (!isValidEmail(email)) {
+          setStatus("need-email");
+          setMsg("이메일 형식이 올바르지 않습니다.");
+          return;
+        }
 
         if (mode === "login") {
           const { isSuccess, result, message } = await verifyLoginCode(email, token);
@@ -101,14 +123,14 @@ export default function MagicLink() {
       }
     };
     run();
-  }, [navigate, status]);
+  }, [mode, navigate, status]);
 
-  const onManualSubmit = () => {
-    const v = manualEmail.trim();
-    if (!/\S+@\S+\.\S+/.test(v)) {
+  const submitEmail = () => {
+    if (!isValidEmail(emailInput)) {
       setMsg("올바른 이메일을 입력해 주세요.");
       return;
     }
+    const v = emailInput.trim();
     localStorage.setItem("auth:pendingEmail", v);
     emailRef.current = v;
     setStatus("loading");
@@ -118,20 +140,47 @@ export default function MagicLink() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
       <div className="bg-white rounded-[16px] shadow-md p-8 w-full max-w-[520px] text-center">
-        {status === "loading" && (<><div className="text-xl font-semibold mb-2">확인 중…</div><p className="text-gray-600">{msg}</p></>)}
-        {status === "input" && (
+        {status === "loading" && (
           <>
-            <div className="text-xl font-semibold mb-3">이메일 확인 필요</div>
-            <p className="text-gray-600 mb-4">메일을 보냈던 주소를 입력해 주세요.</p>
-            <div className="flex gap-2 mb-3">
-              <input className="flex-1 border rounded px-3 py-2 text-sm" placeholder="you@example.com" value={manualEmail} onChange={(e) => setManualEmail(e.target.value)} />
-              <button className="px-3 py-2 rounded bg-[#0EA6C0] text-white text-sm" onClick={onManualSubmit}>확인</button>
-            </div>
-            <a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">로그인 페이지로</a>
+            <div className="text-xl font-semibold mb-2">확인 중…</div>
+            <p className="text-gray-600">{msg}</p>
           </>
         )}
-        {status === "error" && (<><div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div><p className="text-gray-600 mb-4 break-all">{msg}</p><a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">로그인 페이지로</a></>)}
-        {status === "done" && (<><div className="text-xl font-semibold mb-2">완료!</div><p className="text-gray-600">잠시 후 이동합니다…</p></>)}
+        {status === "need-email" && (
+          <>
+            <div className="text-xl font-semibold mb-3">이메일 확인 필요</div>
+            <p className="text-gray-600 mb-4">{msg}</p>
+            <div className="flex gap-2 mb-3">
+              <input
+                className="flex-1 border rounded px-3 py-2 text-sm"
+                placeholder="you@example.com"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+              />
+              <button className="px-3 py-2 rounded bg-[#0EA6C0] text-white text-sm" onClick={submitEmail}>
+                확인
+              </button>
+            </div>
+            <a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">
+              로그인 페이지로
+            </a>
+          </>
+        )}
+        {status === "error" && (
+          <>
+            <div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div>
+            <p className="text-gray-600 mb-4 break-all">{msg}</p>
+            <a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">
+              로그인 페이지로
+            </a>
+          </>
+        )}
+        {status === "done" && (
+          <>
+            <div className="text-xl font-semibold mb-2">완료!</div>
+            <p className="text-gray-600">잠시 후 이동합니다…</p>
+          </>
+        )}
       </div>
     </div>
   );
