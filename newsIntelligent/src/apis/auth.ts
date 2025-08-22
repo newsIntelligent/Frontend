@@ -51,7 +51,6 @@ export const persistAuthRelaxed = (
     : rememberDays * MS.day;
   const exp = now + ttlMs;
 
-  // ✅ persistAuth 와 같은 키로 저장
   localStorage.setItem(ACCESS_KEY, result.accessToken);
   localStorage.setItem(EXPIRES_KEY, String(exp));
   localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
@@ -150,7 +149,6 @@ export function hasLoginHistory(): boolean {
   return !!localStorage.getItem(USER_KEY);
 }
 
-// ✅ 저장된 토큰 적용 (boot)
 const bootToken = localStorage.getItem(ACCESS_KEY);
 if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.trim() !== "") {
   axiosInstance.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
@@ -181,6 +179,7 @@ function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
   };
 }
 
+// 로그인 코드 발송
 export const sendLoginCode = (email: string, isLogin: boolean, redirectBaseUrl?: string) => {
   if (!email || !email.includes("@")) {
     throw new Error("Invalid email format");
@@ -197,6 +196,7 @@ export const sendLoginCode = (email: string, isLogin: boolean, redirectBaseUrl?:
   });
 };
 
+// 로그인 코드 검증
 export const verifyLoginCode = async (
   email: string,
   code: string
@@ -207,6 +207,10 @@ export const verifyLoginCode = async (
   const { data } = await axiosInstance.post("/members/login/verify", { email, code });
   const normalized = normalizeToAuthResult(data);
 
+  if (normalized?.accessToken) {
+    persistAuth(normalized, 7); // ✅ 토큰 저장 + axios 헤더 반영
+  }
+
   return {
     isSuccess: !!((data?.isSuccess ?? true) && normalized),
     status: data?.status,
@@ -216,6 +220,7 @@ export const verifyLoginCode = async (
   };
 };
 
+// 회원가입 코드 검증
 export async function verifySignupCode(
   email: string,
   code: string
@@ -226,6 +231,10 @@ export async function verifySignupCode(
   const { data } = await axiosInstance.post("/members/signup/verify", { email, code });
   const normalized = normalizeToAuthResult(data);
 
+  if (normalized?.accessToken) {
+    persistAuth(normalized, 7); // ✅ 토큰 저장 + axios 헤더 반영
+  }
+
   return {
     isSuccess: !!((data?.isSuccess ?? true) && normalized),
     status: data?.status,
@@ -235,6 +244,7 @@ export async function verifySignupCode(
   };
 }
 
+// 매직 링크 재전송
 export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl?: string) => {
   const url = isLogin ? "/members/login/email" : "/members/signup/email";
   const defaultRedirectBaseUrl = isLogin
@@ -247,6 +257,7 @@ export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl
   });
 };
 
+// 이메일 변경 코드 발송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
@@ -254,6 +265,7 @@ export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => 
   });
 };
 
+// 이메일 변경 코드 검증
 export const verifyEmailChangeCode = async (
   email: string,
   code: string
@@ -265,6 +277,7 @@ export const verifyEmailChangeCode = async (
   return data;
 };
 
+// 이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
@@ -272,6 +285,7 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
   });
 };
 
+// 매직 링크 verify는 프론트에서 처리
 export const verifyMagicLink = async () => {
   throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
 };
