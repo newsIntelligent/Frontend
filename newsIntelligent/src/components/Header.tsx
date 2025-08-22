@@ -35,19 +35,19 @@ function Header() {
 >
   <div className="w-[1440px] flex flex-col pb-0 px-[max(16px,calc((100vw-1227px)/2))]">
     {isScrolled ? (
-      <div className="flex justify-between items-center h-[60px] gap-[300px]">
+      <div className="flex items-center h-[60px] gap-[300px]">
         <img src="/SmallLogo.svg" alt="Logo" className="w-[42px]" onClick={handleLogoClick}/>
         <SearchBar variant="default" />
         <HeaderAction />
       </div>
     ) : (
-      <div className="flex flex-col gap-y-2 justify-between ">
-        <div className="flex justify-between items-center h-[70px] gap-[272px]">
+      <div className="flex flex-col gap-y-2 ">
+        <div className="flex items-center h-[70px] gap-[272px]">
           <img src="/HeaderLogo.svg" alt="Logo" className="w-[456px] h-[70px]" onClick={handleLogoClick}/>
           <SearchBar variant="default" />
         </div>
 
-        <div className="flex justify-between items-center h-[44px] gap-[627px]">
+        <div className="flex h-[44px] gap-[627px]">
         <nav className="flex w-[508px] gap-x-6 ">
                 {menus.map((menu) => {
                   const isEconomyActive = menu === "경제" && pathname === "/"; 

@@ -183,7 +183,7 @@ const ArticlePage = () => {
 
   return (
     <div className="w-full overflow-x-hidden"> 
-    <div className='w-[1440px] flex min-h-screen mx-auto gap-[90px] px-[min(100px,calc((100vw-1240px)/2))] '>
+    <div className='w-[1440px] flex  min-h-screen px-[max(16px,calc((100vw-1280px)/2))] gap-[90px]'>
     <aside
                 className={`sticky w-[320px] self-start 
                   ${isScrolled ? 'top-[75px]' : ""}`}
