@@ -3,7 +3,6 @@ import EmailInput from "../components/LoginPage/EmailInput";
 import LoginLog from "../components/LoginPage/LoginLog";
 import CodeInput from "../components/LoginPage/CodeInput";
 import LeftSection from "../components/LoginPage/LeftSection";
-import LoginComplete from "../components/LoginPage/LoginComplete";
 import { sendLoginCode, resendMagicLink } from "../apis/auth";
 import { useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
@@ -216,13 +215,6 @@ const LoginPage = () => {
               {renderRightSection()}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* 화면 전체 덮는 LoginComplete */}
-      {step === "complete" && (
-        <div className="absolute inset-0 z-50 bg-white">
-          <LoginComplete />
         </div>
       )}
     </div>
