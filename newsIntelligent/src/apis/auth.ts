@@ -55,10 +55,13 @@ export const persistAuthRelaxed = (
   localStorage.setItem(EXPIRES_KEY, String(exp));
   localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
 
-  if (result.accessToken && result.accessToken.trim() !== "") {
-    axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
+  const t = result.accessToken?.trim();
+  if (t) {
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
+    axios.defaults.headers.common.Authorization = `Bearer ${t}`; // ← 기본 axios도 반영
   } else {
     delete axiosInstance.defaults.headers.common.Authorization;
+    delete axios.defaults.headers.common.Authorization;
   }
 };
 
@@ -79,11 +82,13 @@ export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_D
     localStorage.setItem(EXPIRES_KEY, String(exp));
     localStorage.setItem(USER_KEY, JSON.stringify(result.user));
 
-    const t = result.accessToken;
-    if (t && t !== "null" && t !== "undefined" && t.trim() !== "") {
+    const t = result.accessToken?.trim();
+    if (t) {
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
+      axios.defaults.headers.common.Authorization = `Bearer ${t}`;
     } else {
       delete axiosInstance.defaults.headers.common.Authorization;
+      delete axios.defaults.headers.common.Authorization;
     }
   } catch (error) {
     console.error("Failed to persist auth data:", error);
@@ -136,7 +141,8 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err?.response?.status === 400) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {   // ← 400 → 401/403 로 변경
         clearAuth(true);
         delete instance.defaults.headers.common.Authorization;
       }
@@ -152,9 +158,14 @@ export function hasLoginHistory(): boolean {
 const bootToken = localStorage.getItem(ACCESS_KEY);
 if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.trim() !== "") {
   axiosInstance.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
+  axios.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
 } else {
   delete axiosInstance.defaults.headers.common.Authorization;
+  delete axios.defaults.headers.common.Authorization;
 }
+
+// attach 인터셉터 초기 실행
+attachAxiosAuth(axiosInstance);
 
 type NormalizeOpts = { allowMissingAccessToken?: boolean };
 
