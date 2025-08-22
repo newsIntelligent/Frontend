@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../api/axios";
 import { persistAuth } from "../apis/auth";
-import { getMemberInfo } from "../apis/members";
 
 type Mode = "login" | "signup" | "notification-email";
 
@@ -49,8 +48,8 @@ export default function MagicLink() {
       try {
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-        const info: any = await getMemberInfo();
-        const r = info?.result ?? info; // 안전 매핑
+        const { data } = await axiosInstance.get("/members/info");
+        const r: any = data?.result ?? data;
         const user = {
           email: r?.email ?? "",
           name: r?.nickname ?? r?.name ?? "",
@@ -58,6 +57,7 @@ export default function MagicLink() {
         };
 
         persistAuth({ accessToken: token, user }, 7);
+
         setStatus("done");
         setMsg("로그인되었습니다. 잠시 후 이동합니다…");
         setTimeout(() => {
@@ -73,9 +73,25 @@ export default function MagicLink() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
       <div className="bg-white rounded-[16px] shadow-md p-8 w-full max-w-[520px] text-center">
-        {status === "loading" && (<><div className="text-xl font-semibold mb-2">확인 중…</div><p className="text-gray-600">{msg}</p></>)}
-        {status === "error" && (<><div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div><p className="text-gray-600 mb-4 break-all">{msg}</p><a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">로그인 페이지로</a></>)}
-        {status === "done" && (<><div className="text-xl font-semibold mb-2">완료!</div><p className="text-gray-600">잠시 후 이동합니다…</p></>)}
+        {status === "loading" && (
+          <>
+            <div className="text-xl font-semibold mb-2">확인 중…</div>
+            <p className="text-gray-600">{msg}</p>
+          </>
+        )}
+        {status === "error" && (
+          <>
+            <div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div>
+            <p className="text-gray-600 mb-4 break-all">{msg}</p>
+            <a href="/login" className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white">로그인 페이지로</a>
+          </>
+        )}
+        {status === "done" && (
+          <>
+            <div className="text-xl font-semibold mb-2">완료!</div>
+            <p className="text-gray-600">잠시 후 이동합니다…</p>
+          </>
+        )}
       </div>
     </div>
   );
