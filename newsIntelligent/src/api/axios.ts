@@ -10,7 +10,7 @@ export const axiosInstance: AxiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 우선 auth:accessToken → 없으면 accessToken
+    // 로그인 토큰이 있으면 우선적으로 사용
     const token =
       localStorage.getItem("auth:accessToken") ||
       localStorage.getItem("accessToken");
