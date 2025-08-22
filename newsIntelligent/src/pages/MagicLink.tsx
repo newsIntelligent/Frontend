@@ -13,15 +13,22 @@ export default function MagicLink() {
     if (!raw) return "";
     const cleaned = raw.startsWith("#") ? raw.slice(1) : raw;
     const params = new URLSearchParams(cleaned);
-    return params.get("token") || cleaned.replace(/^token=/, "").split("&")[0] || "";
+    return (
+      params.get("token") ||
+      cleaned.replace(/^token=/, "").split("&")[0] ||
+      ""
+    );
   };
 
   const token = parseToken(hash) || parseToken(search);
   const mode: Mode | null =
-    pathname.startsWith("/login/magic") ? "login" :
-    pathname.startsWith("/signup/magic") ? "signup" :
-    pathname.startsWith("/settings/notification-email/magic") ? "notification-email" :
-    null;
+    pathname.startsWith("/login/magic")
+      ? "login"
+      : pathname.startsWith("/signup/magic")
+      ? "signup"
+      : pathname.startsWith("/settings/notification-email/magic")
+      ? "notification-email"
+      : null;
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("확인 중…");
@@ -34,12 +41,18 @@ export default function MagicLink() {
       if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
       const rememberDays = 7;
+
+      // 최소 구조라도 올바르게 넣어줘야 axios 가 헤더에 토큰 붙임
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "",
+          refreshToken: "", // 타입이 허용하면 null, 아니면 "" 유지
           expiresInSec: rememberDays * 86400,
-          user: {}, // 매직링크 단계에서는 user 정보 몰라도 됨
+          user: {
+            email: "",
+            name: "",
+            profileImageUrl: undefined,
+          },
         },
         rememberDays
       );
@@ -47,7 +60,9 @@ export default function MagicLink() {
       setStatus("done");
       setTimeout(() => {
         navigate(
-          mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+          mode === "notification-email"
+            ? "/settings?emailUpdated=1"
+            : "/",
           { replace: true }
         );
       }, 400);
