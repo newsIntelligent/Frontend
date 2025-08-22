@@ -12,7 +12,7 @@ export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ URL에서 token 추출 (쿼리, 해시 둘 다 지원)
+  // ✅ URL에서 token 추출 (쿼리 + 해시 둘 다 지원)
   const getTokenFromUrl = (): string => {
     const queryParams = new URLSearchParams(search);
     const queryToken = queryParams.get("token");
@@ -38,33 +38,40 @@ export default function MagicLink() {
       return;
     }
 
-    try {
-      // ✅ accessToken 저장 (user 기본 구조 포함)
-      persistAuthRelaxed(
-        {
-          accessToken: token,
-          refreshToken: "",
-          expiresInSec: 7 * 86400,
-          user: { email: "", name: "" },
-        },
-        7
-      );
-      
-      getMemberInfo().then((user) => {
+    const doLogin = async () => {
+      try {
+        // ✅ 1) accessToken 저장
+        persistAuthRelaxed(
+          {
+            accessToken: token,
+            refreshToken: "",
+            expiresInSec: 7 * 86400,
+            user: { email: "", name: "" }, // 임시 구조
+          },
+          7
+        );
+
+        // ✅ 2) axios 인터셉터 적용
+        attachAxiosAuth(axiosInstance);
+
+        // ✅ 3) 서버에서 실제 유저 정보 가져와서 갱신
+        const user = await getMemberInfo();
         localStorage.setItem("userInfo", JSON.stringify(user));
-      });
 
-      // ✅ axios 인스턴스에 토큰 인터셉터 적용
-      attachAxiosAuth(axiosInstance);
+        console.log("👤 불러온 유저 정보:", user);
 
-      setStatus("done");
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 800);
-    } catch {
-      setStatus("error");
-      setMsg("로그인 처리 실패");
-    }
+        setStatus("done");
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 800);
+      } catch (err) {
+        console.error("로그인 처리 실패:", err);
+        setStatus("error");
+        setMsg("로그인 처리 실패");
+      }
+    };
+
+    doLogin();
   }, [token, navigate]);
 
   return (
