@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { axiosInstance } from '../api/axios'
 import SubscribeButton from '../components/SubscribeButton'
 
@@ -64,6 +64,7 @@ const clamp2: React.CSSProperties = {
 }
 
 export default function UpdatesSidebar() {
+  // 화면 표시용 상태
   const [hero, setHero] = useState<LatestItem | null>(null)
   const [sources, setSources] = useState<LatestItem[]>([]) // 메인 아래 3개(출처 기사)
   const [others, setOthers] = useState<LatestItem[]>([]) // 그 외 다른 토픽들
@@ -71,6 +72,76 @@ export default function UpdatesSidebar() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
+  // 순환용 원본 데이터 & 인덱스
+  const [items, setItems] = useState<LatestApiItem[]>([])
+  const [currentIdx, setCurrentIdx] = useState(0)
+
+  // 관련 기사 캐시 (topicId -> LatestItem[])
+  const relatedCache = useRef<Map<number, LatestItem[]>>(new Map())
+
+  // 공통: LatestApiItem -> 화면 상태로 변환 & 세팅
+  const applyViewFromItem = async (it: LatestApiItem) => {
+    // 대표 카드
+    const heroCard: LatestItem = {
+      id: it.id,
+      press: it.imageSource?.press ?? '이미지',
+      title: it.topicName,
+      summary: it.aiSummary,
+      updatedAt: it.summaryTime,
+      imageUrl: it.imageUrl ?? '/src/assets/stk.jpg',
+      isSubscribed: it.isSubscribed ?? it.isSub ?? false,
+    }
+    setHero(heroCard)
+    setTopicId(it.id)
+
+    // 관련 기사(캐시 → 응답 내장 → API 호출(폴백))
+    let related: LatestItem[] | undefined = relatedCache.current.get(it.id)
+
+    if (!related || related.length === 0) {
+      if (it.relatedArticles && it.relatedArticles.length > 0) {
+        related = it.relatedArticles.map((r) => ({
+          id: r.id,
+          press: r.press,
+          title: r.title,
+          summary: r.newsSummary,
+          updatedAt: r.publishDate,
+        }))
+      } else {
+        try {
+          const rel = await axiosInstance.get(`/topic/${it.id}/related`, { params: { size: 6 } })
+          const content = rel?.data?.result?.content ?? []
+          related = (content as any[]).map((x) => ({
+            id: x.id ?? x.topicId,
+            press: x.press,
+            title: x.title,
+            summary: x.newsSummary,
+            updatedAt: x.publishDate,
+          }))
+        } catch {
+          related = []
+        }
+      }
+      relatedCache.current.set(it.id, related || [])
+    }
+
+    setSources((related || []).slice(0, 3))
+
+    // other 목록: 현재 아이템 제외하고 나머지를 표시
+    const rest = items
+      .filter((t) => t.id !== it.id)
+      .map((t) => ({
+        id: t.id,
+        press: t.imageSource?.press,
+        title: t.topicName,
+        summary: t.aiSummary,
+        updatedAt: t.summaryTime,
+        imageUrl: t.imageUrl,
+        isSubscribed: t.isSubscribed ?? t.isSub ?? false,
+      }))
+    setOthers(rest)
+  }
+
+  // 최초 로딩
   useEffect(() => {
     ;(async () => {
       try {
@@ -79,10 +150,11 @@ export default function UpdatesSidebar() {
 
         const { data } = await axiosInstance.get('/topic/latest')
         const raw = data?.result as LatestApiResultV2 | undefined
-        const first: LatestApiItem | undefined =
-          raw && Array.isArray(raw.items) && raw.items.length > 0 ? raw.items[0] : undefined
+        const list = raw?.items ?? []
 
-        if (!first) {
+        setItems(list)
+
+        if (list.length === 0) {
           setHero(null)
           setSources([])
           setOthers([])
@@ -90,60 +162,9 @@ export default function UpdatesSidebar() {
           return
         }
 
-        setTopicId(first.id)
-
-        // 대표 카드
-        const heroCard: LatestItem = {
-          id: first.id,
-          press: first.imageSource?.press ?? '이미지',
-          title: first.topicName,
-          summary: first.aiSummary,
-          updatedAt: first.summaryTime,
-          imageUrl: first.imageUrl ?? '/src/assets/stk.jpg',
-          isSubscribed: first.isSubscribed ?? first.isSub ?? false,
-        }
-        setHero(heroCard)
-
-        // 관련 기사(출처 3개)
-        let related: LatestItem[] = (first.relatedArticles ?? []).map((r) => ({
-          id: r.id,
-          press: r.press,
-          title: r.title,
-          summary: r.newsSummary,
-          updatedAt: r.publishDate,
-        }))
-
-        // 폴백
-        if (related.length === 0) {
-          try {
-            const rel = await axiosInstance.get(`/topic/${first.id}/related`, {
-              params: { size: 6 },
-            })
-            const content = rel?.data?.result?.content ?? []
-            related = (content as any[]).map((it) => ({
-              id: it.id ?? it.topicId,
-              press: it.press,
-              title: it.title,
-              summary: it.newsSummary,
-              updatedAt: it.publishDate,
-            }))
-          } catch {
-            /* ignore */
-          }
-        }
-        setSources(related.slice(0, 3))
-
-        // 그 외 다른 토픽들
-        const rest = (raw?.items ?? []).slice(1).map((t) => ({
-          id: t.id,
-          press: t.imageSource?.press,
-          title: t.topicName,
-          summary: t.aiSummary,
-          updatedAt: t.summaryTime,
-          imageUrl: t.imageUrl,
-          isSubscribed: t.isSubscribed ?? t.isSub ?? false,
-        }))
-        setOthers(rest)
+        // 첫 아이템으로 초기화
+        await applyViewFromItem(list[0])
+        setCurrentIdx(0)
       } catch (e: any) {
         const code = e?.response?.status
         if (code === 404) {
@@ -157,7 +178,23 @@ export default function UpdatesSidebar() {
         setLoading(false)
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 10초 자동 전환 (아이템이 2개 이상일 때만)
+  useEffect(() => {
+    if (items.length <= 1) return
+
+    const tick = async () => {
+      const next = (currentIdx + 1) % items.length
+      setCurrentIdx(next)
+      await applyViewFromItem(items[next])
+    }
+
+    const id = setInterval(tick, 10_000)
+    return () => clearInterval(id)
+    // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
+  }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
 
   // 구독 ID 결정
   const subIdFor = (it?: LatestItem) => {
