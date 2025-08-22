@@ -30,6 +30,7 @@ function FeedBack() {
             setMessage(prevMessages => [
                 ...prevMessages,
                 { text: inputText, isUser: true, tag: tag }
+
             ]);
         },
         onSuccess: () => {

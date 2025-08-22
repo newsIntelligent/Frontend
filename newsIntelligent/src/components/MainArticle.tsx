@@ -51,7 +51,7 @@ function MainArticle({id, topicName, aiSummary, imageUrl, summaryTime, imageSour
                     </div>
                 </div>
                 <div className="w-full h-[20px] text-[10px] text-[#919191] ">이미지 · {imageSource?.press}  
-                    <a className="underline" href={imageUrl}
+                    <a className="underline" href={imageSource?.newsLink}
                         onClick={(e:React.MouseEvent)=>e.stopPropagation()}> "{imageSource?.title}"</a></div>
                 <div className="w-full h-[20px] text-[10px] text-[#919191] mb-[8px] text-right">업데이트 {formatTime(summaryTime)}</div>
         </div>
