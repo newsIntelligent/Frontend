@@ -182,113 +182,87 @@ const ArticlePage = () => {
   }, [article?.summaryTime])
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-gray-50">
-      {/* 레이아웃: lg부터 2열(사이드바/본문), 그 이하는 스택 */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6 lg:gap-10 py-6">
-        {/* 사이드바: 모바일/태블릿에서는 상단에 자연스레 배치, lg부터 sticky */}
-        <aside
-          className={`
-            ${isScrolled ? 'lg:sticky lg:top-[75px]' : 'lg:sticky lg:top-[167px]'}
-            lg:h-[calc(100vh-167px)]
-          `}
-        >
-          <UpdatesSidebar />
-        </aside>
+    <div className="w-full overflow-x-hidden"> 
+    <div className='w-[1440px] flex min-h-screen mx-auto gap-[90px] px-[min(100px,calc((100vw-1240px)/2))] '>
+    <aside
+                className={`sticky w-[320px] self-start 
+                  ${isScrolled ? 'top-[75px]' : ""}`}
+              >
+                <UpdatesSidebar />
+              </aside>
 
-        {/* 메인 콘텐츠 */}
-        <main className="min-w-0">
-          <section className="bg-white border border-gray-200 rounded-xl px-4 sm:px-6 py-6">
-            <h1 className="text-xl sm:text-2xl font-bold leading-tight mb-2 break-words">
-              {article?.topicName}
-            </h1>
+      
+    <main className="w-[840px]">
+          <div className="flex flex-col border-t-2 px-6 py-6 w-[840px]">
+            <h1 className="text-xl font-bold leading-tight mb-2">{article?.topicName}</h1>
             {formattedSummaryTime && (
-              <p className="text-xs text-gray-600 mb-4">업데이트: {formattedSummaryTime}</p>
+              <p className="text-xs text-black mb-4">업데이트: {formattedSummaryTime}</p>
             )}
 
-            {article && (
-              <div className="mb-4">
-                <SubscribeButton id={article.id} subscribe={false} size="large" />
-              </div>
-            )}
+            {article && <SubscribeButton id={article.id} subscribe={false} size="large" />}
 
             {article?.imageUrl && (
-              <figure className="my-3">
-                <img
-                  src={article.imageUrl}
-                  alt={article.topicName || 'topic image'}
-                  className="w-full h-56 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg"
-                />
-                <figcaption className="text-[11px] text-gray-400 mt-2">
-                  이미지 · {article?.topicName}
-                </figcaption>
-              </figure>
+              <img
+                src={article.imageUrl}
+                alt={article.topicName || 'topic image'}
+                className="w-full h-[360px] object-cover rounded my-3"
+              />
             )}
+            <p className="text-[11px] text-gray-400 mb-4">이미지 · {article?.topicName}</p>
 
             {article?.aiSummary && (
-              <article className="text-sm sm:text-base text-gray-800 leading-relaxed">
-                <p className="whitespace-pre-line">{article.aiSummary}</p>
+              <article className="text-sm text-gray-800 leading-relaxed mb-8">
+                <p className="transition-all whitespace-pre-line">{article.aiSummary}</p>
               </article>
             )}
-          </section>
+          </div>
 
-          <hr className="my-6 border-gray-200" />
+          <hr className="my-4 border-gray-300" />
 
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-[14px] text-gray-400 mb-4">
             해당 AI 요약글에 사용된 원본 토픽입니다. 최신순으로 정렬됩니다.
           </p>
 
-          {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+          {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
 
-          {/* 관련 토픽 카드: 반응형 그리드 */}
-          <div
-            className="
-              grid gap-3 sm:gap-4
-              grid-cols-1 sm:grid-cols-2 md:grid-cols-3
-            "
-          >
+          <div className="flex flex-wrap gap-4 mb-8">
             {topics.map((topic) => (
               <a
                 key={topic.id}
                 href={topic.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col gap-2 bg-white border border-gray-200 px-4 py-3 rounded-xl text-sm hover:shadow-md transition-shadow"
+                className="flex flex-col gap-2 bg-gray-100 px-4 py-3 rounded-xl text-xs text-gray-800 w-[200px] hover:shadow"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <img
-                    src={topic.mediaLogo}
-                    alt={topic.media}
-                    className="w-5 h-5 shrink-0"
-                    loading="lazy"
-                  />
-                  <span className="text-gray-600 text-xs truncate">{topic.media}</span>
+                <div className="flex items-center gap-1">
+                  <img src={topic.mediaLogo} alt={topic.media} className="w-4 h-4" loading="lazy" />
+                  <span className="text-gray-500 text-[11px]">{topic.media}</span>
                 </div>
-                <p className="text-xs text-gray-500">{topic.publishDate}</p>
-                <h3 className="text-sm font-medium leading-snug line-clamp-2 break-words">
-                  {topic.title}
-                </h3>
-                <p className="text-[12px] leading-snug text-gray-700 line-clamp-3 break-words">
-                  {topic.text}
-                </p>
+                <p className="text-[11px] leading-snug break-words line-clamp-3">{topic.text}</p>
               </a>
             ))}
           </div>
 
           {hasNext && (
-            <div className="flex justify-center my-10">
+            <div className="flex justify-center mb-16">
               <button
                 onClick={() => fetchRelatedArticles(true)}
                 disabled={loading}
-                className="px-6 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300 disabled:opacity-60"
+                className="px-6 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300"
               >
                 {loading ? '불러오는 중...' : '+ 토픽 더보기'}
               </button>
             </div>
           )}
         </main>
-      </div>
+
+    
+
+    </div>
+      
     </div>
   )
+
 }
 
 export default ArticlePage

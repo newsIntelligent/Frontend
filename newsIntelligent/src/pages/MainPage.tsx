@@ -55,17 +55,17 @@ function MainPage() {
 
 
   return (
-    <div className="flex justify-center">
-      <div
-        className={`sticky w-[320px] h-[calc(100vh-167px)] ${
-          isScrolled ? 'top-[75px]' : 'top-[167px]'
-        }`}
-      >
-        <UpdatesSidebar />
-      </div>
+    <div className="w-full overflow-x-hidden "> 
+    <div className='w-[1440px] flex  min-h-screen mx-auto gap-[90px] px-[min(100px,calc((100vw-1240px)/2))]'>
+    <aside
+                className={`sticky w-[320px] self-start 
+                  ${isScrolled ? 'top-[75px]' : ""}`}
+              >
+                <UpdatesSidebar />
+              </aside>
 
-      <div className="pl-[140px] pr-8">
-        {data && items.length > 0 && (
+      <main className='w-[840px]'>
+      {data && items.length > 0 && (
           <>
             {main && <MainArticle {...main} />}
             <div className="grid grid-cols-2 w-[840px] gap-x-[20px] gap-y-[20px] py-[24px]">
@@ -77,7 +77,12 @@ function MainPage() {
             <div ref={ref} />
           </>
         )}
-      </div>
+      </main>
+
+    
+
+    </div>
+      
     </div>
   )
 }
