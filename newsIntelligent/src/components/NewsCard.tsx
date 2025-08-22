@@ -24,7 +24,6 @@ const getImageSourceLink = (related: any[], data: TopicWithSub): string | null =
     const title = data.imageSource?.title?.trim()?.toLowerCase() ?? "";
     const press = data.imageSource?.press?.trim()?.toLowerCase() ?? "";
     const img = data.imageUrl?.trim() ?? "";
-    const newsLink = data.newsLink?.trim() ?? "";  
 
     const byTitle = related.find((c: any) => (c?.title ?? "").trim().toLowerCase() === title)?.newsLink;
     if (byTitle) return byTitle;
