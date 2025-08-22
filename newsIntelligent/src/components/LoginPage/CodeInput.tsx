@@ -14,7 +14,7 @@ interface CodeInputProps {
   setFromLoginLog?: (v: boolean)=> void;
 }
 
-const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog, verifyFn, setFromLoginLog }: CodeInputProps) => {
+const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fromLoginLog, verifyFn}: CodeInputProps) => {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [code, setCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
