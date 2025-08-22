@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { axiosInstance } from "../api/axios";
-import { persistAuth } from "../apis/auth";
+import { persistAuthRelaxed } from "../apis/auth";
 
 export default function MagicLink() {
-  const { search, hash } = useLocation();
+  const { hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ URL 에서 token 추출 (#token=... 혹은 ?token=...)
+  // ✅ 해시에서 token 추출
   const getTokenFromUrl = (): string => {
-    const params = new URLSearchParams(search || hash.replace(/^#/, "?"));
+    const params = new URLSearchParams(hash.replace(/^#/, "?"));
     return params.get("token") || "";
   };
 
@@ -29,40 +28,21 @@ export default function MagicLink() {
       return;
     }
 
-    // ✅ 백엔드 API 호출: 토큰 교환
-    axiosInstance
-      .get(`/members/login/magic?token=${token}`)
-      .then((res) => {
-        console.log("🔑 /members/login/magic 응답:", res.data);
+    // ✅ 토큰 자체가 accessToken
+    persistAuthRelaxed(
+      {
+        accessToken: token,
+        refreshToken: "", // 필요시 빈값
+        expiresInSec: 7 * 86400, // 7일
+        user: {}, // 서버에서 유저 정보는 별도 API로 조회
+      },
+      7
+    );
 
-        const result = res.data?.result;
-        if (!result?.accessToken) {
-          setStatus("error");
-          setMsg("accessToken이 응답에 없습니다.");
-          return;
-        }
-
-        // ✅ 토큰/유저 저장
-        persistAuth(
-          {
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            expiresInSec: result.expiresInSec ?? 604800,
-            user: result.user ?? { email: result.email, name: result.name },
-          },
-          7
-        );
-
-        setStatus("done");
-        setTimeout(() => {
-          navigate("/", { replace: true });
-        }, 800);
-      })
-      .catch((err) => {
-        console.error("❌ login/magic 실패:", err);
-        setStatus("error");
-        setMsg("로그인 처리 실패");
-      });
+    setStatus("done");
+    setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 800);
   }, [token, navigate]);
 
   return (
