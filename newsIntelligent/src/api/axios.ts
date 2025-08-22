@@ -10,10 +10,10 @@ export const axiosInstance: AxiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 로그인 토큰이 있으면 우선적으로 사용
+    // ⭐ accessToken 먼저 확인
     const token =
-      localStorage.getItem("auth:accessToken") ||
-      localStorage.getItem("accessToken");
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("auth:accessToken");
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
