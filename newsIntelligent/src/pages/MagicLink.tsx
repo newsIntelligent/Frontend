@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
+import { axiosInstance } from "../api/axios"; // 추가
 
 type Mode = "login" | "signup" | "notification-email";
 
@@ -46,7 +47,7 @@ export default function MagicLink() {
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "", // 타입이 허용하면 null, 아니면 "" 유지
+          refreshToken: "",
           expiresInSec: rememberDays * 86400,
           user: {
             email: "",
@@ -56,6 +57,9 @@ export default function MagicLink() {
         },
         rememberDays
       );
+
+      // ✅ axios 헤더에도 즉시 반영
+      axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setStatus("done");
       setTimeout(() => {
