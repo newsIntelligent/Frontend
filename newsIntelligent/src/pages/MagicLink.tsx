@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { persistAuthRelaxed } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
 
 async function exchangeToken(flow: "login" | "signup" | "notification-email", token: string) {
