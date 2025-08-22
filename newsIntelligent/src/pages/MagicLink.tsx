@@ -1,7 +1,7 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth } from "../apis/auth";
+import { persistAuth, persistAuthRelaxed } from "../apis/auth";
 
 type Mode = "login" | "signup" | "notification-email";
 
@@ -35,15 +35,13 @@ export default function MagicLink() {
       if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
       const rememberDays = 7;
-      persistAuth(
+
+      persistAuthRelaxed(
         {
           accessToken: token,
           refreshToken: "",
           expiresInSec: rememberDays * 86400,
-          user: {
-            email: "",
-            name: ""
-          }, // email 없이도 허용
+          user: {}, // email 없어도 OK
         },
         rememberDays
       );
