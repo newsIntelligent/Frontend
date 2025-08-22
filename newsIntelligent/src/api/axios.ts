@@ -8,32 +8,18 @@ export const axiosInstance: AxiosInstance = axios.create({
   },
 })
 
-// 요청 인터셉터
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('API 요청:', config.method?.toUpperCase(), config.url)
-    return config
-  },
-  (error) => {
-    console.error('API 요청 에러:', error)
-    return Promise.reject(error)
-  }
-)
+    // ⭐ accessToken 먼저 확인
+    const token =
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("auth:accessToken");
 
-// 응답 인터셉터
-axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('API 응답 성공:', response.status, response.config.url)
-    return response
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
   },
-  (error) => {
-    console.error('API 응답 에러:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      message: error.message,
-      data: error.response?.data,
-    })
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);

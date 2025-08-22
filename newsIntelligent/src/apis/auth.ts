@@ -24,12 +24,45 @@ export interface AuthResult {
   user: AuthUser;
 }
 
+export interface AuthResultRelaxed {
+  accessToken: string;
+  refreshToken?: string;
+  expiresInSec: number;
+  user?: {
+    email?: string;
+    name?: string;
+    profileImageUrl?: string;
+  };
+}
+
 const ACCESS_KEY = "accessToken";
 const EXPIRES_KEY = "expiresAt";
 const USER_KEY = "userInfo";
 
 const DEFAULT_DAYS = 7; // 7일동안 유효
 const MS = { day: 24 * 60 * 60 * 1000 };
+
+export const persistAuthRelaxed = (
+  result: { accessToken: string; refreshToken?: string; expiresInSec: number; user?: any },
+  rememberDays: number
+) => {
+  const now = Date.now();
+  const ttlMs = result.expiresInSec != null
+    ? result.expiresInSec * 1000
+    : rememberDays * 24 * 60 * 60 * 1000;
+  const exp = now + ttlMs;
+
+  localStorage.setItem("auth:accessToken", result.accessToken);
+  localStorage.setItem("auth:expiresAt", String(exp));
+  localStorage.setItem("auth:user", JSON.stringify(result.user ?? {}));
+
+  // ✅ axiosInstance에도 바로 반영
+  if (result.accessToken && result.accessToken.trim() !== "") {
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
+  } else {
+    delete axiosInstance.defaults.headers.common.Authorization;
+  }
+};
 
 // 토큰/유저 정보 저장
 export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_DAYS) => {
@@ -290,9 +323,4 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
     newEmail: email,
     redirectBaseUrl: redirectBaseUrl,
   });
-};
-
-// 매직 링크 검증 API는 더 이상 사용하지 않음 (백엔드가 리다이렉트로 토큰을 해시로 전달)
-export const verifyMagicLink = async () => {
-  throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
 };

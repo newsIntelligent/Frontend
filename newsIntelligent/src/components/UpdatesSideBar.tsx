@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { axiosInstance } from '../api/axios'
 import SubscribeButton from '../components/SubscribeButton'
 
@@ -33,7 +33,8 @@ type LatestApiItem = {
   summaryTime?: string
   imageSource?: { press?: string; title?: string }
   isSubscribed?: boolean
-  relatedArticles?: RelatedArticle[] // ← 여기!
+  isSub?: boolean
+  relatedArticles?: RelatedArticle[]
 }
 
 type LatestApiResultV2 = {
@@ -48,11 +49,27 @@ const fmt = (iso?: string) => {
   return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+/** 라인 클램프(플러그인 없이 동작) */
+const clamp3: React.CSSProperties = {
+  display: '-webkit-box',
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+}
+const clamp2: React.CSSProperties = {
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+}
+
 export default function UpdatesSidebar() {
-  const [items, setItems] = useState<LatestItem[]>([])
+  const [hero, setHero] = useState<LatestItem | null>(null)
+  const [sources, setSources] = useState<LatestItem[]>([]) // 메인 아래 3개(출처 기사)
+  const [others, setOthers] = useState<LatestItem[]>([]) // 그 외 다른 토픽들
+  const [topicId, setTopicId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [topicId, setTopicId] = useState<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -62,31 +79,33 @@ export default function UpdatesSidebar() {
 
         const { data } = await axiosInstance.get('/topic/latest')
         const raw = data?.result as LatestApiResultV2 | undefined
-
-        const topic: LatestApiItem | undefined =
+        const first: LatestApiItem | undefined =
           raw && Array.isArray(raw.items) && raw.items.length > 0 ? raw.items[0] : undefined
 
-        if (!topic) {
-          setItems([])
+        if (!first) {
+          setHero(null)
+          setSources([])
+          setOthers([])
           setTopicId(null)
           return
         }
 
-        setTopicId(topic.id)
+        setTopicId(first.id)
 
         // 대표 카드
-        const hero: LatestItem = {
-          id: topic.id,
-          press: topic.imageSource?.press ?? '이미지',
-          title: topic.topicName,
-          summary: topic.aiSummary,
-          updatedAt: topic.summaryTime,
-          imageUrl: topic.imageUrl ?? '/src/assets/stk.jpg',
-          isSubscribed: topic.isSubscribed ?? false,
+        const heroCard: LatestItem = {
+          id: first.id,
+          press: first.imageSource?.press ?? '이미지',
+          title: first.topicName,
+          summary: first.aiSummary,
+          updatedAt: first.summaryTime,
+          imageUrl: first.imageUrl ?? '/src/assets/stk.jpg',
+          isSubscribed: first.isSubscribed ?? first.isSub ?? false,
         }
+        setHero(heroCard)
 
-        // 관련 기사: 최신 스키마에서는 topic.relatedArticles에 존재
-        let related: LatestItem[] = (topic.relatedArticles ?? []).map((r) => ({
+        // 관련 기사(출처 3개)
+        let related: LatestItem[] = (first.relatedArticles ?? []).map((r) => ({
           id: r.id,
           press: r.press,
           title: r.title,
@@ -94,10 +113,10 @@ export default function UpdatesSidebar() {
           updatedAt: r.publishDate,
         }))
 
-        // 폴백: 만약 배열이 비어 있으면 /topic/{id}/related 호출
+        // 폴백
         if (related.length === 0) {
           try {
-            const rel = await axiosInstance.get(`/topic/${topic.id}/related`, {
+            const rel = await axiosInstance.get(`/topic/${first.id}/related`, {
               params: { size: 6 },
             })
             const content = rel?.data?.result?.content ?? []
@@ -112,12 +131,26 @@ export default function UpdatesSidebar() {
             /* ignore */
           }
         }
+        setSources(related.slice(0, 3))
 
-        setItems([hero, ...related])
+        // 그 외 다른 토픽들
+        const rest = (raw?.items ?? []).slice(1).map((t) => ({
+          id: t.id,
+          press: t.imageSource?.press,
+          title: t.topicName,
+          summary: t.aiSummary,
+          updatedAt: t.summaryTime,
+          imageUrl: t.imageUrl,
+          isSubscribed: t.isSubscribed ?? t.isSub ?? false,
+        }))
+        setOthers(rest)
       } catch (e: any) {
         const code = e?.response?.status
-        if (code === 404) setItems([])
-        else if (code === 401 || code === 403) setErr('인증이 필요합니다.')
+        if (code === 404) {
+          setHero(null)
+          setSources([])
+          setOthers([])
+        } else if (code === 401 || code === 403) setErr('인증이 필요합니다.')
         else setErr('목록을 불러오지 못했어요.')
         setTopicId(null)
       } finally {
@@ -126,11 +159,7 @@ export default function UpdatesSidebar() {
     })()
   }, [])
 
-  const hero = items[0]
-  const list3 = useMemo(() => items.slice(1, 4), [items])
-  const bottom = useMemo(() => items.slice(4, 7), [items])
-
-  // 구독에 넘길 ID 결정(토픽/기사)
+  // 구독 ID 결정
   const subIdFor = (it?: LatestItem) => {
     if (SUBSCRIBE_SCOPE === 'article') return it?.id ?? topicId ?? 0
     return topicId ?? it?.id ?? 0
@@ -145,7 +174,7 @@ export default function UpdatesSidebar() {
 
             {loading && <p className="text-sm text-gray-500">불러오는 중…</p>}
             {err && <p className="text-sm text-red-500">{err}</p>}
-            {!loading && !err && items.length === 0 && (
+            {!loading && !err && !hero && (
               <div className="my-6 text-sm text-gray-500">최신 수정 보도가 아직 없어요.</div>
             )}
 
@@ -153,7 +182,6 @@ export default function UpdatesSidebar() {
             {!loading && !err && hero && (
               <div className="mb-2">
                 <div className="mb-2">
-                  {/*  제목은 flex-1 + min-w-0 로 공간 제한, 버튼은 flex-shrink-0 로 고정 */}
                   <div className="flex items-start gap-2 mb-1">
                     <span className="flex-1 min-w-0 font-semibold text-sm leading-snug truncate">
                       {hero.title ?? '제목'}
@@ -176,7 +204,8 @@ export default function UpdatesSidebar() {
                     className="w-[96px] h-[60px] object-cover rounded"
                     loading="lazy"
                   />
-                  <p className="text-sm text-gray-800 leading-snug mb-3">
+                  {/* 요약 3줄만 노출 */}
+                  <p className="text-sm text-gray-800 leading-snug mb-3" style={clamp3}>
                     {hero.summary ?? hero.title ?? ''}
                   </p>
                 </div>
@@ -186,18 +215,17 @@ export default function UpdatesSidebar() {
               </div>
             )}
 
-            {!loading && !err && items.length > 0 && <hr className="my-5 border-gray-300" />}
+            {!loading && !err && sources.length > 0 && <hr className="my-5 border-gray-300" />}
 
-            {/* 중간 3개 */}
-            {!loading && !err && list3.length > 0 && (
+            {/* 메인 아래 3개: 출처 기사(구독 버튼 제거) */}
+            {!loading && !err && sources.length > 0 && (
               <ul className="space-y-5 mb-8">
-                {list3.map((it, i) => (
-                  <li
-                    key={`${it.id}-${it.title}-${i}`}
-                    className="flex gap-2 items-start text-xs leading-snug"
-                  >
+                {sources.map((it, i) => (
+                  <li key={`${it.id}-${i}`} className="flex gap-2 items-start text-xs leading-snug">
                     <div
-                      className={`w-2 h-2 rounded-full mt-[5px] ${i === 2 ? 'bg-gray-400' : 'bg-sky-500'}`}
+                      className={`w-2 h-2 rounded-full mt-[5px] ${
+                        i === 2 ? 'bg-gray-400' : 'bg-sky-500'
+                      }`}
                     />
                     <div className="flex flex-col flex-1">
                       <span className="text-[11px] text-gray-500 mb-0.5">
@@ -205,44 +233,42 @@ export default function UpdatesSidebar() {
                       </span>
                       <span className="text-gray-800">{it.title}</span>
                     </div>
-                    <SubscribeButton id={subIdFor(it)} subscribe={false} size="default" />
+                    {/* 구독 버튼 없음 */}
                   </li>
                 ))}
               </ul>
             )}
 
-            {!loading && !err && items.length > 1 && <hr className="my-5 border-gray-300" />}
+            {!loading && !err && others.length > 0 && <hr className="my-5 border-gray-300" />}
 
-            {/* 하단 3개 */}
-            {!loading && !err && bottom.length > 0 && (
+            {/* 그 외 다른 기사(버튼 안 밀리게 고정) */}
+            {!loading && !err && others.length > 0 && (
               <div className="text-sm">
-                {bottom.map((item, idx) => {
-                  const title = item.title ?? ''
-                  const isTitleLong = title.length > 20
-                  return (
-                    <React.Fragment key={`${item.id}-${title}-${idx}`}>
-                      <div className="flex justify-between items-start gap-3">
-                        {isTitleLong ? (
-                          <div className="flex flex-col">
-                            <span className="font-medium leading-tight">{title}</span>
-                            <span className="text-xs text-gray-500">
-                              업데이트 {fmt(item.updatedAt)}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium leading-tight">{title}</span>
-                            <span className="text-xs text-gray-500 whitespace-nowrap">
-                              업데이트 {fmt(item.updatedAt)}
-                            </span>
-                          </div>
-                        )}
-                        <SubscribeButton id={subIdFor(item)} subscribe={false} size="default" />
+                {others.map((item, idx) => (
+                  <React.Fragment key={`${item.id}-${idx}`}>
+                    <div className="grid grid-cols-[1fr_auto] gap-3 items-start">
+                      {/* 텍스트 영역(최대 2줄로 고정 높이 비슷하게) */}
+                      <div className="min-w-0">
+                        <div className="font-medium leading-tight" style={clamp2}>
+                          {item.title ?? ''}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          업데이트 {fmt(item.updatedAt)}
+                        </div>
                       </div>
-                      <hr className="my-5 border-gray-300" />
-                    </React.Fragment>
-                  )
-                })}
+
+                      {/* 버튼 영역: 항상 우측 상단 고정 */}
+                      <div className="row-span-2 self-start">
+                        <SubscribeButton
+                          id={subIdFor(item)}
+                          subscribe={item.isSubscribed ?? false}
+                          size="default"
+                        />
+                      </div>
+                    </div>
+                    <hr className="my-5 border-gray-300" />
+                  </React.Fragment>
+                ))}
               </div>
             )}
           </div>

@@ -131,7 +131,7 @@ const NotificationSettingPage = () => {
             <div className="flex w-full px-[max(16px,calc((100vw-1240px)/2))]">
                 <Sidebar />
 
-                <div className="absolute flex-1 h-[114.9375px] ml-[208.86px]">
+                <div className="absolute flex-1 h-dvh ml-[208.86px]">
                     <div className="flex flex-col gap-[16px] leading-none justify-center">
                         <div className="text-[32px] h-[33.94px] font-medium"> 알림 설정 </div>
                         <p className="text-[18px] text-[#919191] h-[21px] font-regular">

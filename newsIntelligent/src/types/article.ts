@@ -10,4 +10,5 @@ export type MainArticleCardProps = {
     imageUrl: string;
     summaryTime: string;
     imageSource: imageSource;
+    isSub: boolean;
   }

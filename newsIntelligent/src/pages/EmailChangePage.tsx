@@ -53,7 +53,7 @@ const EmailChangePage = () => {
             return (
                 <CodeInput
                     email={email}
-                    onComplete={() => navigate("/settings/change", {replace:true})}
+                    onComplete={() => navigate("/notification", {replace:true})}
                     autoLogin={false}
                     setAutoLogin={()=>{}}
                     isResending={isResending}
