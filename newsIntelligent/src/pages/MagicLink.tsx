@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed, attachAxiosAuth } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
+import { getMemberInfo } from "../apis/apis";
 
 export default function MagicLink() {
   const { search, hash } = useLocation();
@@ -49,9 +50,9 @@ export default function MagicLink() {
         7
       );
       
-      console.log("✅ 저장된 accessToken:", localStorage.getItem("accessToken"));
-      console.log("✅ 저장된 expiresAt:", localStorage.getItem("expiresAt"));
-      console.log("✅ 저장된 userInfo:", localStorage.getItem("userInfo"));
+      getMemberInfo().then((user) => {
+        localStorage.setItem("userInfo", JSON.stringify(user));
+      });
 
       // ✅ axios 인스턴스에 토큰 인터셉터 적용
       attachAxiosAuth(axiosInstance);
