@@ -1,0 +1,437 @@
+warning: in the working copy of 'newsIntelligent/src/components/UpdatesSideBar.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/newsIntelligent/src/components/NewsCard.tsx b/newsIntelligent/src/components/NewsCard.tsx[m
+[1mindex a223483..451790d 100644[m
+[1m--- a/newsIntelligent/src/components/NewsCard.tsx[m
+[1m+++ b/newsIntelligent/src/components/NewsCard.tsx[m
+[36m@@ -1,244 +1,295 @@[m
+[31m-import { useMemo, useState } from "react";[m
+[31m-import { ChevronDown, Circle } from "lucide-react";[m
+[31m-import SubscribeButton from "./SubscribeButton";[m
+[31m-import { useQuery } from "@tanstack/react-query";[m
+[31m-import type { ContentResultResponse, Topics } from "../types/mypage";[m
+[31m-import { axiosInstance } from "../api/axios";[m
+[31m-import { useNavigate } from "react-router-dom";[m
+[32m+[m[32mimport { useMemo, useState } from 'react'[m
+[32m+[m[32mimport { ChevronDown, Circle } from 'lucide-react'[m
+[32m+[m[32mimport SubscribeButton from './SubscribeButton'[m
+[32m+[m[32mimport { useQuery } from '@tanstack/react-query'[m
+[32m+[m[32mimport type { ContentResultResponse, Topics } from '../types/mypage'[m
+[32m+[m[32mimport { axiosInstance } from '../api/axios'[m
+[32m+[m[32mimport { useNavigate } from 'react-router-dom'[m
+ [m
+ const formatSummaryTime = (isoString: string) => {[m
+[31m-    if (!isoString) return "";[m
+[32m+[m[32m  if (!isoString) return ''[m
+ [m
+[31m-    const d = new Date(isoString);[m
+[31m-    const mm = String(d.getMonth() + 1).padStart(2, "0");[m
+[31m-    const dd = String(d.getDate()).padStart(2, "0");[m
+[31m-    const hh = String(d.getHours()).padStart(2, "0");[m
+[31m-    const mi = String(d.getMinutes()).padStart(2, "0");[m
+[32m+[m[32m  const d = new Date(isoString)[m
+[32m+[m[32m  const mm = String(d.getMonth() + 1).padStart(2, '0')[m
+[32m+[m[32m  const dd = String(d.getDate()).padStart(2, '0')[m
+[32m+[m[32m  const hh = String(d.getHours()).padStart(2, '0')[m
+[32m+[m[32m  const mi = String(d.getMinutes()).padStart(2, '0')[m
+ [m
+[31m-    return `${mm}/${dd} ${hh}:${mi}`;[m
+[31m-};[m
+[32m+[m[32m  return `${mm}/${dd} ${hh}:${mi}`[m
+[32m+[m[32m}[m
+ [m
+[31m-type TopicWithSub = Topics & { isSub?: boolean; imageSource?: { press?: string; title?: string }, newsLink? :string };[m
+[32m+[m[32mtype TopicWithSub = Topics & {[m
+[32m+[m[32m  isSub?: boolean[m
+[32m+[m[32m  imageSource?: { press?: string; title?: string }[m
+[32m+[m[32m  newsLink?: string[m
+[32m+[m[32m}[m
+ [m
+ const getImageSourceLink = (related: any[], data: TopicWithSub): string | null => {[m
+[31m-    const title = data.imageSource?.title?.trim()?.toLowerCase() ?? "";[m
+[31m-    const press = data.imageSource?.press?.trim()?.toLowerCase() ?? "";[m
+[31m-    const img = data.imageUrl?.trim() ?? "";[m
+[32m+[m[32m  const title = data.imageSource?.title?.trim()?.toLowerCase() ?? ''[m
+[32m+[m[32m  const press = data.imageSource?.press?.trim()?.toLowerCase() ?? ''[m
+[32m+[m[32m  const img = data.imageUrl?.trim() ?? ''[m
+ [m
+[31m-    const byTitle = related.find((c: any) => (c?.title ?? "").trim().toLowerCase() === title)?.newsLink;[m
+[31m-    if (byTitle) return byTitle;[m
+[32m+[m[32m  const byTitle = related.find([m
+[32m+[m[32m    (c: any) => (c?.title ?? '').trim().toLowerCase() === title[m
+[32m+[m[32m  )?.newsLink[m
+[32m+[m[32m  if (byTitle) return byTitle[m
+ [m
+[31m-    const byPress = related.find((c: any) => (c?.press ?? "").trim().toLowerCase() === press)?.newsLink;[m
+[31m-    if (byPress) return byPress;[m
+[32m+[m[32m  const byPress = related.find([m
+[32m+[m[32m    (c: any) => (c?.press ?? '').trim().toLowerCase() === press[m
+[32m+[m[32m  )?.newsLink[m
+[32m+[m[32m  if (byPress) return byPress[m
+ [m
+[31m-    const byImageUrl = related.find((c: any) => (c as any)?.imageUrl && (c as any).imageUrl === img)?.newsLink;[m
+[31m-    if (byImageUrl) return byImageUrl;[m
+[32m+[m[32m  const byImageUrl = related.find([m
+[32m+[m[32m    (c: any) => (c as any)?.imageUrl && (c as any).imageUrl === img[m
+[32m+[m[32m  )?.newsLink[m
+[32m+[m[32m  if (byImageUrl) return byImageUrl[m
+ [m
+[31m-    return null;[m
+[31m-};[m
+[32m+[m[32m  return null[m
+[32m+[m[32m}[m
+ [m
+ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {[m
+[31m-    const [isExpanded, setIsExpanded] = useState(false);[m
+[31m-    const navigate = useNavigate();[m
+[31m-    const subscribed = sub ?? !!data.isSub;[m
+[31m-[m
+[31m-    const fetchTopicRelated = async (): Promise<ContentResultResponse> => {[m
+[31m-        const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 3 } });[m
+[31m-        return res.data as ContentResultResponse;[m
+[31m-    };[m
+[31m-[m
+[31m-    const { data: relatedData, isLoading, isError, error } = useQuery({[m
+[31m-        queryKey: ["topicRelated", data.id],[m
+[31m-        queryFn: fetchTopicRelated,[m
+[31m-        enabled: Number.isFinite(data.id),[m
+[31m-        staleTime: 30000,[m
+[31m-        gcTime: 300000,[m
+[31m-        retry: 1,[m
+[31m-        refetchOnWindowFocus: false,[m
+[31m-    });[m
+[31m-[m
+[31m-    const relatedList = useMemo(() => {[m
+[31m-        const raw = relatedData?.result?.content ?? [];[m
+[31m-        const seen = new Set<string>();[m
+[31m-        const out: typeof raw = [];[m
+[31m-        for (const c of raw) {[m
+[31m-        const key = ((c.newsLink ?? "").trim() || (c.press ?? "").trim() || `${c.id}-${c.title ?? ""}`).toLowerCase();[m
+[31m-        if (!seen.has(key)) {[m
+[31m-            seen.add(key);[m
+[31m-            out.push(c);[m
+[31m-        }[m
+[31m-        }[m
+[31m-        out.sort((a: any, b: any) => (b.publishDate || "").localeCompare(a.publishDate || ""));[m
+[31m-        return out;[m
+[31m-    }, [relatedData]);[m
+[31m-[m
+[31m-    const handleCardClick = () => navigate(`/article?id=${data.id}`);[m
+[31m-[m
+[31m-    const sourceLink = getImageSourceLink(relatedList, data);[m
+[31m-    const sourceTitle = data.imageSource?.title ?? "";[m
+[31m-    const newsLink = data.newsLink;[m
+[31m-    return ([m
+[31m-        <div[m
+[31m-        className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? "h-[597px]" : "h-[288px]"} cursor-pointer`}[m
+[31m-        onClick={handleCardClick}[m
+[31m-        >[m
+[31m-        {isExpanded ? ([m
+[31m-            <div className="w-[410px] h-[595px]">[m
+[31m-            <div className="flex flex-col p-6 gap-4">[m
+[31m-                <div className="flex flex-1 justify-between items-center">[m
+[31m-                <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">[m
+[31m-                    업데이트 {formatSummaryTime(data.summaryTime)} ·{" "}[m
+[31m-                    {newsLink ? ([m
+[31m-                    <a[m
+[31m-                        href={newsLink}[m
+[31m-                        target="_blank"[m
+[31m-                        rel="noreferrer"[m
+[31m-                        onClick={(e) => e.stopPropagation()}[m
+[31m-                        className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"[m
+[31m-                        title={sourceTitle}[m
+[31m-                    >[m
+[31m-                        {newsLink}[m
+[31m-                    </a>[m
+[31m-                    ) : ([m
+[31m-                    <span className="underline underline-offset-2 decoration-[#919191]">{sourceTitle}</span>[m
+[31m-                    )}[m
+[31m-                </p>[m
+[31m-                <div onClick={(e) => e.stopPropagation()}>[m
+[31m-                    <SubscribeButton id={data.id} subscribe={subscribed} />[m
+[31m-                </div>[m
+[32m+[m[32m  const [isExpanded, setIsExpanded] = useState(false)[m
+[32m+[m[32m  const navigate = useNavigate()[m
+[32m+[m[32m  const subscribed = sub ?? !!data.isSub[m
+[32m+[m
+[32m+[m[32m  const fetchTopicRelated = async (): Promise<ContentResultResponse> => {[m
+[32m+[m[32m    const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 3 } })[m
+[32m+[m[32m    return res.data as ContentResultResponse[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  const {[m
+[32m+[m[32m    data: relatedData,[m
+[32m+[m[32m    isLoading,[m
+[32m+[m[32m    isError,[m
+[32m+[m[32m    error,[m
+[32m+[m[32m  } = useQuery({[m
+[32m+[m[32m    queryKey: ['topicRelated', data.id],[m
+[32m+[m[32m    queryFn: fetchTopicRelated,[m
+[32m+[m[32m    enabled: Number.isFinite(data.id),[m
+[32m+[m[32m    staleTime: 30000,[m
+[32m+[m[32m    gcTime: 300000,[m
+[32m+[m[32m    retry: 1,[m
+[32m+[m[32m    refetchOnWindowFocus: false,[m
+[32m+[m[32m  })[m
+[32m+[m
+[32m+[m[32m  const relatedList = useMemo(() => {[m
+[32m+[m[32m    const raw = relatedData?.result?.content ?? [][m
+[32m+[m[32m    const seen = new Set<string>()[m
+[32m+[m[32m    const out: typeof raw = [][m
+[32m+[m[32m    for (const c of raw) {[m
+[32m+[m[32m      const key = ([m
+[32m+[m[32m        (c.newsLink ?? '').trim() ||[m
+[32m+[m[32m        (c.press ?? '').trim() ||[m
+[32m+[m[32m        `${c.id}-${c.title ?? ''}`[m
+[32m+[m[32m      ).toLowerCase()[m
+[32m+[m[32m      if (!seen.has(key)) {[m
+[32m+[m[32m        seen.add(key)[m
+[32m+[m[32m        out.push(c)[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    out.sort((a: any, b: any) => (b.publishDate || '').localeCompare(a.publishDate || ''))[m
+[32m+[m[32m    return out[m
+[32m+[m[32m  }, [relatedData])[m
+[32m+[m
+[32m+[m[32m  const handleCardClick = () => navigate(`/article?id=${data.id}`)[m
+[32m+[m
+[32m+[m[32m  const sourceLink = getImageSourceLink(relatedList, data)[m
+[32m+[m[32m  const sourceTitle = data.imageSource?.title ?? ''[m
+[32m+[m[32m  const newsLink = data.newsLink[m
+[32m+[m[32m  return ([m
+[32m+[m[32m    <div[m
+[32m+[m[32m      className={`break-inside-avoid border border-[1px] border-[#919191] rounded-lg ${isExpanded ? 'h-[597px]' : 'h-[288px]'} cursor-pointer`}[m
+[32m+[m[32m      onClick={handleCardClick}[m
+[32m+[m[32m    >[m
+[32m+[m[32m      {isExpanded ? ([m
+[32m+[m[32m        <div className="w-[410px] h-[595px]">[m
+[32m+[m[32m          <div className="flex flex-col p-6 gap-4">[m
+[32m+[m[32m            <div className="flex flex-1 justify-between items-center">[m
+[32m+[m[32m              <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">[m
+[32m+[m[32m                업데이트 {formatSummaryTime(data.summaryTime)} ·{' '}[m
+[32m+[m[32m                {newsLink ? ([m
+[32m+[m[32m                  <a[m
+[32m+[m[32m                    href={newsLink}[m
+[32m+[m[32m                    target="_blank"[m
+[32m+[m[32m                    rel="noreferrer"[m
+[32m+[m[32m                    onClick={(e) => e.stopPropagation()}[m
+[32m+[m[32m                    className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"[m
+[32m+[m[32m                    title={sourceTitle}[m
+[32m+[m[32m                  >[m
+[32m+[m[32m                    {newsLink}[m
+[32m+[m[32m                  </a>[m
+[32m+[m[32m                ) : ([m
+[32m+[m[32m                  <span className="underline underline-offset-2 decoration-[#919191]">[m
+[32m+[m[32m                    {sourceTitle}[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                )}[m
+[32m+[m[32m              </p>[m
+[32m+[m[32m              <div onClick={(e) => e.stopPropagation()}>[m
+[32m+[m[32m                <SubscribeButton id={data.id} subscribe={subscribed} />[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m            <div className="flex flex-col gap-4">[m
+[32m+[m[32m              <div className="flex">[m
+[32m+[m[32m                <img[m
+[32m+[m[32m                  src={data.imageUrl}[m
+[32m+[m[32m                  alt=""[m
+[32m+[m[32m                  className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]"[m
+[32m+[m[32m                />[m
+[32m+[m[32m                <div className="w-[169px] h-[59px] text-[24px] font-semibold leading-tight line-clamp-3 mb-[4px]">[m
+[32m+[m[32m                  {data.topicName}[m
+                 </div>[m
+[32m+[m[32m              </div>[m
+ [m
+[31m-                <div className="flex flex-col gap-4">[m
+[31m-                <div className="flex">[m
+[31m-                    <img src={data.imageUrl} alt="" className="w-[88px] h-[64px] object-cover rounded-[8px] mr-[12px]" />[m
+[31m-                    <div className="w-[169px] h-[59px] text-[24px] font-semibold leading-tight line-clamp-3 mb-[4px]">[m
+[31m-                    {data.topicName}[m
+[31m-                    </div>[m
+[32m+[m[32m              <div className="flex-1 min-w-0">[m
+[32m+[m[32m                <div className="w-[360px] h-[98px] text-[14px] leading-[24px] line-clamp-3">[m
+[32m+[m[32m                  {data.aiSummary}[m
+                 </div>[m
+ [m
+[31m-                <div className="flex-1 min-w-0">[m
+[31m-                    <div className="w-[360px] h-[98px] text-[14px] leading-[24px] line-clamp-3">{data.aiSummary}</div>[m
+[31m-[m
+[31m-                    <div className="mt-[8px] flex items-center justify-between">[m
+[31m-                    <hr className={`border-t border-gray-300 ${isExpanded ? "w-[307px]" : "w-[259px]"}`} />[m
+[31m-                    <button[m
+[31m-                        onClick={(e) => {[m
+[31m-                        e.stopPropagation();[m
+[31m-                        setIsExpanded((v) => !v);[m
+[31m-                        }}[m
+[31m-                        className="flex items-center text-[10px] text-[#919191] hover:text-black rounded-md transition-colors duration-200"[m
+[31m-                    >[m
+[31m-                        <span>{isExpanded ? "접기" : "출처 기사 펼치기"}</span>[m
+[31m-                        <ChevronDown size={16} className={`ml-1 transition-transform ${isExpanded ? "rotate-180" : ""}`} />[m
+[31m-                    </button>[m
+[31m-                    </div>[m
+[32m+[m[32m                <div className="mt-[8px] flex items-center justify-between">[m
+[32m+[m[32m                  <hr[m
+[32m+[m[32m                    className={`border-t border-gray-300 ${isExpanded ? 'w-[307px]' : 'w-[259px]'}`}[m
+[32m+[m[32m                  />[m
+[32m+[m[32m                  <button[m
+[32m+[m[32m                    onClick={(e) => {[m
+[32m+[m[32m                      e.stopPropagation()[m
+[32m+[m[32m                      setIsExpanded((v) => !v)[m
+[32m+[m[32m                    }}[m
+[32m+[m[32m                    className="flex items-center text-[10px] text-[#919191] hover:text-black rounded-md transition-colors duration-200"[m
+[32m+[m[32m                  >[m
+[32m+[m[32m                    <span>{isExpanded ? '접기' : '출처 기사 펼치기'}</span>[m
+[32m+[m[32m                    <ChevronDown[m
+[32m+[m[32m                      size={16}[m
+[32m+[m[32m                      className={`ml-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`}[m
+[32m+[m[32m                    />[m
+[32m+[m[32m                  </button>[m
+                 </div>[m
+[32m+[m[32m              </div>[m
+ [m
+[31m-                <div className="flex flex-col gap-2">[m
+[31m-                    {isLoading && ([m
+[31m-                    <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[31m-                        <span className="pl-4 text-[12px] text-[#919191]">출처 기사를 불러오는 중...</span>[m
+[31m-                    </div>[m
+[31m-                    )}[m
+[32m+[m[32m              <div className="flex flex-col gap-2">[m
+[32m+[m[32m                {isLoading && ([m
+[32m+[m[32m                  <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[32m+[m[32m                    <span className="pl-4 text-[12px] text-[#919191]">[m
+[32m+[m[32m                      출처 기사를 불러오는 중...[m
+[32m+[m[32m                    </span>[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                )}[m
+[32m+[m
+[32m+[m[32m                {isError && ([m
+[32m+[m[32m                  <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[32m+[m[32m                    <span className="pl-4 text-[12px] text-red-500">[m
+[32m+[m[32m                      출처 기사 로딩 실패{error instanceof Error ? `: ${error.message}` : ''}[m
+[32m+[m[32m                    </span>[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                )}[m
+ [m
+[31m-                    {isError && ([m
+[32m+[m[32m                {!isLoading &&[m
+[32m+[m[32m                  !isError &&[m
+[32m+[m[32m                  (relatedList.length === 0 ? ([m
+                     <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[31m-                        <span className="pl-4 text-[12px] text-red-500">[m
+[31m-                        출처 기사 로딩 실패{error instanceof Error ? `: ${error.message}` : ""}[m
+[31m-                        </span>[m
+[32m+[m[32m                      <span className="pl-4 text-[12px] text-[#919191]">[m
+[32m+[m[32m                        표시할 출처 기사가 없어요.[m
+[32m+[m[32m                      </span>[m
+                     </div>[m
+[31m-                    )}[m
+[31m-[m
+[31m-                    {!isLoading &&[m
+[31m-                    !isError &&[m
+[31m-                    (relatedList.length === 0 ? ([m
+[31m-                        <div className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[31m-                        <span className="pl-4 text-[12px] text-[#919191]">표시할 출처 기사가 없어요.</span>[m
+[31m-                        </div>[m
+[31m-                    ) : ([m
+[31m-                        relatedList.map((c: any) => ([m
+[31m-                        <div key={c.id} className="flex flex-col ml-5 justify-center w-[319px] h-[89px]">[m
+[31m-                            <div className="flex flex-1 gap-2 items-center">[m
+[31m-                            <Circle size={8} fill="#0EA6C0" className="text-[#0EA6C0]" />[m
+[31m-                            <span className="text-[12px] text-[#919191] overflow-hidden text-ellipsis whitespace-nowrap">[m
+[31m-                                {c.press} · {c.publishDate}[m
+[31m-                            </span>[m
+[31m-                            </div>[m
+[31m-                            <a[m
+[31m-                            href={c.newsLink}[m
+[31m-                            target="_blank"[m
+[31m-                            rel="noreferrer"[m
+[31m-                            onClick={(e) => e.stopPropagation()}[m
+[31m-                            className="pl-4 w-full h-[63px] text-[14px] leading-[21px] line-clamp-3 hover:underline"[m
+[31m-                            title={c.title}[m
+[31m-                            >[m
+[31m-                            {c.newsSummary || c.title}[m
+[31m-                            </a>[m
+[32m+[m[32m                  ) : ([m
+[32m+[m[32m                    relatedList.map((c: any) => ([m
+[32m+[m[32m                      <div[m
+[32m+[m[32m                        key={c.id}[m
+[32m+[m[32m                        className="flex flex-col ml-5 justify-center w-[319px] h-[89px]"[m
+[32m+[m[32m                      >[m
+[32m+[m[32m                        <div className="flex flex-1 gap-2 items-center">[m
+[32m+[m[32m                          <Circle size={8} fill="#0EA6C0" className="text-[#0EA6C0]" />[m
+[32m+[m[32m                          <span className="text-[12px] text-[#919191] overflow-hidden text-ellipsis whitespace-nowrap">[m
+[32m+[m[32m                            {c.press} · {c.publishDate}[m
+[32m+[m[32m                          </span>[m
+                         </div>[m
+[31m-                        ))[m
+[31m-                    ))}[m
+[31m-                </div>[m
+[31m-                </div>[m
+[32m+[m[32m                        <a[m
+[32m+[m[32m                          href={c.newsLink}[m
+[32m+[m[32m                          target="_blank"[m
+[32m+[m[32m                          rel="noreferrer"[m
+[32m+[m[32m                          onClick={(e) => e.stopPropagation()}[m
+[32m+[m[32m                          className="pl-4 w-full h-[63px] text-[14px] leading-[21px] line-clamp-3 hover:underline"[m
+[32m+[m[32m                          title={c.title}[m
+[32m+[m[32m                        >[m
+[32m+[m[32m                          {c.newsSummary || c.title}[m
+[32m+[m[32m                        </a>[m
+[32m+[m[32m                      </div>[m
+[32m+[m[32m                    ))[m
+[32m+[m[32m                  ))}[m
+[32m+[m[32m              </div>[m
+             </div>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m      ) : ([m
+[32m+[m[32m        <div className="w-[410px]">[m
+[32m+[m[32m          <div className="flex flex-col m-6 gap-4">[m
+[32m+[m[32m            <div className="flex flex-1 justify-between items-center">[m
+[32m+[m[32m              <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">[m
+[32m+[m[32m                업데이트 {formatSummaryTime(data.summaryTime)} ·{' '}[m
+[32m+[m[32m                {sourceLink ? ([m
+[32m+[m[32m                  <a[m
+[32m+[m[32m                    href={sourceLink}[m
+[32m+[m[32m                    target="_blank"[m
+[32m+[m[32m                    rel="noreferrer"[m
+[32m+[m[32m                    onClick={(e) => e.stopPropagation()}[m
+[32m+[m[32m                    className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"[m
+[32m+[m[32m                    title={sourceTitle}[m
+[32m+[m[32m                  >[m
+[32m+[m[32m                    {sourceTitle}[m
+[32m+[m[32m                  </a>[m
+[32m+[m[32m                ) : ([m
+[32m+[m[32m                  <span className="underline underline-offset-2 decoration-[#919191]">[m
+[32m+[m[32m                    {sourceTitle}[m
+[32m+[m[32m                  </span>[m
+[32m+[m[32m                )}[m
+[32m+[m[32m              </p>[m
+[32m+[m[32m              <div onClick={(e) => e.stopPropagation()}>[m
+[32m+[m[32m                <SubscribeButton id={data.id} subscribe={subscribed} />[m
+[32m+[m[32m              </div>[m
+             </div>[m
+[31m-        ) : ([m
+[31m-            <div className="w-[410px]">[m
+[31m-            <div className="flex flex-col m-6 gap-4">[m
+[31m-                <div className="flex flex-1 justify-between items-center">[m
+[31m-                <p className="w-[298px] h-[21px] text-[12px] font-normal text-[#919191] overflow-hidden whitespace-nowrap truncate">[m
+[31m-                    업데이트 {formatSummaryTime(data.summaryTime)} ·{" "}[m
+[31m-                    {sourceLink ? ([m
+[31m-                    <a[m
+[31m-                        href={sourceLink}[m
+[31m-                        target="_blank"[m
+[31m-                        rel="noreferrer"[m
+[31m-                        onClick={(e) => e.stopPropagation()}[m
+[31m-                        className="text-[#919191] underline underline-offset-2 decoration-[#919191] hover:decoration-black"[m
+[31m-                        title={sourceTitle}[m
+[31m-                    >[m
+[31m-                        {sourceTitle}[m
+[31m-                    </a>[m
+[31m-                    ) : ([m
+[31m-                    <span className="underline underline-offset-2 decoration-[#919191]">{sourceTitle}</span>[m
+[31m-                    )}[m
+[31m-                </p>[m
+[31m-                <div onClick={(e) => e.stopPropagation()}>[m
+[31m-                    <SubscribeButton id={data.id} subscribe={subscribed} />[m
+[31m-               
