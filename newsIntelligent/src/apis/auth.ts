@@ -24,12 +24,56 @@ export interface AuthResult {
   user: AuthUser;
 }
 
+export interface AuthResultRelaxed {
+  accessToken: string;
+  refreshToken?: string;
+  expiresInSec: number;
+  user?: {
+    email?: string;
+    name?: string;
+    profileImageUrl?: string;
+  };
+}
+
 const ACCESS_KEY = "accessToken";
 const EXPIRES_KEY = "expiresAt";
 const USER_KEY = "userInfo";
 
 const DEFAULT_DAYS = 7; // 7일동안 유효
 const MS = { day: 24 * 60 * 60 * 1000 };
+
+export const persistAuthRelaxed = (result: AuthResultRelaxed, rememberDays: number = DEFAULT_DAYS) => {
+  // accessToken만 필수
+  if (!result?.accessToken) {
+    console.error("Invalid auth result:", result);
+    throw new Error("Invalid authentication result");
+  }
+
+  const now = Date.now();
+  const ttlMs = result.expiresInSec != null
+    ? result.expiresInSec * 1000
+    : rememberDays * MS.day;
+  const exp = now + ttlMs;
+
+  try {
+    localStorage.setItem("ACCESS_KEY", result.accessToken);
+    localStorage.setItem("EXPIRES_KEY", String(exp));
+    localStorage.setItem(
+      "USER_KEY",
+      JSON.stringify(result.user ?? { email: "", name: "", profileImageUrl: "" })
+    );
+
+    const t = result.accessToken;
+    if (t && t.trim() !== "") {
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
+    } else {
+      delete axiosInstance.defaults.headers.common.Authorization;
+    }
+  } catch (error) {
+    console.error("Failed to persist auth data:", error);
+    throw new Error("Failed to save authentication data");
+  }
+};
 
 // 토큰/유저 정보 저장
 export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_DAYS) => {
