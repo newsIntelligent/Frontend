@@ -349,7 +349,7 @@ export default function UpdatesSidebar() {
               </p>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-tight mb-3">
-              이미지 · {hero.press ?? '-'}
+              이미지 · {hero.press ?? '-'}{' '}
               {hero.imageSource?.newsLink && hero.imageSource?.title && (
                 <a
                   className="underline"
