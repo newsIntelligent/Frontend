@@ -77,14 +77,25 @@ const ArticlePage = () => {
     return Number.isFinite(n) && n > 0 ? n : null
   }, [searchParams])
 
-  const pageSize = 3
+  const pageSize = 9
   const fetchingRef = useRef<boolean>(false)
 
-  // 스크롤 고정
+  // 스크롤 고정: lg 이상에서만 sticky 오프셋 적용
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 142)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const handleScrollOrResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsScrolled(window.scrollY > 142)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+    handleScrollOrResize()
+    window.addEventListener('scroll', handleScrollOrResize)
+    window.addEventListener('resize', handleScrollOrResize)
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize)
+      window.removeEventListener('resize', handleScrollOrResize)
+    }
   }, [])
 
   // 상단 기사 로딩
@@ -171,71 +182,104 @@ const ArticlePage = () => {
   }, [article?.summaryTime])
 
   return (
-    <div className="flex justify-center bg-gray-50 overflow-visible">
-      <div className="w-[1440px] flex overflow-visible min-h-screen">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-gray-50">
+      {/* 레이아웃: lg부터 2열(사이드바/본문), 그 이하는 스택 */}
+      <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-6 lg:gap-10 py-6">
+        {/* 사이드바: 모바일/태블릿에서는 상단에 자연스레 배치, lg부터 sticky */}
         <aside
-          className={`sticky w-[320px] ml-[25px] self-start ${isScrolled ? 'top-[75px]' : 'top-[167px]'}`}
+          className={`
+            ${isScrolled ? 'lg:sticky lg:top-[75px]' : 'lg:sticky lg:top-[167px]'}
+            lg:h-[calc(100vh-167px)]
+          `}
         >
           <UpdatesSidebar />
         </aside>
 
-        <main className="flex-1 pl-[120px] pr-8 max-w-[1000px]">
-          <div className="border-t-2 px-6 py-6 w-full">
-            <h1 className="text-xl font-bold leading-tight mb-2">{article?.topicName}</h1>
+        {/* 메인 콘텐츠 */}
+        <main className="min-w-0">
+          <section className="bg-white border border-gray-200 rounded-xl px-4 sm:px-6 py-6">
+            <h1 className="text-xl sm:text-2xl font-bold leading-tight mb-2 break-words">
+              {article?.topicName}
+            </h1>
             {formattedSummaryTime && (
-              <p className="text-xs text-black mb-4">업데이트: {formattedSummaryTime}</p>
+              <p className="text-xs text-gray-600 mb-4">업데이트: {formattedSummaryTime}</p>
             )}
 
-            {article && <SubscribeButton id={article.id} subscribe={false} size="large" />}
+            {article && (
+              <div className="mb-4">
+                <SubscribeButton id={article.id} subscribe={false} size="large" />
+              </div>
+            )}
 
             {article?.imageUrl && (
-              <img
-                src={article.imageUrl}
-                alt={article.topicName || 'topic image'}
-                className="w-full h-[360px] object-cover rounded my-3"
-              />
+              <figure className="my-3">
+                <img
+                  src={article.imageUrl}
+                  alt={article.topicName || 'topic image'}
+                  className="w-full h-56 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg"
+                />
+                <figcaption className="text-[11px] text-gray-400 mt-2">
+                  이미지 · {article?.topicName}
+                </figcaption>
+              </figure>
             )}
-            <p className="text-[11px] text-gray-400 mb-4">이미지 · {article?.topicName}</p>
 
             {article?.aiSummary && (
-              <article className="text-sm text-gray-800 leading-relaxed mb-8">
-                <p className="transition-all whitespace-pre-line">{article.aiSummary}</p>
+              <article className="text-sm sm:text-base text-gray-800 leading-relaxed">
+                <p className="whitespace-pre-line">{article.aiSummary}</p>
               </article>
             )}
-          </div>
+          </section>
 
-          <hr className="my-4 border-gray-300" />
+          <hr className="my-6 border-gray-200" />
 
-          <p className="text-[14px] text-gray-400 mb-4">
+          <p className="text-sm text-gray-500 mb-3">
             해당 AI 요약글에 사용된 원본 토픽입니다. 최신순으로 정렬됩니다.
           </p>
 
-          {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
+          {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
 
-          <div className="flex flex-wrap gap-4 mb-8">
+          {/* 관련 토픽 카드: 반응형 그리드 */}
+          <div
+            className="
+              grid gap-3 sm:gap-4
+              grid-cols-1 sm:grid-cols-2 md:grid-cols-3
+            "
+          >
             {topics.map((topic) => (
               <a
                 key={topic.id}
                 href={topic.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col gap-2 bg-gray-100 px-4 py-3 rounded-xl text-xs text-gray-800 w-[200px] hover:shadow"
+                className="flex flex-col gap-2 bg-white border border-gray-200 px-4 py-3 rounded-xl text-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center gap-1">
-                  <img src={topic.mediaLogo} alt={topic.media} className="w-4 h-4" loading="lazy" />
-                  <span className="text-gray-500 text-[11px]">{topic.media}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <img
+                    src={topic.mediaLogo}
+                    alt={topic.media}
+                    className="w-5 h-5 shrink-0"
+                    loading="lazy"
+                  />
+                  <span className="text-gray-600 text-xs truncate">{topic.media}</span>
                 </div>
-                <p className="text-[11px] leading-snug break-words line-clamp-3">{topic.text}</p>
+                <p className="text-xs text-gray-500">{topic.publishDate}</p>
+                <h3 className="text-sm font-medium leading-snug line-clamp-2 break-words">
+                  {topic.title}
+                </h3>
+                <p className="text-[12px] leading-snug text-gray-700 line-clamp-3 break-words">
+                  {topic.text}
+                </p>
               </a>
             ))}
           </div>
 
           {hasNext && (
-            <div className="flex justify-center mb-16">
+            <div className="flex justify-center my-10">
               <button
                 onClick={() => fetchRelatedArticles(true)}
                 disabled={loading}
-                className="px-6 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300"
+                className="px-6 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300 disabled:opacity-60"
               >
                 {loading ? '불러오는 중...' : '+ 토픽 더보기'}
               </button>
