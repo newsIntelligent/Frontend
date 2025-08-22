@@ -1,13 +1,9 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth } from "../apis/auth";
-
-type Mode = "login" | "signup" | "notification-email";
+import { useLocation } from "react-router-dom";
 
 export default function MagicLink() {
   const { pathname, hash, search } = useLocation();
-  const navigate = useNavigate();
   const once = useRef(false);
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [msg, setMsg] = useState("확인 중…");
