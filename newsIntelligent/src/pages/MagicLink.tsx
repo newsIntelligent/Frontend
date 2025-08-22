@@ -37,37 +37,33 @@ export default function MagicLink() {
   useEffect(() => {
     if (once.current) return;
     once.current = true;
-
+  
     (async () => {
       try {
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
-
+  
         const rememberDays = 7;
-
-        // ✅ 토큰 임시 반영
+  
+        // 토큰 먼저 헤더에 심기
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
-
-        // ✅ 서버에서 사용자 정보 조회
+  
+        // 서버에서 유저 정보 불러오기 (토큰이 헤더에 붙은 상태)
         const { data } = await axiosInstance.get("/members/info");
         if (!data?.result) throw new Error("사용자 정보를 불러오지 못했습니다.");
-
-        // ✅ accessToken + userInfo 로 로컬스토리지 저장
+  
         persistAuth(
           {
             accessToken: token,
-            refreshToken: "", // refreshToken 내려오면 교체
+            refreshToken: "",
             expiresInSec: rememberDays * 86400,
             user: data.result,
           },
           rememberDays
         );
-
+  
         setStatus("done");
         setTimeout(() => {
-          navigate(
-            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
-            { replace: true }
-          );
+          navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
         }, 400);
       } catch (e: any) {
         setStatus("error");
@@ -75,6 +71,7 @@ export default function MagicLink() {
       }
     })();
   }, [mode, navigate, token]);
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
