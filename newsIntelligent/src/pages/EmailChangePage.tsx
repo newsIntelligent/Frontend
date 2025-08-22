@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import LeftSection from "../components/LoginPage/LeftSection";
 import { resendEmailChangeCode, sendEmailChangeCode, verifyEmailChangeCode } from "../apis/auth";
 import EmailInput from "../components/LoginPage/EmailInput";
@@ -52,6 +52,38 @@ const EmailChangePage = () => {
     const [error, setError] = useState<string | null>(null);
     const MAX_RESEND = 3;
     const navigate = useNavigate();
+
+    // verifyFn을 useCallback으로 메모이제이션
+    const handleVerifyCode = useCallback(async (email: string, code: string) => {
+        try {
+            // 1) 검증 호출(교환/재발급은 서버 정책에 따름)
+            const resp: unknown = await verifyEmailChangeCode(email, code);
+
+            console.log("이메일 변경 검증 응답:", resp);
+
+            // 2) 새 토큰이 오면 갈아끼우고, 없으면 기존 저장 토큰을 재장착
+            const newToken = pickAccessToken(resp);
+            console.log("추출된 새 토큰:", newToken);
+
+            if (newToken) {
+                axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+                localStorage.setItem("accessToken", newToken);
+                console.log("토큰 업데이트 완료");
+            } else {
+                console.log("새 토큰이 없어서 기존 토큰 유지");
+                // 기존 토큰이 유효한지 확인
+                const currentToken = localStorage.getItem("accessToken");
+                if (currentToken) {
+                    axiosInstance.defaults.headers.common.Authorization = `Bearer ${currentToken}`;
+                }
+            }
+
+            return true; // → onComplete()가 /notification으로 이동
+        } catch (e) {
+            console.error("이메일 변경 코드 검증 실패", e);
+            return false;
+        }
+    }, []);
 
     const handleResendCode = async () => {
         if (resendCount >= MAX_RESEND) return;
@@ -127,36 +159,7 @@ const EmailChangePage = () => {
                     isResending={isResending}
                     fromLoginLog={false}
                     setFromLoginLog={()=>{}}
-                    verifyFn={async (email, code)=>{
-                        try {
-                            // 1) 검증 호출(교환/재발급은 서버 정책에 따름)
-                            const resp: unknown = await verifyEmailChangeCode(email, code);
-
-                            console.log("이메일 변경 검증 응답:", resp);
-
-                            // 2) 새 토큰이 오면 갈아끼우고, 없으면 기존 저장 토큰을 재장착
-                            const newToken = pickAccessToken(resp);
-                            console.log("추출된 새 토큰:", newToken);
-
-                            if (newToken) {
-                                axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-                                localStorage.setItem("accessToken", newToken);
-                                console.log("토큰 업데이트 완료");
-                            } else {
-                                console.log("새 토큰이 없어서 기존 토큰 유지");
-                                // 기존 토큰이 유효한지 확인
-                                const currentToken = localStorage.getItem("accessToken");
-                                if (currentToken) {
-                                    axiosInstance.defaults.headers.common.Authorization = `Bearer ${currentToken}`;
-                                }
-                            }
-
-                            return true; // → onComplete()가 /notification으로 이동
-                            } catch (e) {
-                                console.error("이메일 변경 코드 검증 실패", e);
-                            return false;
-                            }
-                        }}
+                    verifyFn={handleVerifyCode}
                 />
             );
         }
