@@ -11,28 +11,27 @@ export const axiosInstance: AxiosInstance = axios.create({
 // 요청 인터셉터
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('API 요청:', config.method?.toUpperCase(), config.url)
+    const token = localStorage.getItem("accessToken")
+    if (token && token.trim() !== "") {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    console.log("API 요청:", config.method?.toUpperCase(), config.url)
     return config
   },
   (error) => {
-    console.error('API 요청 에러:', error)
+    console.error("API 요청 에러:", error)
     return Promise.reject(error)
   }
 )
 
-const token = localStorage.getItem("accessToken");
-if (token && token.trim() !== "") {
-  axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
-}
-
 // 응답 인터셉터
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('API 응답 성공:', response.status, response.config.url)
+    console.log("API 응답 성공:", response.status, response.config.url)
     return response
   },
   (error) => {
-    console.error('API 응답 에러:', {
+    console.error("API 응답 에러:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
       url: error.config?.url,
