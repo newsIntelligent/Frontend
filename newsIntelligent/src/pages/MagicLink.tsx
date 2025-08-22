@@ -29,47 +29,35 @@ export default function MagicLink() {
       try {
         const hashToken = getTokenFromUrl();
         const queryToken = getQueryToken();
-        const token = hashToken || queryToken;
+        const code = hashToken || queryToken; // 인증 코드
 
-        if (token) {
-          console.log("🔑 매직링크 accessToken:", token);
+        // 이메일은 로컬스토리지에 pendingEmail 로 저장해두는 게 일반적임
+        const email = localStorage.getItem("auth:pendingEmail") || "";
 
-          // 1️⃣ 토큰 저장
+        if (code && email) {
+          console.log("🔑 매직링크 code:", code);
+          console.log("📧 이메일:", email);
+
+          // 1️⃣ verify 호출 → accessToken/refreshToken 발급
+          const verifyRes = await axiosInstance.post("/members/login/verify", {
+            email,
+            code,
+          });
+          console.log("📡 verify 응답:", verifyRes.data);
+
+          const { accessToken, refreshToken, expiresInSec, user } = verifyRes.data;
+
+          // 2️⃣ 토큰 저장
           persistAuthRelaxed(
-            {
-              accessToken: token,
-              refreshToken: "",
-              expiresInSec: 7 * 86400,
-              user: {}, // 임시
-            },
+            { accessToken, refreshToken, expiresInSec, user },
             7
           );
 
-          // 2️⃣ axios 기본 헤더 업데이트
-          localStorage.setItem("accessToken", token);
-          axiosInstance.defaults.headers.Authorization = `Bearer ${token}`;
+          // 3️⃣ axios 헤더 갱신
+          axiosInstance.defaults.headers.Authorization = `Bearer ${accessToken}`;
 
-          // 3️⃣ 서버에서 userInfo 가져오기
-          try {
-            console.log("🔑 최종 저장된 accessToken:", localStorage.getItem("accessToken"));
-
-            const res = await axiosInstance.get("/members/info");
-            console.log("📡 /members/info 응답 전체:", res);
-
-            const data = res.data;
-            console.log("📦 res.data:", data);
-
-            const user =
-              data?.result ??
-              data?.user ??
-              data ?? {};
-
-            console.log("🙋 최종 userInfo 저장:", user);
-
-            localStorage.setItem("userInfo", JSON.stringify(user));
-          } catch (err) {
-            console.error("❌ 유저 정보 불러오기 실패:", err);
-          }
+          // 4️⃣ 유저 정보 저장
+          localStorage.setItem("userInfo", JSON.stringify(user));
 
           setStatus("done");
           setTimeout(() => navigate("/", { replace: true }), 800);
@@ -77,7 +65,7 @@ export default function MagicLink() {
         }
 
         setStatus("error");
-        setMsg("토큰이 없습니다.");
+        setMsg("토큰 또는 이메일이 없습니다.");
       } catch (err) {
         console.error("로그인 처리 실패:", err);
         setStatus("error");
