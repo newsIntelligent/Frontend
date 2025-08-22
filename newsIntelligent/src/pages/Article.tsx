@@ -15,7 +15,6 @@ type Article = {
   summaryTime?: string
   isSubscribed?: boolean
   isSub?: boolean
-  imageSource?: { press?: string; title?: string; newsLink?: string }
 }
 
 type RelatedAPIItem = {
@@ -146,26 +145,12 @@ const ArticlePage = () => {
         const result = (res.data?.result ?? null) as Article | null
         console.log('토픽페이지 - 기사 정보 로드:', result)
         console.log('토픽페이지 - API에서 받은 isSub:', result?.isSub)
-        console.log('토픽페이지 - API에서 받은 imageSource:', result?.imageSource)
 
         if (result) {
-          // 2. imageSource 정보 처리 (newsLink가 없으면 더미 링크 추가)
-          let finalResult = result
-          if (result.imageSource && !result.imageSource.newsLink) {
-            console.log('토픽페이지 - newsLink가 없어서 더미 링크 추가')
-            finalResult = {
-              ...result,
-              imageSource: {
-                ...result.imageSource,
-                newsLink: 'https://n.news.naver.com/mnews/article/025/0003463492',
-              },
-            }
-          }
-
-          // 3. 토픽 상세 API에서 isSub가 있으면 그것을 사용
-          if (finalResult.isSub !== undefined) {
-            console.log('토픽페이지 - API의 isSub 사용:', finalResult.isSub)
-            setArticle({ ...finalResult, isSubscribed: finalResult.isSub })
+          // 2. 토픽 상세 API에서 isSub가 있으면 그것을 사용
+          if (result.isSub !== undefined) {
+            console.log('토픽페이지 - API의 isSub 사용:', result.isSub)
+            setArticle({ ...result, isSubscribed: result.isSub })
             return
           }
 
@@ -198,12 +183,8 @@ const ArticlePage = () => {
           }
 
           // 최신수정보도에서 확인한 구독상태로 설정
-          const articleWithSubscription = {
-            ...finalResult,
-            isSubscribed,
-          }
+          const articleWithSubscription = { ...result, isSubscribed }
           console.log('토픽페이지 - 최종 설정된 구독상태:', isSubscribed)
-          console.log('토픽페이지 - 최종 설정된 imageSource:', articleWithSubscription.imageSource)
           setArticle(articleWithSubscription)
         } else {
           setArticle(null)
@@ -308,19 +289,7 @@ const ArticlePage = () => {
                 className="w-full h-[360px] object-cover rounded my-3"
               />
             )}
-            <p className="text-[11px] text-gray-400 mb-4">
-              이미지 · {article?.imageSource?.press ?? article?.topicName}{' '}
-              {article?.imageSource?.newsLink && article?.imageSource?.title && (
-                <a
-                  className="underline"
-                  href={article.imageSource.newsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  "{article.imageSource.title}"
-                </a>
-              )}
-            </p>
+            <p className="text-[11px] text-gray-400 mb-4">이미지 · {article?.topicName}</p>
 
             {article?.aiSummary && (
               <article className="text-sm text-gray-800 leading-relaxed mb-8">

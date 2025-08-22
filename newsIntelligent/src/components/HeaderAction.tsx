@@ -59,7 +59,7 @@ function HeaderAction() {
 
 
   return (
-    <div className={`flex  justify-between h-[40px]} gap-[28px]
+    <div className={`flex h-[40px]} gap-[28px]
               ${isLogin ? 'w-[92px]' : 'w-[166px]'}`}>
       <div className="relative">
         <BellIcon

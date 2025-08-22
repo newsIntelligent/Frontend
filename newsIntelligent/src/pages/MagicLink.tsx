@@ -9,51 +9,84 @@ export default function MagicLink() {
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
-  const [msg, setMsg] = useState("확인 중…");
+  const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ 토큰 파싱 함수 (쿼리 & 해시 둘 다 커버)
   const getTokenFromUrl = (): string => {
-    const params = new URLSearchParams(search || hash.replace(/^#/, "?"));
-    return params.get("token") || "";
+    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
+    return hashParams.get("token") || "";
   };
 
-  const token = getTokenFromUrl();
+  const getQueryToken = (): string => {
+    const queryParams = new URLSearchParams(search);
+    return queryParams.get("token") || "";
+  };
 
   useEffect(() => {
     if (once.current) return;
     once.current = true;
 
-    try {
-      if (!token) throw new Error("토큰이 없습니다.");
+    const tryLogin = async () => {
+      try {
+        const hashToken = getTokenFromUrl();
+        const queryToken = getQueryToken();
+        const token = hashToken || queryToken;
 
-      const rememberDays = 7;
+        if (token) {
+          console.log("🔑 매직링크 accessToken:", token);
 
-      // ✅ accessToken을 무조건 localStorage에 저장
-      localStorage.setItem("accessToken", token);
+          // 1️⃣ 토큰 저장
+          persistAuthRelaxed(
+            {
+              accessToken: token,
+              refreshToken: "",
+              expiresInSec: 7 * 86400,
+              user: {}, // 임시
+            },
+            7
+          );
 
-      // ✅ axios에도 즉시 반영
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+          // 2️⃣ axios 기본 헤더 업데이트
+          localStorage.setItem("accessToken", token);
+          axiosInstance.defaults.headers.Authorization = `Bearer ${token}`;
 
-      // ✅ auth 상태에도 반영
-      persistAuthRelaxed(
-        {
-          accessToken: token,
-          refreshToken: "",
-          expiresInSec: rememberDays * 86400,
-          user: { email: "unknown", name: "사용자" },
-        },
-        rememberDays
-      );
+          // 3️⃣ 서버에서 userInfo 가져오기
+          try {
+            console.log("🔑 최종 저장된 accessToken:", localStorage.getItem("accessToken"));
 
-      setStatus("done");
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 500);
-    } catch (e: any) {
-      setStatus("error");
-      setMsg(e?.message || "로그인 처리 실패");
-    }
-  }, [token, navigate]);
+            const res = await axiosInstance.get("/members/info");
+            console.log("📡 /members/info 응답 전체:", res);
+
+            const data = res.data;
+            console.log("📦 res.data:", data);
+
+            const user =
+              data?.result ??
+              data?.user ??
+              data ?? {};
+
+            console.log("🙋 최종 userInfo 저장:", user);
+
+            localStorage.setItem("userInfo", JSON.stringify(user));
+          } catch (err) {
+            console.error("❌ 유저 정보 불러오기 실패:", err);
+          }
+
+          setStatus("done");
+          setTimeout(() => navigate("/", { replace: true }), 800);
+          return;
+        }
+
+        setStatus("error");
+        setMsg("토큰이 없습니다.");
+      } catch (err) {
+        console.error("로그인 처리 실패:", err);
+        setStatus("error");
+        setMsg("로그인 처리 실패");
+      }
+    };
+
+    tryLogin();
+  }, [hash, search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">

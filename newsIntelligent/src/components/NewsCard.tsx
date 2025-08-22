@@ -140,29 +140,24 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                   {data.topicName}
                 </div>
               </div>
+                <div className="flex-1 min-w-0">
+                    <div className="w-[360px] h-[98px] text-[14px] leading-[24px] overflow-hidden text-ellipsis break-words line-clamp-4">
+                    {data.aiSummary}
+                    </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="w-[360px] h-[98px] text-[14px] leading-[24px] line-clamp-3">
-                  {data.aiSummary}
-                </div>
-
-                <div className="mt-[8px] flex items-center justify-between">
-                  <hr
-                    className={`border-t border-gray-300 ${isExpanded ? 'w-[307px]' : 'w-[259px]'}`}
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsExpanded((v) => !v)
-                    }}
-                    className="flex items-center text-[10px] text-[#919191] hover:text-black rounded-md transition-colors duration-200"
-                  >
-                    <span>{isExpanded ? '접기' : '출처 기사 펼치기'}</span>
-                    <ChevronDown
-                      size={16}
-                      className={`ml-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    />
-                  </button>
+                    <div className="mt-[8px] flex items-center justify-between">
+                    <hr className={`border-t border-gray-300 ${isExpanded ? "w-[307px]" : "w-[259px]"}`} />
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded((v) => !v);
+                        }}
+                        className="flex items-center text-[10px] text-[#919191] hover:text-black rounded-md transition-colors duration-200"
+                    >
+                        <span>{isExpanded ? "접기" : "출처 기사 펼치기"}</span>
+                        <ChevronDown size={16} className={`ml-1 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    </div>
                 </div>
               </div>
 
@@ -259,10 +254,24 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
                   {data.topicName}
                 </div>
               </div>
+                <div className="flex-1 min-w-0">
+                    <div className="w-[360px] h-[98px] text-[14px] leading-[24px] overflow-hidden text-ellipsis break-words line-clamp-4">
+                    {data.aiSummary}
+                    </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="w-[360px] h-[98px] text-[14px] leading-[24px] line-clamp-3">
-                  {data.aiSummary}
+                    <div className="mt-[8px] flex items-center justify-between">
+                    <hr className={`border-t border-gray-300 ${isExpanded ? "w-[307px]" : "w-[259px]"}`} />
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded((v) => !v);
+                        }}
+                        className="flex items-center text-[10px] text-[#919191] hover:text-black rounded-md transition-colors duration-200"
+                    >
+                        <span>{isExpanded ? "접기" : "출처 기사 펼치기"}</span>
+                        <ChevronDown size={16} className={`ml-1 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    </div>
                 </div>
 
                 <div className="mt-[8px] flex items-center justify-between">

@@ -8,6 +8,9 @@ export const axiosInstance: AxiosInstance = axios.create({
   },
 })
 
+  const saved = localStorage.getItem("accessToken");
+  if (saved) axiosInstance.defaults.headers.common.Authorization = `Bearer ${saved}`;
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
