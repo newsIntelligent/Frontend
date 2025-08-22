@@ -145,7 +145,7 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err?.response?.status === 401) {
+      if (err?.response?.status === 400) {
         clearAuth(true);
         // 401 이후에도 헤더가 남아있지 않도록 방어
         delete instance.defaults.headers.common.Authorization;
@@ -191,6 +191,7 @@ function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
     user: p.user ?? { email: p.email, name: p.name, profileImageUrl: p.profileImageUrl },
   };
 }
+
 
 
 
