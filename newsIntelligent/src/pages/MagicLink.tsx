@@ -43,21 +43,21 @@ export default function MagicLink() {
 
       const rememberDays = 7;
 
-      // ✅ accessToken 로컬스토리지에 저장
+      // ✅ accessToken 로컬스토리지에 직접 저장
       localStorage.setItem("accessToken", token);
 
-      // ✅ persistAuth도 그대로 호출
+      // ✅ persistAuth에도 저장
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "", // refreshToken 내려오면 교체
+          refreshToken: "", 
           expiresInSec: rememberDays * 86400,
           user: { email: "unknown", name: "사용자" },
         },
         rememberDays
       );
 
-      // ✅ axios 에도 즉시 반영
+      // ✅ axios 헤더 즉시 적용
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
       setStatus("done");
@@ -70,7 +70,7 @@ export default function MagicLink() {
     }
   }, [mode, navigate, token]);
 
-  // ✅ 새로고침했을 때 accessToken 다시 반영
+  // ✅ 새로고침 시 토큰 유지
   useEffect(() => {
     const savedToken = localStorage.getItem("accessToken");
     if (savedToken) {
