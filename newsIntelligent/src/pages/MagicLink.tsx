@@ -34,13 +34,12 @@ export default function MagicLink() {
       if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
       const rememberDays = 7;
-
       persistAuthRelaxed(
         {
           accessToken: token,
           refreshToken: "",
           expiresInSec: rememberDays * 86400,
-          user: {}, // 매직링크 초기 단계에서는 비워둠
+          user: {}, // 매직링크 단계에서는 user 정보 몰라도 됨
         },
         rememberDays
       );

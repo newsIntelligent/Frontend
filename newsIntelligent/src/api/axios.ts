@@ -20,7 +20,7 @@ axiosInstance.interceptors.request.use(
   }
 )
 
-const token = localStorage.getItem("ACCESS_KEY");
+const token = localStorage.getItem("accessToken");
 if (token && token.trim() !== "") {
   axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 }
