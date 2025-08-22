@@ -137,10 +137,27 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err?.response?.status === 400) {
+      const status = err?.response?.status;
+      const url = err?.config?.url || '';
+      
+      console.log(`[AXIOS INTERCEPTOR] ${status} ${url}`);
+      
+      // 이메일 변경 관련 API는 모든 에러에서 로그인 유지
+      const isEmailChangeAPI = url.includes('/notification-email/');
+      
+      if (isEmailChangeAPI) {
+        console.log('[AXIOS INTERCEPTOR] 이메일 변경 API - 로그인 유지');
+        return Promise.reject(err);
+      }
+      
+      // 401 Unauthorized나 403 Forbidden일 때만 로그인 풀기
+      if (status === 401 || status === 403) {
+        console.log('[AXIOS INTERCEPTOR] 인증 에러 - 로그인 풀기');
         clearAuth(true);
         delete instance.defaults.headers.common.Authorization;
       }
+      
+      // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
       return Promise.reject(err);
     }
   );
@@ -248,9 +265,11 @@ export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl
 };
 
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
+  const base = redirectBaseUrl ?? `${window.location.origin}/settings/notification-email/magic#token=`;
+  
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl,
+    redirectBaseUrl: base,
   });
 };
 
@@ -266,12 +285,10 @@ export const verifyEmailChangeCode = async (
 };
 
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
+  const base = redirectBaseUrl ?? `${window.location.origin}/settings/notification-email/magic#token=`;
+  
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl,
+    redirectBaseUrl: base,
   });
-};
-
-export const verifyMagicLink = async () => {
-  throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
 };

@@ -2,11 +2,12 @@ import { useEffect, useState } from "react"
 import Sidebar from "../components/Sidebar"
 import { getMemberInfo, getNicknameAvailability, patchNickname } from '../apis/apis';
 import type { MemberInfo } from "../types/members";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 
 const SettingChangePage = () => {  
     const navigate = useNavigate();
+    const location = useLocation();
     const [member, setMember] = useState<MemberInfo | undefined>(undefined);
 
     const [name, setName] = useState("");
@@ -18,18 +19,47 @@ const SettingChangePage = () => {
     const [isEditMail] = useState(false);
     const [isMailValid] = useState(true);
 
-    useEffect(() => {
-        const load = async () => {
+    const load = async () => {
         try {
+            console.log("🔍 load 호출됨 - 현재 URL:", window.location.href);
             const response = await getMemberInfo();
+            console.log("🔍 getMemberInfo 응답:", response);
             const info = Array.isArray(response.result) ? response.result[0] : response.result;
+            console.log("🔍 설정할 member 데이터:", info);
             setMember(info);
         } catch (e) {
+            console.error("🔍 load 에러:", e);
             navigate("/login");
         }
-        };
+    };
+
+    useEffect(() => {
+        console.log("🔄 useEffect 트리거됨 - location 변경:", location);
         load();
-    }, [navigate]);
+    }, [location]); // location 객체 전체가 변경될 때마다 데이터 새로고침
+
+    // 페이지가 포커스될 때마다 데이터 새로고침 (이메일 변경 완료 후 돌아올 때)
+    useEffect(() => {
+        const handleFocus = () => {
+            console.log("설정 페이지 포커스됨 - 데이터 새로고침");
+            load();
+        };
+
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                console.log("설정 페이지 가시성 변경됨 - 데이터 새로고침");
+                load();
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
 
     useEffect(() => {
         if (!member) return;
@@ -158,7 +188,7 @@ const SettingChangePage = () => {
                         autoFocus
                         />
                     ) : (
-                        <span className="h-[19px] text-[14px] font-[500] text-black">{mail}</span>
+                        <span className="h-[19px] text-[14px] font-[500] text-black">{member?.notificationEmail || mail}</span>
                     )}
 
                     {isEditMail ? (
