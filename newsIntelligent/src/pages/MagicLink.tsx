@@ -43,11 +43,15 @@ export default function MagicLink() {
         {
           accessToken: token,
           refreshToken: "",
-          expiresInSec: 7 * 86400, // 7일
+          expiresInSec: 7 * 86400,
           user: { email: "", name: "" },
         },
         7
       );
+      
+      console.log("✅ 저장된 accessToken:", localStorage.getItem("accessToken"));
+      console.log("✅ 저장된 expiresAt:", localStorage.getItem("expiresAt"));
+      console.log("✅ 저장된 userInfo:", localStorage.getItem("userInfo"));
 
       // ✅ axios 인스턴스에 토큰 인터셉터 적용
       attachAxiosAuth(axiosInstance);
