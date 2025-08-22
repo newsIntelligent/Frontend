@@ -1,75 +1,65 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuth } from "../apis/auth";
-import { axiosInstance } from "../api/axios";
 
 export default function MagicLink() {
-  const { search, hash } = useLocation();
+  const { hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ URL에서 token 추출 (쿼리 + 해시 모두 지원)
-  const getTokenFromUrl = (): string => {
-    const queryParams = new URLSearchParams(search);
-    const queryToken = queryParams.get("token");
-
-    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
-    const hashToken = hashParams.get("token");
-
-    return queryToken || hashToken || "";
+  // ✅ 해시에서 accessToken, refreshToken 등 추출
+  const getTokensFromHash = () => {
+    const params = new URLSearchParams(hash.replace(/^#/, ""));
+    return {
+      accessToken: params.get("accessToken") || "",
+      refreshToken: params.get("refreshToken") || "",
+      expiresInSec: Number(params.get("expiresInSec") || 7 * 86400),
+      email: params.get("email") || "",
+      name: params.get("name") || "",
+      profileImageUrl: params.get("profileImageUrl") || "",
+    };
   };
-
-  const token = getTokenFromUrl();
 
   useEffect(() => {
     if (once.current) return;
     once.current = true;
 
-    console.log("🔎 현재 URL:", window.location.href);
-    console.log("🔑 파싱된 토큰:", token);
+    const { accessToken, refreshToken, expiresInSec, email, name, profileImageUrl } =
+      getTokensFromHash();
 
-    if (!token) {
+    console.log("🔑 해시 파싱 accessToken:", accessToken);
+
+    if (!accessToken) {
       setStatus("error");
       setMsg("토큰이 없습니다.");
       return;
     }
 
-    const doLogin = async () => {
-      try {
-        // ✅ 1) 매직링크 검증 API 호출
-        const { data } = await axiosInstance.get(`/members/login/magic`, {
-          params: { token },
-        });
+    try {
+      // ✅ accessToken 저장
+      persistAuth(
+        {
+          accessToken,
+          refreshToken,
+          expiresInSec,
+          user: { email, name, profileImageUrl },
+        },
+        7
+      );
 
-        console.log("✅ 매직링크 응답:", data);
-
-        // ✅ 2) 응답을 persistAuth에 저장
-        persistAuth(
-          {
-            accessToken: data.result.accessToken,
-            refreshToken: data.result.refreshToken,
-            expiresInSec: data.result.expiresInSec,
-            user: data.result.user,
-          },
-          7
-        );
-
-        setStatus("done");
-        setTimeout(() => {
-          navigate("/", { replace: true });
-        }, 800);
-      } catch (err) {
-        console.error("로그인 처리 실패:", err);
-        setStatus("error");
-        setMsg("로그인 처리 실패");
-      }
-    };
-
-    doLogin();
-  }, [token, navigate]);
+      setStatus("done");
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 800);
+    } catch (err) {
+      console.error("로그인 처리 실패:", err);
+      setStatus("error");
+      setMsg("로그인 처리 실패");
+    }
+  }, [hash, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
