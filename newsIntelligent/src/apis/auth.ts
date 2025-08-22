@@ -272,6 +272,14 @@ export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) =
   });
 };
 
-export const verifyMagicLink = async () => {
-  throw new Error("verifyMagicLink API는 사용되지 않습니다. 해시(#)에서 토큰을 파싱하세요.");
+export const verifyMagicLink = async (token: string) => {
+  const { data } = await axiosInstance.post("/members/login/magic", { token });
+  // 서버가 주는 payload 구조에 맞춰서 normalize
+  const normalized = {
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    expiresInSec: data.expiresInSec,
+    user: data.user,
+  };
+  return normalized;
 };
