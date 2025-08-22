@@ -42,35 +42,28 @@ const USER_KEY = "userInfo";
 const DEFAULT_DAYS = 7; // 7일동안 유효
 const MS = { day: 24 * 60 * 60 * 1000 };
 
-export const persistAuthRelaxed = (result: AuthResultRelaxed, rememberDays: number = DEFAULT_DAYS) => {
-  if (!result?.accessToken) {
-    console.error("Invalid auth result:", result);
-    throw new Error("Invalid authentication result");
-  }
-
+export const persistAuthRelaxed = (
+  result: { accessToken: string; refreshToken?: string; expiresInSec: number; user?: any },
+  rememberDays: number
+) => {
   const now = Date.now();
   const ttlMs = result.expiresInSec != null
     ? result.expiresInSec * 1000
-    : rememberDays * MS.day;
+    : rememberDays * 24 * 60 * 60 * 1000;
   const exp = now + ttlMs;
 
-  try {
-    localStorage.setItem(ACCESS_KEY, result.accessToken);
-    localStorage.setItem(EXPIRES_KEY, String(exp));
-    localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
+  localStorage.setItem("auth:accessToken", result.accessToken);
+  localStorage.setItem("auth:expiresAt", String(exp));
+  localStorage.setItem("auth:user", JSON.stringify(result.user ?? {}));
 
-    // axios 헤더 즉시 반영
-    const t = result.accessToken;
-    if (t && t.trim() !== "") {
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
-    } else {
-      delete axiosInstance.defaults.headers.common.Authorization;
-    }
-  } catch (error) {
-    console.error("Failed to persist auth data:", error);
-    throw new Error("Failed to save authentication data");
+  // ✅ axiosInstance에도 바로 반영
+  if (result.accessToken && result.accessToken.trim() !== "") {
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
+  } else {
+    delete axiosInstance.defaults.headers.common.Authorization;
   }
 };
+
 // 토큰/유저 정보 저장
 export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_DAYS) => {
   // 입력값 검증
