@@ -11,33 +11,27 @@ export const axiosInstance: AxiosInstance = axios.create({
 // 요청 인터셉터
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken")
-    if (token && token.trim() !== "") {
-      config.headers.Authorization = `Bearer ${token}`
+    const token = localStorage.getItem("accessToken"); // 항상 localStorage에서 읽음
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
-    console.log("API 요청:", config.method?.toUpperCase(), config.url)
-    return config
+    return config;
   },
-  (error) => {
-    console.error("API 요청 에러:", error)
-    return Promise.reject(error)
-  }
-)
+  (error) => Promise.reject(error)
+);
 
-// 응답 인터셉터
+// 응답 인터셉터 (옵션)
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log("API 응답 성공:", response.status, response.config.url)
-    return response
-  },
+  (response) => response,
   (error) => {
-    console.error("API 응답 에러:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      message: error.message,
-      data: error.response?.data,
-    })
-    return Promise.reject(error)
+    // 401 처리 로직 (토큰 만료 시)
+    if (error.response?.status === 401) {
+      console.error("토큰이 만료되었거나 유효하지 않습니다.");
+      // 필요하면 refreshToken 로직 추가
+    }
+    return Promise.reject(error);
   }
-)
+);
+
+export default axiosInstance;
