@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuth } from "../apis/auth";   // ✅ strict 버전 사용
+import { persistAuth } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
 
 type Mode = "login" | "signup" | "notification-email";
@@ -10,9 +10,10 @@ export default function MagicLink() {
   const navigate = useNavigate();
   const once = useRef(false);
 
+  // ✅ ?token=xxx 또는 #token=xxx 모두 파싱 가능하도록 수정
   const parseToken = (raw: string): string => {
     if (!raw) return "";
-    const cleaned = raw.startsWith("#") ? raw.slice(1) : raw;
+    const cleaned = raw.startsWith("#") || raw.startsWith("?") ? raw.slice(1) : raw;
     const params = new URLSearchParams(cleaned);
     return (
       params.get("token") ||
@@ -22,6 +23,7 @@ export default function MagicLink() {
   };
 
   const token = parseToken(hash) || parseToken(search);
+
   const mode: Mode | null =
     pathname.startsWith("/login/magic")
       ? "login"
@@ -37,20 +39,21 @@ export default function MagicLink() {
   useEffect(() => {
     if (once.current) return;
     once.current = true;
-  
+
     (async () => {
       try {
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
-  
+
         const rememberDays = 7;
-  
-        // 토큰 먼저 헤더에 심기
+
+        // 토큰을 axiosInstance 에 먼저 반영
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
-  
-        // 서버에서 유저 정보 불러오기 (토큰이 헤더에 붙은 상태)
+
+        // ✅ 사용자 정보 조회 (토큰이 헤더에 실린 상태)
         const { data } = await axiosInstance.get("/members/info");
         if (!data?.result) throw new Error("사용자 정보를 불러오지 못했습니다.");
-  
+
+        // ✅ accessToken + userInfo 저장 → localStorage 에 반영
         persistAuth(
           {
             accessToken: token,
@@ -60,10 +63,13 @@ export default function MagicLink() {
           },
           rememberDays
         );
-  
+
         setStatus("done");
         setTimeout(() => {
-          navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
+          navigate(
+            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+            { replace: true }
+          );
         }, 400);
       } catch (e: any) {
         setStatus("error");
@@ -71,7 +77,6 @@ export default function MagicLink() {
       }
     })();
   }, [mode, navigate, token]);
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
