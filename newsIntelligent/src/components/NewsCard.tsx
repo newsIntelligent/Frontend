@@ -14,7 +14,7 @@ const formatSummaryTime = (isoString: string) => {
     const dd = String(d.getDate()).padStart(2, "0");
     const hh = String(d.getHours()).padStart(2, "0");
     const mi = String(d.getMinutes()).padStart(2, "0");
-    
+
     return `${mm}/${dd} ${hh}:${mi}`;
 };
 
@@ -43,7 +43,7 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
     const subscribed = sub ?? !!data.isSub;
 
     const fetchTopicRelated = async (): Promise<ContentResultResponse> => {
-        const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 10 } });
+        const res = await axiosInstance.get(`/topic/${data.id}/related`, { params: { size: 3 } });
         return res.data as ContentResultResponse;
     };
 
