@@ -246,3 +246,4 @@ const NewsCard = ({ data, sub }: { data: TopicWithSub; sub?: boolean }) => {
 
 export default NewsCard;
 
+
