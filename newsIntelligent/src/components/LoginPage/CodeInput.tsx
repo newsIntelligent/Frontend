@@ -123,7 +123,7 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
         verifyInFlightRef.current = false;
       }
     })();
-  }, [code, isLoading, isResending, autoLogin, fromLoginLog, email, onComplete, verifyFn, setFromLoginLog]);
+  }, [code, isLoading, isResending, email]); // 의존성 배열 최소화
       
   const handleChange = (value: string, index: number) => {
     const digit = value.replace(/[^0-9]/g, "");

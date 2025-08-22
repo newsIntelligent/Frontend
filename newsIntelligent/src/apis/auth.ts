@@ -148,15 +148,23 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
       const status = err?.response?.status;
       const url = err?.config?.url || '';
       
-      // 이메일 변경 관련 API는 400 에러가 발생해도 로그인 유지
+      console.log(`[AXIOS INTERCEPTOR] ${status} ${url}`);
+      
+      // 이메일 변경 관련 API는 모든 에러에서 로그인 유지
       const isEmailChangeAPI = url.includes('/notification-email/');
       
+      if (isEmailChangeAPI) {
+        console.log('[AXIOS INTERCEPTOR] 이메일 변경 API - 로그인 유지');
+        return Promise.reject(err);
+      }
+      
       // 401 Unauthorized나 403 Forbidden일 때만 로그인 풀기
-      if ((status === 401 || status === 403) && !isEmailChangeAPI) {
+      if (status === 401 || status === 403) {
+        console.log('[AXIOS INTERCEPTOR] 인증 에러 - 로그인 풀기');
         clearAuth(true);
-        // 401 이후에도 헤더가 남아있지 않도록 방어
         delete instance.defaults.headers.common.Authorization;
       }
+      
       // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
       return Promise.reject(err);
     }
