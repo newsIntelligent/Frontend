@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuthRelaxed } from "../apis/auth";
+import { persistAuth } from "../apis/auth";   // ✅ strict 버전 사용
 import { axiosInstance } from "../api/axios";
 
 type Mode = "login" | "signup" | "notification-email";
@@ -38,33 +38,42 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
-    try {
-      if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
+    (async () => {
+      try {
+        if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-      const rememberDays = 7;
+        const rememberDays = 7;
 
-      // ✅ accessToken 저장
-      persistAuthRelaxed(
-        {
-          accessToken: token,
-          refreshToken: "", // refreshToken 내려오면 교체
-          expiresInSec: rememberDays * 86400,
-          user: { email: "unknown", name: "사용자" },
-        },
-        rememberDays
-      );
+        // ✅ 토큰 임시 반영
+        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-      // ✅ axios 에도 즉시 반영
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+        // ✅ 서버에서 사용자 정보 조회
+        const { data } = await axiosInstance.get("/members/info");
+        if (!data?.result) throw new Error("사용자 정보를 불러오지 못했습니다.");
 
-      setStatus("done");
-      setTimeout(() => {
-        navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
-      }, 400);
-    } catch (e: any) {
-      setStatus("error");
-      setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
-    }
+        // ✅ accessToken + userInfo 로 로컬스토리지 저장
+        persistAuth(
+          {
+            accessToken: token,
+            refreshToken: "", // refreshToken 내려오면 교체
+            expiresInSec: rememberDays * 86400,
+            user: data.result,
+          },
+          rememberDays
+        );
+
+        setStatus("done");
+        setTimeout(() => {
+          navigate(
+            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
+            { replace: true }
+          );
+        }, 400);
+      } catch (e: any) {
+        setStatus("error");
+        setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
+      }
+    })();
   }, [mode, navigate, token]);
 
   return (
