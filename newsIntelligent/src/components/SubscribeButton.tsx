@@ -31,6 +31,7 @@ function SubscribeButton({ id, size = 'default', subscribe = false }: SubscribeB
       setSub(next)
       // onMutate에서는 콜백을 호출하지 않음 (중복 방지)
     }, //구독 상태 변경
+
     onSuccess: (_, next: boolean) => {
       // 성공 시에만 이벤트 발생
       console.log('SubscribeButton - onSuccess 호출, 이벤트 발생:', id, next)
