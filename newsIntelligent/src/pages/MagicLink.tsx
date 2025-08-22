@@ -1,24 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuthRelaxed, attachAxiosAuth } from "../apis/auth";
-import { axiosInstance } from "../api/axios";
+import { persistAuthRelaxed } from "../apis/auth";
 
 export default function MagicLink() {
-  const { search, hash } = useLocation();
+  const { search } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
+  // ✅ URL 쿼리에서 token 추출
   const getTokenFromUrl = (): string => {
-    const queryParams = new URLSearchParams(search);
-    const queryToken = queryParams.get("token");
-
-    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
-    const hashToken = hashParams.get("token");
-
-    return queryToken || hashToken || "";
+    const params = new URLSearchParams(search);
+    return params.get("token") || "";
   };
 
   const token = getTokenFromUrl();
@@ -27,6 +22,9 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
+    console.log("🔎 현재 URL:", window.location.href);
+    console.log("🔑 파싱된 토큰:", token);
+
     if (!token) {
       setStatus("error");
       setMsg("토큰이 없습니다.");
@@ -34,18 +32,16 @@ export default function MagicLink() {
     }
 
     try {
+      // ✅ accessToken 저장
       persistAuthRelaxed(
         {
           accessToken: token,
           refreshToken: "",
-          expiresInSec: 7 * 86400,
+          expiresInSec: 7 * 86400, // 7일
           user: {},
         },
         7
       );
-
-      // 저장 직후 보강 attach
-      attachAxiosAuth(axiosInstance);
 
       setStatus("done");
       setTimeout(() => {
