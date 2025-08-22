@@ -10,16 +10,12 @@ export default function MagicLink() {
   const navigate = useNavigate();
   const once = useRef(false);
 
-  // ✅ ?token=xxx 또는 #token=xxx 모두 파싱 가능하도록 수정
+  // ✅ #token=xxx, ?token=xxx 모두 커버
   const parseToken = (raw: string): string => {
     if (!raw) return "";
     const cleaned = raw.startsWith("#") || raw.startsWith("?") ? raw.slice(1) : raw;
     const params = new URLSearchParams(cleaned);
-    return (
-      params.get("token") ||
-      cleaned.replace(/^token=/, "").split("&")[0] ||
-      ""
-    );
+    return params.get("token") || "";
   };
 
   const token = parseToken(hash) || parseToken(search);
@@ -46,23 +42,33 @@ export default function MagicLink() {
 
         const rememberDays = 7;
 
-        // 토큰을 axiosInstance 에 먼저 반영
+        // 1️⃣ accessToken 을 axiosInstance 에 먼저 반영
         axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-        // ✅ 사용자 정보 조회 (토큰이 헤더에 실린 상태)
-        const { data } = await axiosInstance.get("/members/info");
-        if (!data?.result) throw new Error("사용자 정보를 불러오지 못했습니다.");
-
-        // ✅ accessToken + userInfo 저장 → localStorage 에 반영
+        // 2️⃣ accessToken 저장 (userInfo 는 일단 빈 값)
         persistAuth(
           {
             accessToken: token,
             refreshToken: "",
             expiresInSec: rememberDays * 86400,
-            user: data.result,
+            user: { email: "", name: "" }, // 임시
           },
           rememberDays
         );
+
+        // 3️⃣ 이제 /members/info 로 실제 사용자 정보 가져오기
+        const { data } = await axiosInstance.get("/members/info");
+        if (data?.result) {
+          persistAuth(
+            {
+              accessToken: token,
+              refreshToken: "",
+              expiresInSec: rememberDays * 86400,
+              user: data.result, // 실제 유저 정보로 교체
+            },
+            rememberDays
+          );
+        }
 
         setStatus("done");
         setTimeout(() => {
