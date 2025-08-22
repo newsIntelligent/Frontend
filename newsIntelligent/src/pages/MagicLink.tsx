@@ -1,4 +1,3 @@
-// src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
@@ -41,7 +40,7 @@ export default function MagicLink() {
           accessToken: token,
           refreshToken: "",
           expiresInSec: rememberDays * 86400,
-          user: {}, // email 없어도 OK
+          user: {}, // 매직링크 초기 단계에서는 비워둠
         },
         rememberDays
       );

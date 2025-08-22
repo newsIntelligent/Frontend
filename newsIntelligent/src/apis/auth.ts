@@ -43,9 +43,7 @@ const DEFAULT_DAYS = 7; // 7일동안 유효
 const MS = { day: 24 * 60 * 60 * 1000 };
 
 export const persistAuthRelaxed = (result: AuthResultRelaxed, rememberDays: number = DEFAULT_DAYS) => {
-  // accessToken만 필수
   if (!result?.accessToken) {
-    console.error("Invalid auth result:", result);
     throw new Error("Invalid authentication result");
   }
 
@@ -58,11 +56,9 @@ export const persistAuthRelaxed = (result: AuthResultRelaxed, rememberDays: numb
   try {
     localStorage.setItem("ACCESS_KEY", result.accessToken);
     localStorage.setItem("EXPIRES_KEY", String(exp));
-    localStorage.setItem(
-      "USER_KEY",
-      JSON.stringify(result.user ?? { email: "", name: "", profileImageUrl: "" })
-    );
+    localStorage.setItem("USER_KEY", JSON.stringify(result.user ?? {}));
 
+    // axios 헤더 즉시 반영
     const t = result.accessToken;
     if (t && t.trim() !== "") {
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
