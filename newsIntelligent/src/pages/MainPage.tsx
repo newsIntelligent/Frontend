@@ -15,7 +15,7 @@ function MainPage() {
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 142)
-    }
+    } 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
