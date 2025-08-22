@@ -227,8 +227,6 @@ export default function UpdatesSidebar() {
       window.removeEventListener('subscriptionChanged', handleSubscriptionChange as EventListener)
   }, [hero])
 
-
-
   // 구독 ID 결정
   const subIdFor = (it?: LatestItem) => {
     if (SUBSCRIBE_SCOPE === 'article') return it?.id ?? topicId ?? 0
