@@ -1,6 +1,7 @@
 type imageSource = {
     press: string;
     title: string;
+    newsLink: string;
 }
 
 export type MainArticleCardProps = {

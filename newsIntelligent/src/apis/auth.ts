@@ -137,7 +137,7 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err?.response?.status === 401) {
+      if (err?.response?.status === 400) {
         clearAuth(true);
         delete instance.defaults.headers.common.Authorization;
       }
@@ -181,7 +181,6 @@ function normalizeToAuthResult(payload: any, opts: NormalizeOpts = {}) {
   };
 }
 
-// --- 아래 API 부분은 그대로 ---
 export const sendLoginCode = (email: string, isLogin: boolean, redirectBaseUrl?: string) => {
   if (!email || !email.includes("@")) {
     throw new Error("Invalid email format");

@@ -43,7 +43,7 @@ function MainArticleCard({
       <div className="flex justify-between items-center text-[12px] text-[#919191]">
         
         <span className="truncate w-[300px]">업데이트 {formatTime(summaryTime)} · 이미지  {imageSource?.press}  
-            <a className="underline" href={imageUrl} onClick={(e:React.MouseEvent)=>e.stopPropagation()}> "{imageSource?.title}"</a>
+            <a className="underline" href={imageSource?.newsLink} onClick={(e:React.MouseEvent)=>e.stopPropagation()}> "{imageSource?.title}"</a>
         </span> 
         <div onClick={(e:React.MouseEvent)=>e.stopPropagation()}>
         <SubscribeButton id={id} subscribe={isSub}/>
