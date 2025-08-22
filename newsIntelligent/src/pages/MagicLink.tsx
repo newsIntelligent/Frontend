@@ -39,17 +39,22 @@ export default function MagicLink() {
 
     setStatus("done");
     setMsg("로그인 성공!");
-    navigate("/"); // 메인페이지나 마이페이지 등으로 이동
+    navigate("/"); // 로그인 후 이동할 경로
   }, [hash, navigate]);
 
   return (
     <div className="flex items-center justify-center h-screen">
       {status === "loading" && <p>{msg}</p>}
       {status === "error" && (
-        <div>
-          <p className="text-red-500">링크 오류</p>
-          <p>{msg}</p>
-          <button onClick={() => navigate("/login")}>로그인 페이지로</button>
+        <div className="text-center">
+          <p className="text-red-500 font-bold">링크 오류</p>
+          <p className="mb-4">{msg}</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="px-4 py-2 bg-teal-500 text-white rounded"
+          >
+            로그인 페이지로
+          </button>
         </div>
       )}
     </div>
