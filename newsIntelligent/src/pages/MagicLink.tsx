@@ -1,16 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
+import { axiosInstance } from "../api/axios";
 
 export default function MagicLink() {
-  const { search } = useLocation();
+  const { search, hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ query 에서 token 추출
+  const getTokenFromUrl = (): string => {
+    const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
+    return hashParams.get("token") || "";
+  };
+
   const getQueryToken = (): string => {
     const queryParams = new URLSearchParams(search);
     return queryParams.get("token") || "";
@@ -20,33 +25,50 @@ export default function MagicLink() {
     if (once.current) return;
     once.current = true;
 
-    const token = getQueryToken();
-    console.log("🎯 MagicLink token:", token, "search:", search);
+    const tryLogin = async () => {
+      try {
+        const hashToken = getTokenFromUrl();
+        const queryToken = getQueryToken();
+        const token = hashToken || queryToken;
 
-    if (!token) {
-      setStatus("error");
-      setMsg("토큰이 없습니다.");
-      return;
-    }
+        if (token) {
+          console.log("🔑 매직링크 accessToken:", token);
 
-    try {
-      persistAuthRelaxed(
-        {
-          accessToken: token,
-          refreshToken: "",
-          expiresInSec: 7 * 86400,
-          user: { email: "", name: "", profileImageUrl: "" },
-        },
-        7
-      );
-      setStatus("done");
-      setTimeout(() => navigate("/", { replace: true }), 800);
-    } catch (err) {
-      console.error("로그인 처리 실패:", err);
-      setStatus("error");
-      setMsg("로그인 처리 실패");
-    }
-  }, [search, navigate]);
+          // 1️⃣ 토큰 저장
+          persistAuthRelaxed(
+            {
+              accessToken: token,
+              refreshToken: "",
+              expiresInSec: 7 * 86400,
+              user: {}, // 임시
+            },
+            7
+          );
+
+          // 2️⃣ 서버에서 userInfo 가져오기
+          try {
+            const res = await axiosInstance.get("/members/info");
+            localStorage.setItem("userInfo", JSON.stringify(res.data.result));
+          } catch (err) {
+            console.error("유저 정보 불러오기 실패:", err);
+          }
+
+          setStatus("done");
+          setTimeout(() => navigate("/", { replace: true }), 800);
+          return;
+        }
+
+        setStatus("error");
+        setMsg("토큰이 없습니다.");
+      } catch (err) {
+        console.error("로그인 처리 실패:", err);
+        setStatus("error");
+        setMsg("로그인 처리 실패");
+      }
+    };
+
+    tryLogin();
+  }, [hash, search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
