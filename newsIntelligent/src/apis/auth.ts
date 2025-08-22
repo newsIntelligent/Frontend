@@ -55,13 +55,10 @@ export const persistAuthRelaxed = (
   localStorage.setItem(EXPIRES_KEY, String(exp));
   localStorage.setItem(USER_KEY, JSON.stringify(result.user ?? {}));
 
-  const t = result.accessToken?.trim();
-  if (t) {
-    axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
-    axios.defaults.headers.common.Authorization = `Bearer ${t}`; // ← 기본 axios도 반영
+  if (result.accessToken && result.accessToken.trim() !== "") {
+    axiosInstance.defaults.headers.common.Authorization = `Bearer ${result.accessToken}`;
   } else {
     delete axiosInstance.defaults.headers.common.Authorization;
-    delete axios.defaults.headers.common.Authorization;
   }
 };
 
@@ -82,13 +79,11 @@ export const persistAuth = (result: AuthResult, rememberDays: number = DEFAULT_D
     localStorage.setItem(EXPIRES_KEY, String(exp));
     localStorage.setItem(USER_KEY, JSON.stringify(result.user));
 
-    const t = result.accessToken?.trim();
-    if (t) {
+    const t = result.accessToken;
+    if (t && t !== "null" && t !== "undefined" && t.trim() !== "") {
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${t}`;
-      axios.defaults.headers.common.Authorization = `Bearer ${t}`;
     } else {
       delete axiosInstance.defaults.headers.common.Authorization;
-      delete axios.defaults.headers.common.Authorization;
     }
   } catch (error) {
     console.error("Failed to persist auth data:", error);
@@ -141,18 +136,10 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      const status = err?.response?.status;
-      const url = err?.config?.url || '';
-      
-      // 이메일 변경 관련 API는 400 에러가 발생해도 로그인 유지
-      const isEmailChangeAPI = url.includes('/notification-email/');
-      
-      // 401 Unauthorized나 403 Forbidden일 때만 로그인 풀기
-      if ((status === 401 || status === 403) && !isEmailChangeAPI) {
+      if (err?.response?.status === 400) {
         clearAuth(true);
         delete instance.defaults.headers.common.Authorization;
       }
-      // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
       return Promise.reject(err);
     }
   );
@@ -165,14 +152,9 @@ export function hasLoginHistory(): boolean {
 const bootToken = localStorage.getItem(ACCESS_KEY);
 if (bootToken && bootToken !== "null" && bootToken !== "undefined" && bootToken.trim() !== "") {
   axiosInstance.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
-  axios.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
 } else {
   delete axiosInstance.defaults.headers.common.Authorization;
-  delete axios.defaults.headers.common.Authorization;
 }
-
-// attach 인터셉터 초기 실행
-attachAxiosAuth(axiosInstance);
 
 type NormalizeOpts = { allowMissingAccessToken?: boolean };
 
@@ -277,13 +259,9 @@ export const resendMagicLink = (email: string, isLogin: boolean, redirectBaseUrl
 
 // 이메일 변경 코드 발송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const base =
-    redirectBaseUrl ??
-    `${window.location.origin}/settings/notification-email/magic#token=`;
-
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: base,
+    redirectBaseUrl,
   });
 };
 
@@ -301,13 +279,9 @@ export const verifyEmailChangeCode = async (
 
 // 이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  const base =
-    redirectBaseUrl ??
-    `${window.location.origin}/settings/notification-email/magic#token=`;
-    
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: base,
+    redirectBaseUrl,
   });
 };
 
