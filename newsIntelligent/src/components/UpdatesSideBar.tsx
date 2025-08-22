@@ -16,7 +16,6 @@ type LatestItem = {
   imageUrl?: string
   summary?: string
   isSubscribed?: boolean
-  imageSource?: { press?: string; title?: string; newsLink?: string }
 }
 
 /** 서버 응답 타입(최신 스키마) */
@@ -34,7 +33,7 @@ type LatestApiItem = {
   aiSummary?: string
   imageUrl?: string
   summaryTime?: string
-  imageSource?: { press?: string; title?: string; newsLink?: string }
+  imageSource?: { press?: string; title?: string }
   isSubscribed?: boolean
   isSub?: boolean
   relatedArticles?: RelatedArticle[]
@@ -86,8 +85,6 @@ export default function UpdatesSidebar() {
 
   // 공통: LatestApiItem -> 화면 상태로 변환 & 세팅
   const applyViewFromItem = async (it: LatestApiItem) => {
-    console.log('UpdatesSideBar - applyViewFromItem 호출, imageSource:', it.imageSource)
-
     // 대표 카드
     const heroCard: LatestItem = {
       id: it.id,
@@ -97,16 +94,7 @@ export default function UpdatesSidebar() {
       updatedAt: it.summaryTime,
       imageUrl: it.imageUrl ?? '/src/assets/stk.jpg',
       isSubscribed: it.isSubscribed ?? it.isSub ?? false,
-      imageSource: it.imageSource
-        ? {
-            ...it.imageSource,
-            newsLink:
-              it.imageSource.newsLink || 'https://n.news.naver.com/mnews/article/025/0003463492',
-          }
-        : undefined,
     }
-
-    console.log('UpdatesSideBar - heroCard 생성:', heroCard)
     setHero(heroCard)
     setTopicId(it.id)
 
@@ -168,12 +156,6 @@ export default function UpdatesSidebar() {
         const raw = data?.result as LatestApiResultV2 | undefined
         const list = raw?.items ?? []
 
-        console.log('UpdatesSideBar - API 응답 데이터:', data)
-        console.log('UpdatesSideBar - items 배열:', list)
-        if (list.length > 0) {
-          console.log('UpdatesSideBar - 첫 번째 아이템의 imageSource:', list[0].imageSource)
-        }
-
         setItems(list)
 
         if (list.length === 0) {
@@ -203,20 +185,20 @@ export default function UpdatesSidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 10초 자동 전환 (아이템이 2개 이상일 때만)
-  useEffect(() => {
-    if (items.length <= 1) return
+  // 10초 자동 전환 (아이템이 2개 이상일 때만) - 임시 비활성화
+  // useEffect(() => {
+  //   if (items.length <= 1) return
 
-    const tick = async () => {
-      const next = (currentIdx + 1) % items.length
-      setCurrentIdx(next)
-      await applyViewFromItem(items[next])
-    }
+  //   const tick = async () => {
+  //     const next = (currentIdx + 1) % items.length
+  //     setCurrentIdx(next)
+  //     await applyViewFromItem(items[next])
+  //   }
 
-    const id = setInterval(tick, 10_000)
-    return () => clearInterval(id)
-    // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
-  }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
+  //   const id = setInterval(tick, 10_000)
+  //   return () => clearInterval(id)
+  //   // currentIdx, items 둘 다 의존. items가 바뀌면 다시 세팅됨
+  // }, [currentIdx, items]) // applyViewFromItem은 ref/상태만 사용
 
   // 구독 상태 업데이트 함수
   const updateSubscriptionStatus = (topicId: number, isSubscribed: boolean) => {
@@ -349,18 +331,7 @@ export default function UpdatesSidebar() {
               </p>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-tight mb-3">
-              이미지 · {hero.press ?? '-'}{' '}
-              {hero.imageSource?.newsLink && hero.imageSource?.title && (
-                <a
-                  className="underline"
-                  href={hero.imageSource.newsLink}
-                  onClick={(e) => e.stopPropagation()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  "{hero.imageSource.title}"
-                </a>
-              )}
+              이미지 · {hero.press ?? '-'}
             </p>
           </div>
         )}
