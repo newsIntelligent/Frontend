@@ -145,11 +145,19 @@ export function attachAxiosAuth(instance: AxiosInstance = axios) {
   instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err?.response?.status === 400) {
+      const status = err?.response?.status;
+      const url = err?.config?.url || '';
+      
+      // 이메일 변경 관련 API는 400 에러가 발생해도 로그인 유지
+      const isEmailChangeAPI = url.includes('/notification-email/');
+      
+      // 401 Unauthorized나 403 Forbidden일 때만 로그인 풀기
+      if ((status === 401 || status === 403) && !isEmailChangeAPI) {
         clearAuth(true);
         // 401 이후에도 헤더가 남아있지 않도록 방어
         delete instance.defaults.headers.common.Authorization;
       }
+      // 400 Bad Request는 비즈니스 로직 에러이므로 로그인 유지
       return Promise.reject(err);
     }
   );
@@ -296,12 +304,13 @@ export const resendMagicLink = (
 
 // 이메일 변경 코드 전송
 export const sendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  // POST /members/notification-email/change
-  // 일부 환경에서 리다이렉트 URL 요구 → 기본값 제공
-  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/magic#token=";
+  const base =
+    redirectBaseUrl ??
+    `${window.location.origin}/settings/notification-email/magic#token=`;
+
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: redirectBaseUrl,
+    redirectBaseUrl: base,
   });
 };
 
@@ -319,9 +328,12 @@ export const verifyEmailChangeCode = async (
 
 //이메일 변경 코드 재전송
 export const resendEmailChangeCode = (email: string, redirectBaseUrl?: string) => {
-  //const defaultRedirectBaseUrl = "https://www.newsintelligent.site/settings/notification-email/change#token=";
+  const base =
+    redirectBaseUrl ??
+    `${window.location.origin}/settings/notification-email/magic#token=`;
+    
   return axiosInstance.post("/members/notification-email/change", {
     newEmail: email,
-    redirectBaseUrl: redirectBaseUrl,
+    redirectBaseUrl: base,
   });
 };
