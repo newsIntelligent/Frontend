@@ -3,108 +3,72 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { persistAuthRelaxed } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
 
-type Mode = "login" | "signup" | "notification-email";
-
 export default function MagicLink() {
-  const { pathname, hash, search } = useLocation();
+  const { search, hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
-  const parseToken = (raw: string): string => {
-    if (!raw) return "";
-    const cleaned = raw.startsWith("#") ? raw.slice(1) : raw;
-    const params = new URLSearchParams(cleaned);
-    return (
-      params.get("token") ||
-      cleaned.replace(/^token=/, "").split("&")[0] ||
-      ""
-    );
-  };
-
-  const token = parseToken(hash) || parseToken(search);
-  const mode: Mode | null =
-    pathname.startsWith("/login/magic")
-      ? "login"
-      : pathname.startsWith("/signup/magic")
-      ? "signup"
-      : pathname.startsWith("/settings/notification-email/magic")
-      ? "notification-email"
-      : null;
-
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("확인 중…");
+
+  // ✅ 토큰 파싱 함수 (쿼리 & 해시 둘 다 커버)
+  const getTokenFromUrl = (): string => {
+    const params = new URLSearchParams(search || hash.replace(/^#/, "?"));
+    return params.get("token") || "";
+  };
+
+  const token = getTokenFromUrl();
 
   useEffect(() => {
     if (once.current) return;
     once.current = true;
 
     try {
-      if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
+      if (!token) throw new Error("토큰이 없습니다.");
 
       const rememberDays = 7;
 
-      // ✅ accessToken 로컬스토리지에 직접 저장
+      // ✅ accessToken을 무조건 localStorage에 저장
       localStorage.setItem("accessToken", token);
 
-      // ✅ persistAuth에도 저장
+      // ✅ axios에도 즉시 반영
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+      // ✅ auth 상태에도 반영
       persistAuthRelaxed(
         {
           accessToken: token,
-          refreshToken: "", 
+          refreshToken: "",
           expiresInSec: rememberDays * 86400,
           user: { email: "unknown", name: "사용자" },
         },
         rememberDays
       );
 
-      // ✅ axios 헤더 즉시 적용
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
-
       setStatus("done");
       setTimeout(() => {
-        navigate(mode === "notification-email" ? "/settings?emailUpdated=1" : "/", { replace: true });
-      }, 400);
+        navigate("/", { replace: true });
+      }, 500);
     } catch (e: any) {
       setStatus("error");
-      setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
+      setMsg(e?.message || "로그인 처리 실패");
     }
-  }, [mode, navigate, token]);
-
-  // ✅ 새로고침 시 토큰 유지
-  useEffect(() => {
-    const savedToken = localStorage.getItem("accessToken");
-    if (savedToken) {
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${savedToken}`;
-    }
-  }, []);
+  }, [token, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
       <div className="bg-white rounded-[16px] shadow-md p-8 w-full max-w-[440px] text-center">
-        {status === "loading" && (
-          <>
-            <div className="text-xl font-semibold mb-2">확인 중…</div>
-            <p className="text-gray-600">{msg}</p>
-          </>
-        )}
+        {status === "loading" && <p>{msg}</p>}
         {status === "error" && (
           <>
-            <div className="text-xl font-semibold text-red-600 mb-2">링크 오류</div>
-            <p className="text-gray-600 mb-4">{msg}</p>
-            <a
-              href="/login"
-              className="inline-block mt-2 px-4 py-2 rounded-md bg-[#0EA6C0] text-white"
-            >
+            <p className="text-red-600 font-bold mb-2">링크 오류</p>
+            <p className="mb-4">{msg}</p>
+            <a href="/login" className="px-4 py-2 bg-[#0EA6C0] text-white rounded-md">
               로그인 페이지로
             </a>
           </>
         )}
-        {status === "done" && (
-          <>
-            <div className="text-xl font-semibold mb-2">완료!</div>
-            <p className="text-gray-600">잠시 후 이동합니다…</p>
-          </>
-        )}
+        {status === "done" && <p>로그인 성공! 잠시 후 이동합니다…</p>}
       </div>
     </div>
   );
