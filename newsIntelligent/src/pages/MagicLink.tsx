@@ -1,14 +1,11 @@
 // src/pages/MagicLink.tsx
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { axiosInstance } from "../api/axios";
-import { persistAuth } from "../apis/auth";
+import { useLocation } from "react-router-dom";
 
 type Mode = "login" | "signup" | "notification-email";
 
 export default function MagicLink() {
   const { pathname, hash, search } = useLocation();
-  const navigate = useNavigate();
 
   const parseTokenFromHash = (h: string): string => {
     if (!h) return "";
@@ -31,7 +28,7 @@ export default function MagicLink() {
     pathname.startsWith("/settings/notification-email/magic") ? "notification-email" :
     null;
 
-  const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
+  const [status, setStatus] = useState<"loading" | "error">("loading");
   const [msg, setMsg] = useState("확인 중…");
   const once = useRef(false);
 
@@ -43,36 +40,22 @@ export default function MagicLink() {
       try {
         if (!mode || !token) throw new Error("잘못된 링크입니다 (mode/token 누락).");
 
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+        // 서버 magic 엔드포인트로 바로 리다이렉트
+        const apiBase = "https://api.newsintelligent.site/api/members";
+        const target =
+          mode === "login"
+            ? `${apiBase}/login/magic?token=${token}`
+            : mode === "signup"
+            ? `${apiBase}/signup/magic?token=${token}`
+            : `${apiBase}/notification-email/magic?token=${token}`;
 
-        // 유저 정보 요청
-        const res = await axiosInstance.get("/members/info");
-        const user = res.data.result;
-
-        const rememberDays = 7;
-        persistAuth(
-          {
-            accessToken: token,
-            refreshToken: "", // undefined 대신 기본값
-            expiresInSec: rememberDays * 86400,
-            user,
-          },
-          rememberDays
-        );
-
-        setStatus("done");
-        setTimeout(() => {
-          navigate(
-            mode === "notification-email" ? "/settings?emailUpdated=1" : "/",
-            { replace: true }
-          );
-        }, 400);
+        window.location.href = target;
       } catch (e: any) {
         setStatus("error");
         setMsg(e?.message || "로그인 처리 중 오류가 발생했습니다.");
       }
     })();
-  }, [mode, navigate, token]);
+  }, [mode, token]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
@@ -93,12 +76,6 @@ export default function MagicLink() {
             >
               로그인 페이지로
             </a>
-          </>
-        )}
-        {status === "done" && (
-          <>
-            <div className="text-xl font-semibold mb-2">완료!</div>
-            <p className="text-gray-600">잠시 후 이동합니다…</p>
           </>
         )}
       </div>
