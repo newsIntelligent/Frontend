@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { persistAuthRelaxed } from "../apis/auth";
+import { persistAuthRelaxed, attachAxiosAuth } from "../apis/auth";
+import { axiosInstance } from "../api/axios";
 
 export default function MagicLink() {
   const { search, hash } = useLocation();
@@ -10,7 +11,6 @@ export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  // ✅ URL에서 token 추출 (쿼리, 해시 둘 다 지원)
   const getTokenFromUrl = (): string => {
     const queryParams = new URLSearchParams(search);
     const queryToken = queryParams.get("token");
@@ -34,22 +34,24 @@ export default function MagicLink() {
     }
 
     try {
-      // ✅ accessToken 저장
       persistAuthRelaxed(
         {
           accessToken: token,
           refreshToken: "",
-          expiresInSec: 7 * 86400, // 7일
-          user: {}, // 유저 정보는 /members/info 등 별도 API로 조회
+          expiresInSec: 7 * 86400,
+          user: {},
         },
         7
       );
+
+      // 저장 직후 보강 attach
+      attachAxiosAuth(axiosInstance);
 
       setStatus("done");
       setTimeout(() => {
         navigate("/", { replace: true });
       }, 800);
-    } catch (e: any) {
+    } catch {
       setStatus("error");
       setMsg("로그인 처리 실패");
     }
