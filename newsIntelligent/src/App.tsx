@@ -40,15 +40,10 @@ function App() {
 
               {/* 보호된 페이지들 */}
               <Route element={<ProtectedRoute />}>
-                {/* /subscriptions */}
                 <Route path="subscriptions" element={<SubscriptionPage />} />
-                {/* /read-topic */}
                 <Route path="read-topic" element={<ReadPage />} />
-                {/* /notification */}
                 <Route path="notification" element={<NotificationSettingPage />} />
-                {/* /settings */}
                 <Route path="settings" element={<SettingPage />} />
-                {/* /settings/changes */}
                 <Route path="settings/changes" element={<SettingChangePage />} />
               </Route>
 
@@ -59,9 +54,15 @@ function App() {
             {/* 인증/매직링크 등 (헤더 없이) */}
             <Route path="login" element={<LoginPage />} />
             <Route path="email-change" element={<EmailChangePage />} />
+
+            {/* 매직 링크 처리 */}
             <Route path="login/magic" element={<MagicLink />} />
             <Route path="signup/magic" element={<MagicLink />} />
             <Route path="settings/notification-email/magic" element={<MagicLink />} />
+
+            {/* ✅ 추가된 부분 */}
+            <Route path="login/magic-success" element={<MagicLink />} />
+            <Route path="signup/magic-success" element={<MagicLink />} />
           </Route>
         </Routes>
       </BrowserRouter>
