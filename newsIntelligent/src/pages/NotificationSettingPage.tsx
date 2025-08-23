@@ -101,14 +101,14 @@ const NotificationSettingPage = () => {
         }
     };
 
-    const [loading, setLoading] = useState(true);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+//    const [loading, setLoading] = useState(true);
+ //   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            setLoading(true);
-            setErrorMsg(null);
+     //       setLoading(true);
+       //     setErrorMsg(null);
             
             try {
                 const response : MemberSettingResponse = await getSetting();
@@ -122,14 +122,14 @@ const NotificationSettingPage = () => {
 
             } catch (error) {
                 if (!cancelled) {
-                    setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+       //             setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
 
                 };
 
             } finally {
                 if (!cancelled) {
-                    setLoading(false);
-                }
+           //         setLoading(false);             
+           }
             }
         }
     )();
