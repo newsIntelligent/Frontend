@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { axiosInstance } from "../api/axios";
 
 export default function MagicLink() {
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
@@ -18,9 +19,12 @@ export default function MagicLink() {
           localStorage.setItem("accessTokenExp", exp);
         }
 
+        // ✅ axios 헤더 반영
+        axiosInstance.defaults.headers.Authorization = `Bearer ${token}`;
+
         setStatus("done");
 
-        // ✅ 홈으로 리다이렉트
+        // ✅ 홈으로 이동
         setTimeout(() => {
           window.location.replace("/");
         }, 800);
