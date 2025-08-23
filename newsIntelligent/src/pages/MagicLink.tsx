@@ -6,9 +6,10 @@ export default function MagicLink() {
 
   useEffect(() => {
     try {
+      // ✅ 해시 파라미터 읽기
       const params = new URLSearchParams(window.location.hash.slice(1));
-      const token = params.get("token");
-      const exp = params.get("exp");
+      const token = params.get("token"); // JWT (eyJ... 형태)
+      const exp = params.get("exp");     // 만료 시각 (timestamp)
 
       if (token) {
         // ✅ 토큰 저장
@@ -19,7 +20,7 @@ export default function MagicLink() {
 
         setStatus("done");
 
-        // ✅ 안전한 페이지로 이동
+        // ✅ 홈으로 리다이렉트
         setTimeout(() => {
           window.location.replace("/");
         }, 800);
