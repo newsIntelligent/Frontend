@@ -41,7 +41,6 @@ const LoginPage = () => {
       }
     }
     catch(error){
-      console.error(error);
       setHasLoginHistory(false);
     }
 
@@ -73,7 +72,6 @@ const LoginPage = () => {
       setResendCount((prev)=> prev+1);
     }
     catch (error){
-      console.error("인증 코드 요청 실패", error);
     }
     finally {
       setIsResending(false);
@@ -125,7 +123,6 @@ const LoginPage = () => {
               autoLogin={autoLogin}
               onToggleAutoLogin={()=>setAutoLogin(prev => !prev)}
               onNext={async (inputEmail) => {
-                console.log("입력된 이메일 : ", inputEmail)
 
                 // ✅ 발급 단계에서도 canonical 처리
                 const canonical = inputEmail.trim().toLowerCase();

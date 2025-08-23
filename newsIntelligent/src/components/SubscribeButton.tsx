@@ -27,33 +27,26 @@ function SubscribeButton({ id, size = 'default', subscribe = false }: SubscribeB
     }, //next: 구독 상태 받음 true일때 구독
 
     onMutate: (next: boolean) => {
-      console.log('SubscribeButton - onMutate 호출:', id, next)
       setSub(next)
       // onMutate에서는 콜백을 호출하지 않음 (중복 방지)
     }, //구독 상태 변경
     onSuccess: (_, next: boolean) => {
-      // 성공 시에만 이벤트 발생
-      console.log('SubscribeButton - onSuccess 호출, 이벤트 발생:', id, next)
       window.dispatchEvent(
         new CustomEvent('subscriptionChanged', {
           detail: { topicId: id, isSubscribed: next },
         })
       )
     },
-    onError: (error, next) => {
-      console.error('구독 상태 변경 실패:', error)
+    onError: (next) => {
       setSub(!next) // 에러 발생 시 이전 상태로 되돌림
     },
   })
 
   const handleClick = () => {
     const token = getAccessTokenFromStorage()
-    console.log('토큰 확인:', token)
     if (!token) {
-      console.log('로그인 필요')
       setIsOpen(true) // 로그인 알림 모달 열기
     } else {
-      console.log('구독 상태 변경', sub)
       toggleSubscribe.mutate(!sub)
     }
   }

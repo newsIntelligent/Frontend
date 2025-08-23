@@ -14,8 +14,8 @@ const MyPageSearchBar = ({onSearch} : MyPageSearchBarProps) => {
     }, 500)
     , []);
 
-    const throttlingSearch = useRef(_.throttle((value : string) => {
-        console.log("throttleSearch : ", value);
+    const throttlingSearch = useRef(_.throttle((value?: string) => {
+        onSearch(value ?? "");
     }, 2000)).current;
 
     useEffect(() => {
@@ -25,11 +25,10 @@ const MyPageSearchBar = ({onSearch} : MyPageSearchBarProps) => {
 
     const handleClick = () => {
         onSearch(input);
-        console.log("Immediate search:", input);
     }
 
     return (
-        <div className="flex border border-[1.5px] border-[#919191] w-[320px] h-[40px] rounded-full items-center">
+        <div className="flex border-[1.5px] border-[#919191] w-[320px] h-[40px] rounded-full items-center">
             <input 
             className="w-[90%] ml-4 focus:outline-none"
             placeholder=""

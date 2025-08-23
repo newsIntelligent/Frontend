@@ -11,11 +11,8 @@ function pickAccessToken(resp: unknown): string | null {
   if (!resp || typeof resp !== "object") return null;
   const r = resp as Record<string, any>;
 
-  console.log("pickAccessToken 입력:", r);
-
   // 1) axios response 객체 형태일 때
   const data = r.data ?? r;
-  console.log("응답 데이터:", data);
   
   const bodyToken =
     data?.result?.accessToken ??
@@ -26,7 +23,6 @@ function pickAccessToken(resp: unknown): string | null {
     r?.token;
     
   if (typeof bodyToken === "string" && bodyToken) {
-    console.log("바디에서 토큰 추출:", bodyToken);
     return bodyToken;
   }
 
@@ -35,11 +31,9 @@ function pickAccessToken(resp: unknown): string | null {
   const authHeader = headers?.authorization ?? headers?.Authorization;
   if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    console.log("헤더에서 토큰 추출:", token);
     return token;
   }
   
-  console.log("토큰을 찾을 수 없음");
   return null;
 }
 
@@ -59,18 +53,13 @@ const EmailChangePage = () => {
             // 1) 검증 호출(교환/재발급은 서버 정책에 따름)
             const resp: unknown = await verifyEmailChangeCode(email, code);
 
-            console.log("이메일 변경 검증 응답:", resp);
-
             // 2) 새 토큰이 오면 갈아끼우고, 없으면 기존 저장 토큰을 재장착
             const newToken = pickAccessToken(resp);
-            console.log("추출된 새 토큰:", newToken);
 
             if (newToken) {
                 axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`;
                 localStorage.setItem("accessToken", newToken);
-                console.log("토큰 업데이트 완료");
             } else {
-                console.log("새 토큰이 없어서 기존 토큰 유지");
                 // 기존 토큰이 유효한지 확인
                 const currentToken = localStorage.getItem("accessToken");
                 if (currentToken) {
@@ -80,11 +69,9 @@ const EmailChangePage = () => {
 
             // 3) 사용자 정보 업데이트 (이메일 변경 완료 후)
             try {
-                console.log("🔄 사용자 정보 업데이트 시작");
                 const { getMemberInfo } = await import('../apis/apis');
                 const memberResponse = await getMemberInfo();
                 const updatedUser = memberResponse.result[0];
-                console.log("🔄 업데이트된 사용자 정보:", updatedUser);
                 
                                  // localStorage의 userInfo 업데이트
                  const currentUserInfo = localStorage.getItem("userInfo");
@@ -96,20 +83,16 @@ const EmailChangePage = () => {
                          notificationEmail: updatedUser.notificationEmail // 알림 이메일
                      };
                      localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
-                     console.log("✅ localStorage 사용자 정보 업데이트 완료:", updatedUserInfo);
                  }
                 
                 // 추가로 accessToken도 업데이트된 사용자 정보로 갱신
                 if (updatedUser.email) {
-                    console.log("✅ 이메일 변경 완료 - 새 이메일:", updatedUser.email);
                 }
             } catch (updateError) {
-                console.error("❌ 사용자 정보 업데이트 실패:", updateError);
             }
 
             return true; // → onComplete()가 /notification으로 이동
         } catch (e) {
-            console.error("이메일 변경 코드 검증 실패", e);
             return false;
         }
     }, []);
@@ -122,7 +105,6 @@ const EmailChangePage = () => {
             setResendCount((prev)=>prev+1);
         }
         catch(error){
-            console.error(error);
         }
         finally{
             setIsResending(false);
@@ -156,7 +138,6 @@ const EmailChangePage = () => {
                             await sendEmailChangeCode(canonical);
                             setStep("verify");
                         } catch (e) {
-                            console.error("이메일 변경 코드 전송 실패", e);
                             
                             // 에러 타입에 따른 메시지 분기
                             if (e && typeof e === 'object' && 'response' in e) {
@@ -184,7 +165,6 @@ const EmailChangePage = () => {
                     email={email}
                     onComplete={() => {
                         // 이메일 변경 완료 후 페이지 새로고침과 함께 이동
-                        console.log("✅ 이메일 변경 완료 - 페이지 새로고침 실행");
                         navigate("/notification", {replace:true});
                         // 강제로 페이지 새로고침
                         setTimeout(() => {
