@@ -9,7 +9,6 @@ export default function useThrottle(value: boolean, delay: number = 500) {
 
         if (value && now - lastTriggered.current >= delay) {
             lastTriggered.current = now;
-            console.log("throttle");
 
             setThrottle(true);
 

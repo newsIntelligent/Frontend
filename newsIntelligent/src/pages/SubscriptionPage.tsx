@@ -52,7 +52,6 @@ const SubscriptionPage = () => {
 
             if (!hasNext) observerRef.current?.disconnect();
         } catch (e) {
-            console.error("구독 뉴스 로딩 실패", e);
         } finally {
             setIsLoading(false);
         }

@@ -11,8 +11,6 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen: boolean, s
   const navigation = useNavigate();
   const notificationRef = useRef<HTMLDivElement | null>(null);
 
-  console.log("Notification component rendered with isOpen:", isOpen);
-
   const { data,
     fetchNextPage,
     hasNextPage,
@@ -32,7 +30,6 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen: boolean, s
   useEffect(() => {
     if (throttleInView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
-      console.log("다음 알람 요청")
     }
   }, [throttleInView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -61,33 +58,6 @@ function Notification({ isOpen, setNotification, onClose }: { isOpen: boolean, s
   const handleSettingClick = () => {
     navigation('/notification')
   }//알림 설정 페이지로 이동
-
-  /*
-    const highlightQuotedText = (text: string): React.ReactNode => {
-      const regex = /'([^']+)'/g;
-      const parts: React.ReactNode[] = [];
-      let lastIndex = 0;
-      let match: RegExpExecArray | null;
-    
-      while ((match = regex.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-          parts.push(text.slice(lastIndex, match.index));
-        }
-        parts.push(
-          <span key={match.index} className="text-[#0B8E8E]">
-            '{match[1]}'
-          </span>
-        );
-        lastIndex = regex.lastIndex;
-      }
-    
-      if (lastIndex < text.length) {
-        parts.push(text.slice(lastIndex));
-      }
-    
-      return parts;
-    };  //구독 토픽 강조
-  */
 
   const formatTime = (iso: string): string => {
     const now = new Date();

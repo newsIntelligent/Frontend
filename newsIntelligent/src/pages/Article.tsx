@@ -76,11 +76,8 @@ const ArticlePage = () => {
   const [searchParams] = useSearchParams()
   const topicId = useMemo(() => {
     const raw = searchParams.get('id')
-    console.log('Article 페이지 - URL 파라미터 확인:', raw)
     const n = raw ? Number(raw) : NaN
-    console.log('Article 페이지 - 숫자 변환 결과:', n, 'isFinite:', Number.isFinite(n))
     const result = Number.isFinite(n) && n > 0 ? n : null
-    console.log('Article 페이지 - 최종 topicId:', result)
     return result
   }, [searchParams])
 
@@ -91,21 +88,15 @@ const ArticlePage = () => {
   useEffect(() => {
     const handleSubscriptionChange = (e: CustomEvent) => {
       const { topicId: changedTopicId, isSubscribed } = e.detail
-      console.log('Article 페이지에서 구독 상태 변경 감지:', changedTopicId, isSubscribed)
-      console.log('현재 토픽 ID:', topicId)
-      console.log('토픽 ID 비교:', changedTopicId, '===', topicId, '?', changedTopicId === topicId)
 
       // 현재 토픽의 구독 상태가 변경된 경우에만 처리
       if (changedTopicId === topicId) {
-        console.log('일치하는 토픽 발견! 구독 상태 즉시 업데이트:', isSubscribed)
         // 이벤트에서 받은 구독상태를 바로 사용
         setArticle((prev) => (prev ? { ...prev, isSubscribed } : null))
       } else {
-        console.log('토픽 ID가 일치하지 않음:', changedTopicId, '!==', topicId)
       }
     }
 
-    console.log('Article 페이지 - 이벤트 리스너 등록, 현재 topicId:', topicId)
     window.addEventListener('subscriptionChanged', handleSubscriptionChange as EventListener)
     return () =>
       window.removeEventListener('subscriptionChanged', handleSubscriptionChange as EventListener)
@@ -144,15 +135,10 @@ const ArticlePage = () => {
           signal: controller.signal,
         })
         const result = (res.data?.result ?? null) as Article | null
-        console.log('토픽페이지 - 기사 정보 로드:', result)
-        console.log('토픽페이지 - API에서 받은 isSub:', result?.isSub)
-        console.log('토픽페이지 - API에서 받은 imageSource:', result?.imageSource)
-
         if (result) {
           // 2. imageSource 정보 처리 (newsLink가 없으면 더미 링크 추가)
           let finalResult = result
           if (result.imageSource && !result.imageSource.newsLink) {
-            console.log('토픽페이지 - newsLink가 없어서 더미 링크 추가')
             finalResult = {
               ...result,
               imageSource: {
@@ -164,19 +150,16 @@ const ArticlePage = () => {
 
           // 3. 토픽 상세 API에서 isSub가 있으면 그것을 사용
           if (finalResult.isSub !== undefined) {
-            console.log('토픽페이지 - API의 isSub 사용:', finalResult.isSub)
             setArticle({ ...finalResult, isSubscribed: finalResult.isSub })
             return
           }
 
           // 3. isSub가 없으면 최신수정보도에서 확인 (폴백)
-          console.log('토픽페이지 - isSub가 없어서 최신수정보도에서 확인')
           let isSubscribed = false
 
           try {
             const latestRes = await axiosInstance.get('/topics/latest')
             const latestData = latestRes.data?.result
-            console.log('토픽페이지 - 최신수정보도 데이터:', latestData)
 
             if (latestData) {
               const foundTopic =
@@ -184,17 +167,12 @@ const ArticlePage = () => {
                   ? latestData.hero
                   : latestData.others?.find((item: any) => item.id === topicId)
 
-              console.log('토픽페이지 - 찾은 토픽:', foundTopic)
-
               if (foundTopic && foundTopic.isSubscribed !== undefined) {
                 isSubscribed = foundTopic.isSubscribed
-                console.log('토픽페이지 - 최신수정보도에서 구독상태 찾음:', isSubscribed)
               } else {
-                console.log('토픽페이지 - 최신수정보도에서 해당 토픽을 찾지 못함')
               }
             }
           } catch (error) {
-            console.log('토픽페이지 - 최신수정보도 확인 실패:', error)
           }
 
           // 최신수정보도에서 확인한 구독상태로 설정
@@ -202,8 +180,6 @@ const ArticlePage = () => {
             ...finalResult,
             isSubscribed,
           }
-          console.log('토픽페이지 - 최종 설정된 구독상태:', isSubscribed)
-          console.log('토픽페이지 - 최종 설정된 imageSource:', articleWithSubscription.imageSource)
           setArticle(articleWithSubscription)
         } else {
           setArticle(null)

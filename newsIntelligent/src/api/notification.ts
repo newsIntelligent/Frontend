@@ -11,7 +11,6 @@ export const getNotification = async ({ cursor, size = 10 }: { cursor?: string, 
       const { data } = await axiosInstance.get("/notification", { params });
       return data;
     } catch (error) {
-      console.log("알람 목록 조회 실패", error);
       throw error;
     }
   };
@@ -20,7 +19,6 @@ export const checkNotification = async (notificationID:number) => {
         const {data} = await axiosInstance.patch(`/notification/${notificationID}/check`)
         return data;
     } catch (error) {
-        console.log("알람 읽음 처리 오류", error)
         throw error;
     }
 }
@@ -30,7 +28,6 @@ export const checkAllNotification = async () => {
         const {data} = await axiosInstance.patch("/notification/check")
         return data;
     } catch (error) {
-        console.log("모든 알람 읽음 처리 오류", error)
         throw error;
     }
 }

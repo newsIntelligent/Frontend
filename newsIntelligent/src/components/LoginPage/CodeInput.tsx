@@ -115,7 +115,6 @@ const CodeInput = ({ onComplete, autoLogin, setAutoLogin, isResending, email, fr
         verifyInFlightRef.current = false;
         onComplete(); // 성공 시 다음 단계로 이동
       } catch (e) {
-        console.error(e);
         setIsLoading(false);
         setError(true);
         setCode("");

@@ -84,7 +84,6 @@ export default function UpdatesSidebar() {
 
   // 공통: LatestApiItem -> 화면 상태로 변환 & 세팅
   const applyViewFromItem = async (it: LatestApiItem) => {
-    console.log('UpdatesSideBar - applyViewFromItem 호출, imageSource:', it.imageSource)
 
     // 대표 카드
     const heroCard: LatestItem = {
@@ -104,7 +103,6 @@ export default function UpdatesSidebar() {
         : undefined,
     }
 
-    console.log('UpdatesSideBar - heroCard 생성:', heroCard)
     setHero(heroCard)
     setTopicId(it.id)
 
@@ -166,11 +164,6 @@ export default function UpdatesSidebar() {
         const raw = data?.result as LatestApiResultV2 | undefined
         const list = raw?.items ?? []
 
-        console.log('UpdatesSideBar - API 응답 데이터:', data)
-        console.log('UpdatesSideBar - items 배열:', list)
-        if (list.length > 0) {
-          console.log('UpdatesSideBar - 첫 번째 아이템의 imageSource:', list[0].imageSource)
-        }
 
         setItems(list)
 
@@ -220,7 +213,6 @@ export default function UpdatesSidebar() {
   useEffect(() => {
     const handleSubscriptionChange = (e: CustomEvent) => {
       const { topicId: changedTopicId, isSubscribed } = e.detail
-      console.log('UpdatesSideBar - 구독 상태 변경 감지:', changedTopicId, isSubscribed)
 
       // hero 업데이트
       if (hero && hero.id === changedTopicId) {

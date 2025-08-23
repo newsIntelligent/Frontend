@@ -44,8 +44,6 @@ const SettingTimeModal = ({onAdd, onCancel} : SettingTimeModalProps) => {
         }
 
         const formatted = `${time24.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-
-        console.log("서버로 보낼 시간 (24시간제):", formatted);
         
         onAdd(formatted);  
     } 

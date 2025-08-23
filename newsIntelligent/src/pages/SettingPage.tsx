@@ -12,11 +12,9 @@ const SettingPage = () => {
         const getData = async() => {
             try {
                 const response = await getMemberInfo();
-                console.log("응답 성공:", response);
     
                 setMember(response.result[0]);
             } catch (error) {
-                console.log("데이터를 받아오지 못했습니다.", error);
                 alert("로그인 후 다시 실행해 주세요.");
             }
         };
@@ -26,26 +24,22 @@ const SettingPage = () => {
 
     const handleSignout = async () => {
         try {
-            console.log("로그아웃 성공");
 
             await signout();
             localStorage.removeItem("accessToken"); //로그아웃 시 토큰 제거
 
             navigate("/");
         } catch (error) {
-            console.log("로그아웃 실패", error);
         }
     }
 
     const handleWithdraw = async () => {
         try {
-            console.log("회원탈퇴 성공");
 
             await deleteId();
 
             navigate("/");
         } catch (error) {
-            console.log("회원탈퇴 실패", error);
         }
     }
 

@@ -28,7 +28,6 @@ export default function MagicLink() {
         setMsg("토큰이 없습니다.");
       }
     } catch (err) {
-      console.error("로그인 처리 실패:", err);
       setStatus("error");
       setMsg("로그인 처리 실패");
     }

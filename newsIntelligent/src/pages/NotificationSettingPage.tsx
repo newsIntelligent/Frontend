@@ -22,14 +22,10 @@ const NotificationSettingPage = () => {
 
     const getData = async() => {
         try {
-            console.log("🔍 getData 호출됨 - 현재 URL:", window.location.href);
             const response = await getMemberInfo();
-            console.log("🔍 getMemberInfo 응답:", response);
-            console.log("🔍 설정할 member 데이터:", response.result[0]);
 
             setMember(response.result[0]);
         } catch (error) {
-            console.log("데이터를 받아오지 못했습니다.", error);
             alert("로그인 후 다시 실행해 주세요.");
 
             navigate("/login");
@@ -37,20 +33,17 @@ const NotificationSettingPage = () => {
     };
 
     useEffect(() => {
-        console.log("🔄 useEffect 트리거됨 - location 변경:", location);
         getData();
     }, [location]); // location 객체 전체가 변경될 때마다 데이터 새로고침
 
     // 페이지가 포커스될 때마다 데이터 새로고침 (이메일 변경 완료 후 돌아올 때)
     useEffect(() => {
         const handleFocus = () => {
-            console.log("페이지 포커스됨 - 데이터 새로고침");
             getData();
         };
 
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                console.log("페이지 가시성 변경됨 - 데이터 새로고침");
                 getData();
             }
         };
@@ -67,8 +60,6 @@ const NotificationSettingPage = () => {
     const handleSubscriptionToggle = async () => {
         const newValue = !subscriptionAlarmButton;
 
-        console.log(`[DEBUG] 구독 알림 토글 클릭됨. newValue:`, newValue);
-
         setSubscriptionAlarmButton(newValue); 
 
         try {
@@ -76,7 +67,6 @@ const NotificationSettingPage = () => {
         } 
         
         catch (error) {
-            console.error("구독 알림 설정 실패:", error);
             setSubscriptionAlarmButton(prev => !prev); 
         }
     };
@@ -84,7 +74,6 @@ const NotificationSettingPage = () => {
     const handleChangeNotificationToggle = async () => {
         const newValue = !changeNotificationButton;
 
-        console.log(`[DEBUG] 읽은 토픽 알림 토글 클릭됨. newValue:`, newValue);
 
         setChangeNotification(newValue);
 
@@ -93,7 +82,6 @@ const NotificationSettingPage = () => {
         } 
         
         catch (error) {
-            console.error("읽은 토픽 알림 설정 실패:", error);
             setChangeNotification(prev => !prev);
         }
     };
@@ -101,7 +89,6 @@ const NotificationSettingPage = () => {
     const handleDailyReportToggle = async () => {
         const newValue = !dailyReport;
 
-        console.log(`[DEBUG] 데일리 리포트 토글 클릭됨. newValue:`, newValue);
 
         setDailyReport(newValue);
 
@@ -110,7 +97,6 @@ const NotificationSettingPage = () => {
         } 
         
         catch (error) {
-            console.error("데일리 리포트 설정 실패:", error);
             setDailyReport(prev => !prev);
         }
     };
@@ -138,10 +124,8 @@ const NotificationSettingPage = () => {
                 if (!cancelled) {
                     setErrorMsg('설정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
 
-                    console.log(loading, errorMsg);
                 };
 
-                console.error('[SETTING] fetch failed:', error);
             } finally {
                 if (!cancelled) {
                     setLoading(false);

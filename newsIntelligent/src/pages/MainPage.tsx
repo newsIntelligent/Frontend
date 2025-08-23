@@ -45,7 +45,6 @@ function MainPage() {
   useEffect(() => {
     if (throttleInView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage()
-      console.log('다음페이지 요청')
     }
   }, [throttleInView, fetchNextPage, hasNextPage])
 

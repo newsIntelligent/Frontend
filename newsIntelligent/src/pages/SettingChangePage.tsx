@@ -21,33 +21,26 @@ const SettingChangePage = () => {
 
     const load = async () => {
         try {
-            console.log("🔍 load 호출됨 - 현재 URL:", window.location.href);
             const response = await getMemberInfo();
-            console.log("🔍 getMemberInfo 응답:", response);
             const info = Array.isArray(response.result) ? response.result[0] : response.result;
-            console.log("🔍 설정할 member 데이터:", info);
             setMember(info);
         } catch (e) {
-            console.error("🔍 load 에러:", e);
             navigate("/login");
         }
     };
 
     useEffect(() => {
-        console.log("🔄 useEffect 트리거됨 - location 변경:", location);
         load();
     }, [location]); // location 객체 전체가 변경될 때마다 데이터 새로고침
 
     // 페이지가 포커스될 때마다 데이터 새로고침 (이메일 변경 완료 후 돌아올 때)
     useEffect(() => {
         const handleFocus = () => {
-            console.log("설정 페이지 포커스됨 - 데이터 새로고침");
             load();
         };
 
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                console.log("설정 페이지 가시성 변경됨 - 데이터 새로고침");
                 load();
             }
         };

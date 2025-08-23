@@ -35,13 +35,11 @@ const ReadPage = () => {
         const getData = async() => {
             try {
                 const response = await getMemberInfo();
-                console.log("응답 성공:", response);
     
                 setMember(response.result[0]);
             } 
             
             catch (error) {
-                console.log("데이터를 받아오지 못했습니다.", error);
                 alert("로그인 후 다시 실행해 주세요.");
     
                 navigate("/login");
@@ -99,9 +97,6 @@ const ReadPage = () => {
             }
 
         } catch (e: any) {
-            console.error("뉴스 로딩 실패", e);
-            console.error("📛 상태 코드:", e?.response?.status);
-            console.error("📛 에러 응답 본문:", e?.response?.data);
         } finally {
             setIsLoading(false);
         }
@@ -160,7 +155,6 @@ const ReadPage = () => {
             setMore(response.result.hasNext);
             moreRef.current = response.result.hasNext;
         } catch (error) {
-            console.error("검색 결과 로딩 실패", error);
         } finally {
             setIsLoading(false);
         }
