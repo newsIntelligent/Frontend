@@ -14,7 +14,8 @@ const MyPageSearchBar = ({onSearch} : MyPageSearchBarProps) => {
     }, 500)
     , []);
 
-    const throttlingSearch = useRef(_.throttle((value : string) => {
+    const throttlingSearch = useRef(_.throttle((value?: string) => {
+        onSearch(value ?? "");
     }, 2000)).current;
 
     useEffect(() => {
