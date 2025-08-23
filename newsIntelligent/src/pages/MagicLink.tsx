@@ -4,21 +4,17 @@ import { persistAuthRelaxed } from "../apis/auth";
 import { axiosInstance } from "../api/axios";
 
 export default function MagicLink() {
-  const { search, hash } = useLocation();
+  const { hash } = useLocation();
   const navigate = useNavigate();
   const once = useRef(false);
 
   const [status, setStatus] = useState<"loading" | "error" | "done">("loading");
   const [msg, setMsg] = useState("로그인 확인 중…");
 
-  const getTokenFromUrl = (): string => {
+  // ✅ 해시에서만 token 읽기
+  const getHashToken = (): string => {
     const hashParams = new URLSearchParams(hash.replace(/^#/, "?"));
     return hashParams.get("token") || "";
-  };
-
-  const getQueryToken = (): string => {
-    const queryParams = new URLSearchParams(search);
-    return queryParams.get("token") || "";
   };
 
   useEffect(() => {
@@ -27,20 +23,18 @@ export default function MagicLink() {
 
     const tryLogin = async () => {
       try {
-        const hashToken = getTokenFromUrl();
-        const queryToken = getQueryToken();
-        const token = hashToken || queryToken;
+        const token = getHashToken();
 
         if (token) {
-          console.log("🔑 매직링크 accessToken:", token);
+          console.log("🔑 매직링크 otpToken:", token);
 
-          // 1️⃣ 토큰 저장
+          // 1️⃣ 토큰 저장 (임시 로그인용, refreshToken 없음)
           persistAuthRelaxed(
             {
               accessToken: token,
               refreshToken: "",
               expiresInSec: 7 * 86400,
-              user: {}, // 임시
+              user: {}, 
             },
             7
           );
@@ -51,14 +45,12 @@ export default function MagicLink() {
 
           // 3️⃣ 서버에서 userInfo 가져오기
           try {
-            console.log("🔑 최종 저장된 accessToken:", localStorage.getItem("accessToken"));
+            console.log("🔑 최종 저장된 otpToken:", localStorage.getItem("accessToken"));
 
             const res = await axiosInstance.get("/members/info");
             console.log("📡 /members/info 응답 전체:", res);
 
             const data = res.data;
-            console.log("📦 res.data:", data);
-
             const user =
               data?.result ??
               data?.user ??
@@ -77,7 +69,7 @@ export default function MagicLink() {
         }
 
         setStatus("error");
-        setMsg("토큰이 없습니다.");
+        setMsg("해시에서 토큰을 찾을 수 없습니다.");
       } catch (err) {
         console.error("로그인 처리 실패:", err);
         setStatus("error");
@@ -86,7 +78,7 @@ export default function MagicLink() {
     };
 
     tryLogin();
-  }, [hash, search, navigate]);
+  }, [hash, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#DEF0F0] p-4">
@@ -106,3 +98,4 @@ export default function MagicLink() {
     </div>
   );
 }
+
