@@ -1,5 +1,5 @@
-{
-    "rewrites": [
+    {
+        "rewrites": [
         { "source": "/subscriptions", "destination": "/" },
         { "source": "/read-topic", "destination": "/" },
         { "source": "/notification", "destination": "/" },
@@ -11,6 +11,8 @@
         { "source": "/email-change", "destination": "/" },
         { "source": "/login/magic", "destination": "/" },
         { "source": "/signup/magic", "destination": "/" },
-        { "source": "/settings/notification-email/magic", "destination": "/" }
-    ]
-}
+        { "source": "/settings/notification-email/magic", "destination": "/" },
+        { "source": "/login/magic-success", "destination": "/" },
+        { "source": "/signup/magic-success", "destination": "/" }
+        ]
+    }
